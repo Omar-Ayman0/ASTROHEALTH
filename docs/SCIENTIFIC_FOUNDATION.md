@@ -1,0 +1,3 @@
+# Scientific foundation
+
+The integrated engine uses synthetic physiological signals, personal baseline calibration, statistical deviations, Isolation Forest, sleep analysis and trend detection. Its trend configuration covers a subset of signals; the newer handoff expands coverage. Scientific references and assumptions are retained in [research](../astronaut-health-intelligence/docs/RESEARCH.md) and [data assumptions](../astronaut-health-intelligence/data/assumptions.md). Additional evidence tables and scientific docs are available in the independent handoff. These are research assumptions, not clinical validation.

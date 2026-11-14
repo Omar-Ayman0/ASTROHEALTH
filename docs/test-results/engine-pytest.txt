@@ -1,0 +1,82 @@
+.........FFF...............F...........                                  [100%]
+=================================== FAILURES ===================================
+__ test_all_injected_events_detected_on_every_astronaut_with_bounded_latency ___
+
+    def test_all_injected_events_detected_on_every_astronaut_with_bounded_latency():
+        for a in ("ASTRO_01", "ASTRO_02", "ASTRO_03"):
+>           m = evaluate_astronaut(raw(a))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_engine.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+engine/evaluation.py:136: in evaluate_astronaut
+    k = (pd.Timestamp(n["night_start"]).normalize() - start).days
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+>   ???
+E   TypeError: Cannot subtract tz-naive and tz-aware datetime-like objects.
+
+timestamps.pyx:514: TypeError
+______________ test_blind_astronauts_all_injected_events_detected ______________
+
+    def test_blind_astronauts_all_injected_events_detected():
+        for a in ("ASTRO_05", "ASTRO_06"):
+>           m = evaluate_astronaut(raw(a))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_engine.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+engine/evaluation.py:136: in evaluate_astronaut
+    k = (pd.Timestamp(n["night_start"]).normalize() - start).days
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+>   ???
+E   TypeError: Cannot subtract tz-naive and tz-aware datetime-like objects.
+
+timestamps.pyx:514: TypeError
+______________ test_control_astronaut_has_no_high_priority_event _______________
+
+    def test_control_astronaut_has_no_high_priority_event():
+        _, res = fitted("ASTRO_04")
+        assert truth_events(raw("ASTRO_04")) == []
+        high = [e for e in res["events"] if e["severity"] == "HIGH_REVIEW_PRIORITY"]
+        assert len(high) <= 1                                  # chance 4-sigma override, documented
+>       m = evaluate_astronaut(raw("ASTRO_04"))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_engine.py:159: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+engine/evaluation.py:136: in evaluate_astronaut
+    k = (pd.Timestamp(n["night_start"]).normalize() - start).days
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+>   ???
+E   TypeError: Cannot subtract tz-naive and tz-aware datetime-like objects.
+
+timestamps.pyx:514: TypeError
+_____________________ test_live_events_equal_batch_events ______________________
+
+    def test_live_events_equal_batch_events():
+        s = run_through_acute()
+        raw = data()[data().astronaut_id == "ASTRO_01"].reset_index(drop=True)
+        t0 = raw["timestamp"].iloc[760]                       # the live system only watched from step 760
+        batch = [e for e in HealthEngine().fit(raw).analyze(raw.iloc[:900])["events"]
+>                if __import__("pandas").Timestamp(e["start"]) >= t0]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_live.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+>   ???
+E   TypeError: Cannot compare tz-naive and tz-aware timestamps
+
+timestamps.pyx:387: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_engine.py::test_all_injected_events_detected_on_every_astronaut_with_bounded_latency - TypeError: Cannot subtract tz-naive and tz-aware datetime-like objects.
+FAILED tests/test_engine.py::test_blind_astronauts_all_injected_events_detected - TypeError: Cannot subtract tz-naive and tz-aware datetime-like objects.
+FAILED tests/test_engine.py::test_control_astronaut_has_no_high_priority_event - TypeError: Cannot subtract tz-naive and tz-aware datetime-like objects.
+FAILED tests/test_live.py::test_live_events_equal_batch_events - TypeError: Cannot compare tz-naive and tz-aware timestamps
+4 failed, 35 passed in 93.25s (0:01:33)
