@@ -1,0 +1,150 @@
+﻿.selection-page {
+    min-height: 100vh;
+    padding: 28px clamp(20px, 5vw, 76px);
+    box-sizing: border-box;
+    color: #eaf2ff;
+    background: radial-gradient(ellipse at 50% 0%, #18345b 0%, #0b172b 48%, #070d19 100%);
+}
+.selection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+.selection-brand {
+    font-size: 1.55rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #60a5fa;
+}
+.selection-brand span { color: #f1f5f9; }
+.engine-indicator {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: .72rem;
+    letter-spacing: 1px;
+    color: #b9c8dc;
+}
+.engine-indicator > span, .selection-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f59e0b;
+}
+.engine-indicator.online > span, .selection-dot { background: #22c55e; }
+.engine-indicator.offline > span { background: #f59e0b; }
+.selection-hero {
+    text-align: center;
+    max-width: 760px;
+    margin: clamp(55px, 9vh, 100px) auto 55px;
+}
+.selection-eyebrow, .selection-role {
+    color: #60a5fa;
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+.selection-hero h1 {
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    margin: 14px 0;
+    line-height: 1.1;
+    font-weight: 900;
+}
+.selection-hero h1 span { color: #60a5fa; }
+.selection-hero p {
+    color: #a8b8ce;
+    line-height: 1.7;
+    font-size: 1rem;
+}
+.selection-grid {
+    width: min(1200px, 100%);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 18px;
+}
+.selection-card {
+    text-align: left;
+    min-height: 255px;
+    padding: 24px 20px;
+    color: #eaf2ff;
+    background: linear-gradient(155deg, rgba(30, 54, 85, .9), rgba(13, 27, 47, .95));
+    border: 1px solid rgba(125, 170, 220, .23);
+    border-radius: 18px;
+    cursor: pointer;
+    transition: transform .2s, border-color .2s, box-shadow .2s;
+}
+.selection-card:hover {
+    transform: translateY(-7px);
+    border-color: #60a5fa;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, .28);
+}
+.doctor-card { border-color: rgba(34, 211, 238, .35); }
+.doctor-card:hover { border-color: #22d3ee; }
+.selection-icon {
+    width: 54px;
+    height: 54px;
+    display: grid;
+    place-items: center;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    font-size: 1.15rem;
+    font-weight: 900;
+}
+.astronaut-icon {
+    color: #93c5fd;
+    background: rgba(59, 130, 246, .2);
+    border: 1px solid rgba(96, 165, 250, .35);
+}
+.doctor-icon {
+    color: #67e8f9;
+    background: rgba(6, 182, 212, .16);
+    border: 1px solid rgba(34, 211, 238, .35);
+    font-size: 2rem;
+}
+.selection-card h2 { font-size: 1.18rem; margin: 9px 0 16px; }
+.selection-role { font-size: .65rem; color: #9ab4d4; }
+.selection-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 25px;
+    color: #b9c8dc;
+    font-size: .75rem;
+}
+.selection-action {
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(148, 163, 184, .18);
+    color: #93c5fd;
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+.selection-action span { float: right; font-size: 1rem; }
+.doctor-card .selection-action { color: #67e8f9; }
+.selection-loading, .selection-footer {
+    text-align: center;
+    color: #8296b2;
+    font-size: .75rem;
+    margin-top: 28px;
+}
+.selection-footer {
+    margin-top: 75px;
+    letter-spacing: 2px;
+}
+@media (max-width: 1050px) {
+    .selection-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 650px) {
+    .selection-page { padding: 22px 16px; }
+    .selection-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .selection-card { min-height: 220px; padding: 18px 14px; }
+    .selection-card h2 { font-size: 1rem; }
+    .selection-hero { margin: 55px auto 35px; }
+    .selection-footer { margin-top: 45px; }
+}
+@media (max-width: 380px) {
+    .selection-grid { grid-template-columns: 1fr; }
+}

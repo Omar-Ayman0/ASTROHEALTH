@@ -1,0 +1,116 @@
+﻿{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Astronaut Health Monitoring API",
+    "version": "1.0.0",
+    "description": "Backend API for astronaut health incidents and medical review."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4000",
+      "description": "Local development server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      }
+    },
+    "schemas": {
+      "Incident": {
+        "type": "object",
+        "properties": {
+          "incident_id": { "type": "string", "example": "INC-0001" },
+          "event_id": { "type": "string", "example": "ASTRO_01-EV005" },
+          "astronaut_id": { "type": "string", "example": "ASTRO_01" },
+          "status": { "type": "string", "example": "PENDING_MEDICAL_REVIEW" },
+          "severity": { "type": "string", "example": "HIGH_REVIEW_PRIORITY" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" },
+          "assigned_role": { "type": "string", "example": "MEDICAL_OFFICER" },
+          "source": { "type": "string", "example": "synthetic_simulator" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/v1/incidents/upsert": {
+      "post": {
+        "summary": "Register or update an incident",
+        "security": [{ "ApiKeyAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": {
+                "schema_version": "1.0",
+                "event_type": "HEALTH_REVIEW_REQUIRED",
+                "source": "health_engine",
+                "event_id": "ASTRO_01-EV005",
+                "astronaut_id": "ASTRO_01",
+                "created_at": "2026-11-14T13:00:00Z",
+                "event": {
+                  "event_id": "ASTRO_01-EV005",
+                  "astronaut_id": "ASTRO_01",
+                  "type": "ACUTE_DEVIATION",
+                  "severity": "HIGH_REVIEW_PRIORITY",
+                  "needs_human_review": true
+                },
+                "data_source": {
+                  "type": "synthetic_simulator",
+                  "is_real_astronaut_data": false
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Incident created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Incident" }
+              }
+            }
+          },
+          "200": { "description": "Existing incident updated or acknowledged" },
+          "400": { "description": "Missing required fields" },
+          "401": { "description": "Invalid or missing API key" },
+          "500": { "description": "Database error" }
+        }
+      }
+    },
+    "/api/v1/incidents": {
+      "get": {
+        "summary": "List incidents",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          {
+            "name": "astronaut_id",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "example": "ASTRO_01"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Incident list",
+            "content": {
+              "application/json": {
+                "example": {
+                  "astronaut_id": "ASTRO_01",
+                  "incidents": []
+                }
+              }
+            }
+          },
+          "401": { "description": "Invalid or missing API key" }
+        }
+      }
+    }
+  }
+}

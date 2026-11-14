@@ -1,0 +1,16 @@
+{
+  "astronaut_id": "ASTRO_01",
+  "incidents": [
+    {
+      "incident_id": "INC-0001",
+      "event_id": "ASTRO_01-EV005",
+      "astronaut_id": "ASTRO_01",
+      "status": "PENDING_MEDICAL_REVIEW",
+      "severity": "HIGH_REVIEW_PRIORITY",
+      "created_at": "2026-11-14T13:00:00Z",
+      "updated_at": "2026-11-14T13:00:00Z",
+      "assigned_role": "MEDICAL_OFFICER",
+      "source": "synthetic_simulator"
+    }
+  ]
+}
