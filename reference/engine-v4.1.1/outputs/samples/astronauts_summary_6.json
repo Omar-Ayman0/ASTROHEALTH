@@ -1,0 +1,80 @@
+[
+  {
+    "astronaut_id": "ASTRO_01",
+    "status": "REVIEW_REQUIRED",
+    "severity": "HIGH_REVIEW_PRIORITY",
+    "anomaly_score": 1.0,
+    "needs_human_review": true,
+    "latest_reading_at": "2026-11-14 09:05:00",
+    "latest_event_id": "ASTRO_01-EV-20261114T0500",
+    "step_index": 829,
+    "finished": false,
+    "run": 1,
+    "model_version": "hybrid-v2.0"
+  },
+  {
+    "astronaut_id": "ASTRO_02",
+    "status": "MONITOR_CLOSELY",
+    "severity": "LOW_DEVIATION",
+    "anomaly_score": 0.553,
+    "needs_human_review": false,
+    "latest_reading_at": "2026-11-14 09:05:00",
+    "latest_event_id": null,
+    "step_index": 829,
+    "finished": false,
+    "run": 1,
+    "model_version": "hybrid-v2.0"
+  },
+  {
+    "astronaut_id": "ASTRO_03",
+    "status": "REVIEW_REQUIRED",
+    "severity": "MODERATE_DEVIATION",
+    "anomaly_score": 0.605,
+    "needs_human_review": true,
+    "latest_reading_at": "2026-11-14 09:05:00",
+    "latest_event_id": "ASTRO_03-EV-20261114T0840",
+    "step_index": 829,
+    "finished": false,
+    "run": 1,
+    "model_version": "hybrid-v2.0"
+  },
+  {
+    "astronaut_id": "ASTRO_04",
+    "status": "MONITOR_CLOSELY",
+    "severity": "LOW_DEVIATION",
+    "anomaly_score": 0.631,
+    "needs_human_review": false,
+    "latest_reading_at": "2026-11-14 09:05:00",
+    "latest_event_id": null,
+    "step_index": 829,
+    "finished": false,
+    "run": 1,
+    "model_version": "hybrid-v2.0"
+  },
+  {
+    "astronaut_id": "ASTRO_05",
+    "status": "MONITOR_CLOSELY",
+    "severity": "LOW_DEVIATION",
+    "anomaly_score": 0.618,
+    "needs_human_review": false,
+    "latest_reading_at": "2026-11-14 09:05:00",
+    "latest_event_id": null,
+    "step_index": 829,
+    "finished": false,
+    "run": 1,
+    "model_version": "hybrid-v2.0"
+  },
+  {
+    "astronaut_id": "ASTRO_06",
+    "status": "REVIEW_REQUIRED",
+    "severity": "HIGH_REVIEW_PRIORITY",
+    "anomaly_score": 0.68,
+    "needs_human_review": true,
+    "latest_reading_at": "2026-11-14 09:05:00",
+    "latest_event_id": "ASTRO_06-EV-20261114T0645",
+    "step_index": 829,
+    "finished": false,
+    "run": 1,
+    "model_version": "hybrid-v2.0"
+  }
+]

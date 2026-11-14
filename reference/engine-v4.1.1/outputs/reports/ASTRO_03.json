@@ -1,0 +1,556 @@
+{
+  "schema_version": "1.0",
+  "astronaut_id": "ASTRO_03",
+  "generated_at": "2026-11-13T14:57:26.542573+00:00",
+  "model_version": "hybrid-v2.1",
+  "disclaimer": "Experimental research prototype for telemetry review and decision support. Not a medical device: it does not diagnose and gives no treatment instructions.",
+  "latest_reading_at": "2026-11-18 11:55:00",
+  "status": "MONITOR_CLOSELY",
+  "severity": "LOW_DEVIATION",
+  "needs_human_review": false,
+  "anomaly_score": 0.538,
+  "anomaly_score_definition": "anomaly_score = min(1, deviation / 6) where deviation = max(|z| of the latest reading, |1 h rolling-mean z|) in units of the astronaut's own baseline sigma. 0.5 = 3 sigma, 0.67 = 4 sigma. It is a deviation scale, NOT a probability of illness.",
+  "reason": "Acute Deviation from 2026-11-18 10:20 to 11:55 (100 min, 2 flagged readings). Main contributors: heart_rate_bpm (elevated, mean z=+1.1), spo2_pct (depressed, mean z=-1.0). Compared against the astronaut's own time-of-day baseline.",
+  "key_findings": [
+    "Acute Deviation from 2026-11-18 10:20 to 11:55 (100 min, 2 flagged readings). Main contributors: heart_rate_bpm (elevated, mean z=+1.1), spo2_pct (depressed, mean z=-1.0). Compared against the astronaut's own time-of-day baseline.",
+    "heart_rate_bpm elevated: observed 77.2 vs expected 75.25 (mean z=+1.1, baseline sigma 1.778)",
+    "spo2_pct depressed: observed 97.39 vs expected 97.813 (mean z=-1.0, baseline sigma 0.407)",
+    "Review reason: below review thresholds (noise-level, not sent for review)"
+  ],
+  "latest_event_id": "ASTRO_03-EV-20261115T1600",
+  "latest_vitals": {
+    "timestamp": "2026-11-18 11:55:00",
+    "activity_state": "REST",
+    "is_corrupted": false,
+    "vitals": {
+      "heart_rate_bpm": {
+        "value": 79.8,
+        "expected": 75.41422025293436,
+        "zscore": 2.4666927711280318
+      },
+      "hrv_ms": {
+        "value": 55.5,
+        "expected": 49.29507373480858,
+        "zscore": 2.0067678736065386
+      },
+      "spo2_pct": {
+        "value": 97.2,
+        "expected": 97.812963,
+        "zscore": -1.506051597051581
+      },
+      "skin_temp_c": {
+        "value": 34.38,
+        "expected": 34.3633632699542,
+        "zscore": 0.1980563100690888
+      },
+      "resp_rate_bpm": {
+        "value": 15.0,
+        "expected": 16.31215884075674,
+        "zscore": -2.6615797986952145
+      }
+    }
+  },
+  "data_source": {
+    "type": "synthetic_simulator",
+    "is_real_astronaut_data": false,
+    "engine_reads_ground_truth_columns": false
+  },
+  "data_quality": {
+    "total_records": 2016,
+    "corrupted_records": 8,
+    "missing_values_detected": 2,
+    "out_of_bounds_detected": 1,
+    "flatline_detected": 5,
+    "longest_invalid_run_steps": 5,
+    "current_invalid_run_steps": 0,
+    "recent_invalid_fraction": 0.0,
+    "data_quality_score_pct": 99.6,
+    "status": "HEALTHY_STREAM"
+  },
+  "baseline": {
+    "astronaut_id": "ASTRO_03",
+    "calibration_samples": 540,
+    "calibration_hours": 47.9,
+    "calibration_ends": "2026-11-13 11:55:00",
+    "use_circadian": true,
+    "metrics": {
+      "heart_rate_bpm": {
+        "mean": 71.099,
+        "std": 1.778,
+        "raw_std": 5.651,
+        "median": 70.7,
+        "iqr": 10.4,
+        "normal_min": 58.156,
+        "normal_max": 79.824,
+        "model": "circadian",
+        "circadian_amplitude": 5.171,
+        "circadian_peak_hour": 14.15,
+        "sleep_effect": -4.218,
+        "variance_explained": 0.902,
+        "coef": [
+          71.098908,
+          -2.754737,
+          -4.376448,
+          -4.218036
+        ]
+      },
+      "hrv_ms": {
+        "mean": 54.333,
+        "std": 3.092,
+        "raw_std": 8.057,
+        "median": 55.15,
+        "iqr": 14.7,
+        "normal_min": 42.373,
+        "normal_max": 74.444,
+        "model": "circadian",
+        "circadian_amplitude": 5.778,
+        "circadian_peak_hour": 1.87,
+        "sleep_effect": 8.151,
+        "variance_explained": 0.854,
+        "coef": [
+          54.332702,
+          2.718626,
+          5.098148,
+          8.151267
+        ]
+      },
+      "spo2_pct": {
+        "mean": 97.813,
+        "std": 0.407,
+        "raw_std": 0.407,
+        "median": 97.8,
+        "iqr": 0.6,
+        "normal_min": 97.0,
+        "normal_max": 98.626,
+        "model": "flat",
+        "circadian_amplitude": 0.0,
+        "circadian_peak_hour": null,
+        "sleep_effect": 0.0,
+        "variance_explained": 0.0,
+        "coef": [
+          97.812963,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "skin_temp_c": {
+        "mean": 34.159,
+        "std": 0.084,
+        "raw_std": 0.199,
+        "median": 34.13,
+        "iqr": 0.35,
+        "normal_min": 33.728,
+        "normal_max": 34.571,
+        "model": "circadian",
+        "circadian_amplitude": 0.244,
+        "circadian_peak_hour": 14.11,
+        "sleep_effect": -0.018,
+        "variance_explained": 0.82,
+        "coef": [
+          34.158682,
+          -0.127956,
+          -0.207522,
+          -0.017711
+        ]
+      },
+      "resp_rate_bpm": {
+        "mean": 15.334,
+        "std": 0.493,
+        "raw_std": 0.954,
+        "median": 15.2,
+        "iqr": 1.5,
+        "normal_min": 13.166,
+        "normal_max": 17.444,
+        "model": "circadian",
+        "circadian_amplitude": 1.123,
+        "circadian_peak_hour": 13.88,
+        "sleep_effect": -0.059,
+        "variance_explained": 0.734,
+        "coef": [
+          15.334412,
+          -0.531915,
+          -0.989586,
+          -0.05897
+        ]
+      }
+    },
+    "trend_thresholds": {
+      "heart_rate_bpm": 2.03,
+      "skin_temp_c": 1.937,
+      "hrv_ms": 1.745,
+      "spo2_pct": 1.582,
+      "resp_rate_bpm": 1.841
+    },
+    "sleep_baseline_hours": 7.21,
+    "sleep_baseline_nights": 2
+  },
+  "observed": {
+    "window_hours": 3.0,
+    "vitals": {
+      "heart_rate_bpm": {
+        "window_mean": 74.611,
+        "expected_window_mean": 73.641,
+        "window_mean_zscore": 0.55,
+        "latest_value": 79.8,
+        "expected_now": 75.414,
+        "latest_timestamp": "2026-11-18 11:55:00"
+      },
+      "hrv_ms": {
+        "window_mean": 49.361,
+        "expected_window_mean": 51.158,
+        "window_mean_zscore": -0.58,
+        "latest_value": 55.5,
+        "expected_now": 49.295,
+        "latest_timestamp": "2026-11-18 11:55:00"
+      },
+      "spo2_pct": {
+        "window_mean": 97.497,
+        "expected_window_mean": 97.813,
+        "window_mean_zscore": -0.78,
+        "latest_value": 97.2,
+        "expected_now": 97.813,
+        "latest_timestamp": "2026-11-18 11:55:00"
+      },
+      "skin_temp_c": {
+        "window_mean": 34.267,
+        "expected_window_mean": 34.28,
+        "window_mean_zscore": -0.16,
+        "latest_value": 34.38,
+        "expected_now": 34.363,
+        "latest_timestamp": "2026-11-18 11:55:00"
+      },
+      "resp_rate_bpm": {
+        "window_mean": 15.85,
+        "expected_window_mean": 15.949,
+        "window_mean_zscore": -0.2,
+        "latest_value": 15.0,
+        "expected_now": 16.312,
+        "latest_timestamp": "2026-11-18 11:55:00"
+      }
+    }
+  },
+  "trend_analysis": [
+    {
+      "metric": "heart_rate_bpm",
+      "direction": "UNKNOWN",
+      "slope_per_hour": null,
+      "slope_in_sigma_per_hour": null,
+      "threshold_sigma_per_hour": null,
+      "status": "INSUFFICIENT_DATA"
+    },
+    {
+      "metric": "hrv_ms",
+      "direction": "UNKNOWN",
+      "slope_per_hour": null,
+      "slope_in_sigma_per_hour": null,
+      "threshold_sigma_per_hour": null,
+      "status": "INSUFFICIENT_DATA"
+    },
+    {
+      "metric": "spo2_pct",
+      "direction": "STABLE",
+      "slope_per_hour": -0.183,
+      "slope_in_sigma_per_hour": -0.45,
+      "threshold_sigma_per_hour": 0.578,
+      "status": "NOMINAL"
+    },
+    {
+      "metric": "skin_temp_c",
+      "direction": "UNKNOWN",
+      "slope_per_hour": null,
+      "slope_in_sigma_per_hour": null,
+      "threshold_sigma_per_hour": null,
+      "status": "INSUFFICIENT_DATA"
+    },
+    {
+      "metric": "resp_rate_bpm",
+      "direction": "UNKNOWN",
+      "slope_per_hour": null,
+      "slope_in_sigma_per_hour": null,
+      "threshold_sigma_per_hour": null,
+      "status": "INSUFFICIENT_DATA"
+    }
+  ],
+  "sleep": {
+    "status": "NOMINAL",
+    "baseline_hours": 7.21,
+    "baseline_nights": 2,
+    "baseline_sd_hours_floor": 0.5,
+    "short_night_rule": ">= 1.0 h below baseline; trend = 2 consecutive short nights",
+    "consecutive_short_nights": 0,
+    "nights": [
+      {
+        "night_start": "2026-11-13 23:00:00",
+        "wake": "2026-11-14 06:05:00",
+        "hours": 7.17,
+        "deficit_hours": 0.04,
+        "short_night": false
+      },
+      {
+        "night_start": "2026-11-14 23:00:00",
+        "wake": "2026-11-15 06:15:00",
+        "hours": 7.33,
+        "deficit_hours": -0.12,
+        "short_night": false
+      },
+      {
+        "night_start": "2026-11-15 23:00:00",
+        "wake": "2026-11-16 06:30:00",
+        "hours": 7.58,
+        "deficit_hours": -0.37,
+        "short_night": false
+      },
+      {
+        "night_start": "2026-11-16 23:00:00",
+        "wake": "2026-11-17 06:05:00",
+        "hours": 7.17,
+        "deficit_hours": 0.04,
+        "short_night": false
+      },
+      {
+        "night_start": "2026-11-17 23:00:00",
+        "wake": "2026-11-18 06:25:00",
+        "hours": 7.5,
+        "deficit_hours": -0.29,
+        "short_night": false
+      }
+    ]
+  },
+  "active_event": {
+    "event_id": "ASTRO_03-EV-20261118T1020",
+    "astronaut_id": "ASTRO_03",
+    "type": "ACUTE_DEVIATION",
+    "severity": "LOW_DEVIATION",
+    "needs_human_review": false,
+    "review_reason": "below review thresholds (noise-level, not sent for review)",
+    "start": "2026-11-18 10:20:00",
+    "end": "2026-11-18 11:55:00",
+    "duration_minutes": 100,
+    "flagged_readings": 2,
+    "peak_zscore": 3.23,
+    "anomaly_score": 0.538,
+    "triggered_by": {
+      "stat": true,
+      "trend": false,
+      "ml": true
+    },
+    "vitals_involved": [
+      {
+        "vital": "heart_rate_bpm",
+        "direction": "elevated",
+        "observed_mean": 77.2,
+        "expected_mean": 75.25,
+        "baseline_sigma": 1.778,
+        "mean_zscore": 1.1,
+        "peak_zscore": 2.47
+      },
+      {
+        "vital": "spo2_pct",
+        "direction": "depressed",
+        "observed_mean": 97.39,
+        "expected_mean": 97.813,
+        "baseline_sigma": 0.407,
+        "mean_zscore": -1.04,
+        "peak_zscore": -3.23
+      }
+    ],
+    "explanation": "Acute Deviation from 2026-11-18 10:20 to 11:55 (100 min, 2 flagged readings). Main contributors: heart_rate_bpm (elevated, mean z=+1.1), spo2_pct (depressed, mean z=-1.0). Compared against the astronaut's own time-of-day baseline.",
+    "scenario_context_demo_only": "NORMAL"
+  },
+  "events": [
+    {
+      "event_id": "ASTRO_03-EV-20261113T1245",
+      "astronaut_id": "ASTRO_03",
+      "type": "ACUTE_DEVIATION",
+      "severity": "HIGH_REVIEW_PRIORITY",
+      "needs_human_review": true,
+      "review_reason": "peak deviation 4.1 sigma (>= 4 required)",
+      "start": "2026-11-13 12:45:00",
+      "end": "2026-11-13 12:50:00",
+      "duration_minutes": 10,
+      "flagged_readings": 2,
+      "peak_zscore": 4.09,
+      "anomaly_score": 0.681,
+      "triggered_by": {
+        "stat": true,
+        "trend": false,
+        "ml": false
+      },
+      "vitals_involved": [
+        {
+          "vital": "resp_rate_bpm",
+          "direction": "depressed",
+          "observed_mean": 14.55,
+          "expected_mean": 16.412,
+          "baseline_sigma": 0.493,
+          "mean_zscore": -3.78,
+          "peak_zscore": -4.09
+        }
+      ],
+      "explanation": "Acute Deviation from 2026-11-13 12:45 to 12:50 (10 min, 2 flagged readings). Main contributors: resp_rate_bpm (depressed, mean z=-3.8). Compared against the astronaut's own time-of-day baseline.",
+      "scenario_context_demo_only": "NORMAL"
+    },
+    {
+      "event_id": "ASTRO_03-EV-20261113T1340",
+      "astronaut_id": "ASTRO_03",
+      "type": "ACUTE_DEVIATION",
+      "severity": "HIGH_REVIEW_PRIORITY",
+      "needs_human_review": true,
+      "review_reason": "peak deviation 4.1 sigma (>= 4 required)",
+      "start": "2026-11-13 13:40:00",
+      "end": "2026-11-13 13:45:00",
+      "duration_minutes": 10,
+      "flagged_readings": 2,
+      "peak_zscore": 4.1,
+      "anomaly_score": 0.683,
+      "triggered_by": {
+        "stat": true,
+        "trend": false,
+        "ml": true
+      },
+      "vitals_involved": [
+        {
+          "vital": "hrv_ms",
+          "direction": "depressed",
+          "observed_mean": 38.1,
+          "expected_mean": 48.561,
+          "baseline_sigma": 3.092,
+          "mean_zscore": -3.38,
+          "peak_zscore": -4.1
+        },
+        {
+          "vital": "resp_rate_bpm",
+          "direction": "elevated",
+          "observed_mean": 17.25,
+          "expected_mean": 16.457,
+          "baseline_sigma": 0.493,
+          "mean_zscore": 1.61,
+          "peak_zscore": 2.52
+        },
+        {
+          "vital": "heart_rate_bpm",
+          "direction": "depressed",
+          "observed_mean": 74.2,
+          "expected_mean": 76.236,
+          "baseline_sigma": 1.778,
+          "mean_zscore": -1.15,
+          "peak_zscore": -2.1
+        }
+      ],
+      "explanation": "Acute Deviation from 2026-11-13 13:40 to 13:45 (10 min, 2 flagged readings). Main contributors: hrv_ms (depressed, mean z=-3.4), resp_rate_bpm (elevated, mean z=+1.6), heart_rate_bpm (depressed, mean z=-1.1). Compared against the astronaut's own time-of-day baseline.",
+      "scenario_context_demo_only": "NORMAL"
+    },
+    {
+      "event_id": "ASTRO_03-EV-20261114T0840",
+      "astronaut_id": "ASTRO_03",
+      "type": "SUSTAINED_DRIFT",
+      "severity": "HIGH_REVIEW_PRIORITY",
+      "needs_human_review": true,
+      "review_reason": "48 flagged readings (>= 3 required); peak deviation 11.1 sigma (>= 4 required); deviation lasted 330 min (>= 180 = sustained)",
+      "start": "2026-11-14 08:40:00",
+      "end": "2026-11-14 14:05:00",
+      "duration_minutes": 330,
+      "flagged_readings": 48,
+      "peak_zscore": 11.12,
+      "anomaly_score": 1.0,
+      "triggered_by": {
+        "stat": true,
+        "trend": true,
+        "ml": true
+      },
+      "vitals_involved": [
+        {
+          "vital": "skin_temp_c",
+          "direction": "elevated",
+          "observed_mean": 34.749,
+          "expected_mean": 34.333,
+          "baseline_sigma": 0.084,
+          "mean_zscore": 4.95,
+          "peak_zscore": 11.12
+        },
+        {
+          "vital": "heart_rate_bpm",
+          "direction": "elevated",
+          "observed_mean": 81.802,
+          "expected_mean": 74.774,
+          "baseline_sigma": 1.778,
+          "mean_zscore": 3.95,
+          "peak_zscore": 7.05
+        },
+        {
+          "vital": "hrv_ms",
+          "direction": "depressed",
+          "observed_mean": 43.729,
+          "expected_mean": 50.012,
+          "baseline_sigma": 3.092,
+          "mean_zscore": -2.03,
+          "peak_zscore": -4.32
+        }
+      ],
+      "explanation": "Sustained Drift from 2026-11-14 08:40 to 14:05 (330 min, 48 flagged readings). Main contributors: skin_temp_c (elevated, mean z=+5.0), heart_rate_bpm (elevated, mean z=+4.0), hrv_ms (depressed, mean z=-2.0). Compared against the astronaut's own time-of-day baseline.",
+      "scenario_context_demo_only": "GRADUAL_DRIFT"
+    },
+    {
+      "event_id": "ASTRO_03-EV-20261115T1600",
+      "astronaut_id": "ASTRO_03",
+      "type": "ACUTE_DEVIATION",
+      "severity": "HIGH_REVIEW_PRIORITY",
+      "needs_human_review": true,
+      "review_reason": "19 flagged readings (>= 3 required); peak deviation 15.5 sigma (>= 4 required)",
+      "start": "2026-11-15 16:00:00",
+      "end": "2026-11-15 17:30:00",
+      "duration_minutes": 95,
+      "flagged_readings": 19,
+      "peak_zscore": 15.52,
+      "anomaly_score": 1.0,
+      "triggered_by": {
+        "stat": true,
+        "trend": true,
+        "ml": true
+      },
+      "vitals_involved": [
+        {
+          "vital": "heart_rate_bpm",
+          "direction": "elevated",
+          "observed_mean": 87.537,
+          "expected_mean": 75.086,
+          "baseline_sigma": 1.778,
+          "mean_zscore": 7.0,
+          "peak_zscore": 15.52
+        },
+        {
+          "vital": "spo2_pct",
+          "direction": "depressed",
+          "observed_mean": 96.358,
+          "expected_mean": 97.813,
+          "baseline_sigma": 0.407,
+          "mean_zscore": -3.58,
+          "peak_zscore": -8.63
+        },
+        {
+          "vital": "hrv_ms",
+          "direction": "depressed",
+          "observed_mean": 39.789,
+          "expected_mean": 50.15,
+          "baseline_sigma": 3.092,
+          "mean_zscore": -3.35,
+          "peak_zscore": -7.03
+        }
+      ],
+      "explanation": "Acute Deviation from 2026-11-15 16:00 to 17:30 (95 min, 19 flagged readings). Main contributors: heart_rate_bpm (elevated, mean z=+7.0), spo2_pct (depressed, mean z=-3.6), hrv_ms (depressed, mean z=-3.4). Compared against the astronaut's own time-of-day baseline.",
+      "scenario_context_demo_only": "NORMAL"
+    }
+  ],
+  "summary_metrics": {
+    "analysed_rows": 1440,
+    "statistical_flags": 60,
+    "isolation_forest_flags": 53,
+    "trend_flags": 60,
+    "hybrid_flags": 91,
+    "events_total": 21,
+    "events_needing_review": 4,
+    "low_deviation_events_hidden": 17,
+    "sensor_artifact_rows": 8
+  }
+}

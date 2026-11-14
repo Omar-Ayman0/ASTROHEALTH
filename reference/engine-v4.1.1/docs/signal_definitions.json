@@ -1,0 +1,106 @@
+{
+  "signals": {
+    "heart_rate_bpm": {
+      "label": "Heart rate",
+      "unit": "bpm",
+      "role": "core",
+      "meaning": "Beats per minute from a wearable optical/ECG sensor.",
+      "can_infer": [
+        "deviation from this astronaut's own time-of-day / sleep-aware normal",
+        "sustained elevation (drift) over hours"
+      ],
+      "cannot_infer": [
+        "cause of a deviation",
+        "any cardiac diagnosis"
+      ],
+      "evidence": "SOURCED",
+      "evidence_note": "Cardiovascular adaptation is a NASA HRP risk; HR was recorded by wearables in Inspiration4 (team research report). Public in-flight HR numbers found are single-astronaut Holter data (N=1): see outputs/evidence_table.*"
+    },
+    "hrv_ms": {
+      "label": "Heart rate variability",
+      "unit": "ms",
+      "role": "supporting",
+      "meaning": "Beat-to-beat variability, ASSUMED to be RMSSD over short windows. The field name does not say which metric: RMSSD and SDNN are NOT interchangeable.",
+      "can_infer": [
+        "change relative to the same astronaut, same metric, same device"
+      ],
+      "cannot_infer": [
+        "comparison with published HRV values unless the metric and window match",
+        "any diagnosis"
+      ],
+      "evidence": "SOURCED_PARTIAL",
+      "evidence_note": "24 h HRV rhythm persisting in long-duration flight (Otsuka et al.); metric used there must be checked before quoting numbers."
+    },
+    "spo2_pct": {
+      "label": "Blood oxygen saturation",
+      "unit": "%",
+      "role": "supporting",
+      "meaning": "Peripheral oxygen saturation from a wearable pulse oximeter.",
+      "can_infer": [
+        "drop or sustained shift from personal normal (still scored during exercise)"
+      ],
+      "cannot_infer": [
+        "hypoxaemia diagnosis",
+        "reliability under motion/poor perfusion without the data-quality flags"
+      ],
+      "evidence": "SOURCED_PARTIAL",
+      "evidence_note": "Measured by wearables in Inspiration4 (team research report). The only public figure collected (outputs/evidence_table.*) is ~97% in 8 astronauts under a hypoxic challenge, NOT resting in-flight. Measurement quality caveats apply."
+    },
+    "skin_temp_c": {
+      "label": "Skin temperature",
+      "unit": "degC",
+      "role": "supporting",
+      "meaning": "peripheral skin (wearable); NOT core body temperature. Typically several degrees below core temperature and influenced by ambient temperature and sensor contact.",
+      "can_infer": [
+        "shift relative to the astronaut's own skin-temperature normal"
+      ],
+      "cannot_infer": [
+        "core body temperature or fever",
+        "numbers from core-temperature studies do not apply"
+      ],
+      "evidence": "ASSUMPTION",
+      "evidence_note": "No skin-temperature source collected. Published spaceflight temperature results (Stahn 2017) are core temperature: not direct evidence for this field."
+    },
+    "resp_rate_bpm": {
+      "label": "Respiratory rate",
+      "unit": "breaths/min",
+      "role": "supporting",
+      "meaning": "Breaths per minute, derived by the wearable.",
+      "can_infer": [
+        "change in breathing rate relative to personal normal"
+      ],
+      "cannot_infer": [
+        "respiratory disease or its cause"
+      ],
+      "evidence": "ASSUMPTION",
+      "evidence_note": "No source for respiratory rate itself; only end-tidal CO2 was found and it has no engine field."
+    },
+    "sleep_hours": {
+      "label": "Sleep duration",
+      "unit": "h/night",
+      "role": "core",
+      "meaning": "DERIVED, not a raw sensor field: hours with activity_state == SLEEP per night. Real datasets that give one value per night must be mapped through engine/adapter.py.",
+      "can_infer": [
+        "restriction trend over consecutive nights vs personal baseline"
+      ],
+      "cannot_infer": [
+        "sleep quality / stages",
+        "circadian phase"
+      ],
+      "evidence": "SOURCED",
+      "evidence_note": "Sleep loss and circadian misalignment are a named NASA HRP risk and documented on the ISS."
+    }
+  },
+  "out_of_scope": [
+    {
+      "area": "Radiation exposure",
+      "reason": "needs a radiation dosimeter; none of the five vitals measures it"
+    },
+    {
+      "area": "Bone and muscle loss",
+      "reason": "needs imaging / strength / biochemical measurements, not wearable vitals"
+    }
+  ],
+  "scope_note": "Scientific foundation, not clinical validation: the engine reports deviations from a person's own baseline for human medical review. It does not diagnose.",
+  "evidence_table": "outputs/evidence_table.json"
+}
