@@ -1,6 +1,7 @@
 ﻿const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const { requireAuth, requireRole } = require('../middleware/auth');
 
 
 
@@ -88,7 +89,7 @@ const healthAlertDispatchTimer = setInterval(dispatchPendingHealthAlerts, 30000)
 if (healthAlertDispatchTimer.unref) healthAlertDispatchTimer.unref();
 
 // Trigger anomaly simulation
-router.post('/simulation/trigger-anomaly', async (req, res) => {
+router.post('/simulation/trigger-anomaly', requireRole('admin'), async (req, res) => {
     try {
         const response = await axios.post(
             `${ML_SERVICE_URL}/simulation/trigger-anomaly`
@@ -125,12 +126,13 @@ router.post('/simulation/trigger-anomaly', async (req, res) => {
 
 
 // Send Emergency Message (Astronaut -> Doctor)
-router.post('/emergency/send', (req, res) => {
+router.post('/emergency/send', requireRole('astronaut'), (req, res) => {
     const { content } = req.body;
     const timestamp = new Date().toISOString();
+    const astronautId = req.session.user.astronaut_id;
 
-    const sql = `INSERT INTO messages (sender_role, receiver_role, content, timestamp, status) VALUES (?, ?, ?, ?, ?)`;
-    db.run(sql, ['Astronaut', 'Doctor', content, timestamp, 'sent'], function (err) {
+    const sql = `INSERT INTO messages (sender_role, receiver_role, content, timestamp, status, astronaut_id) VALUES (?, ?, ?, ?, ?, ?)`;
+    db.run(sql, ['Astronaut', 'Doctor', content, timestamp, 'sent', astronautId], function (err) {
         if (err) return res.status(500).json({ error: err.message });
 
         // Emit socket event if needed (handled in server.js usually, but we can just save here)
@@ -139,38 +141,42 @@ router.post('/emergency/send', (req, res) => {
 });
 
 // Send Precaution (Doctor -> Astronaut)
-router.post('/precaution/send', (req, res) => {
+router.post('/precaution/send', requireRole('doctor', 'admin'), (req, res) => {
     const { content } = req.body;
     const timestamp = new Date().toISOString();
+    const astronautId = req.body.astronaut_id;
+    if (!/^ASTRO_0[1-4]$/.test(astronautId || '')) {
+        return res.status(400).json({ error: 'Valid astronaut_id is required' });
+    }
 
-    const sql = `INSERT INTO messages (sender_role, receiver_role, content, timestamp, status) VALUES (?, ?, ?, ?, ?)`;
-    db.run(sql, ['Doctor', 'Astronaut', content, timestamp, 'sent'], function (err) {
+    const sql = `INSERT INTO messages (sender_role, receiver_role, content, timestamp, status, astronaut_id) VALUES (?, ?, ?, ?, ?, ?)`;
+    db.run(sql, ['Doctor', 'Astronaut', content, timestamp, 'sent', astronautId], function (err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ id: this.lastID, status: 'sent' });
     });
 });
 
 // Get Message History
-router.delete('/messages/clear', (req, res) => {
-    if (req.body?.role !== 'Doctor') {
-        return res.status(403).json({ error: 'Doctor access required' });
-    }
-
+router.delete('/messages/clear', requireRole('doctor', 'admin'), (req, res) => {
     db.run('DELETE FROM messages', [], function (err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ success: true, deleted: this.changes });
     });
 });
-router.get('/messages/history', (req, res) => {
-    const sql = `SELECT * FROM messages ORDER BY timestamp DESC LIMIT 50`;
-    db.all(sql, [], (err, rows) => {
+router.get('/messages/history', requireAuth, (req, res) => {
+    const isAstronaut = req.session.user.role === 'astronaut';
+    const sql = isAstronaut
+        ? `SELECT * FROM messages WHERE astronaut_id = ? ORDER BY timestamp DESC LIMIT 50`
+        : `SELECT * FROM messages ORDER BY timestamp DESC LIMIT 50`;
+    const params = isAstronaut ? [req.session.user.astronaut_id] : [];
+    db.all(sql, params, (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
 });
 
 // Resolve Emergency
-router.post('/emergency/resolve', (req, res) => {
+router.post('/emergency/resolve', requireRole('doctor', 'admin'), (req, res) => {
     const { message_id } = req.body;
     const sql = `UPDATE messages SET status = 'resolved' WHERE id = ?`;
     db.run(sql, [message_id], function (err) {
@@ -180,7 +186,8 @@ router.post('/emergency/resolve', (req, res) => {
 });
 
 // Get Vitals History
-router.get('/vitals/history', (req, res) => {
+router.get('/vitals/history', requireAuth, (req, res) => {
+    if (req.session.user.role === 'astronaut') return res.json([]);
     const limit = req.query.limit || 100;
     const sql = `SELECT * FROM vitals_log ORDER BY timestamp DESC LIMIT ?`;
     db.all(sql, [limit], (err, rows) => {
@@ -195,7 +202,7 @@ router.get('/vitals/history', (req, res) => {
 // --- Task Routes ---
 
 // Get All Tasks
-router.get('/tasks', (req, res) => {
+router.get('/tasks', requireAuth, (req, res) => {
     const sql = `SELECT * FROM tasks ORDER BY id ASC`;
     db.all(sql, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -204,7 +211,7 @@ router.get('/tasks', (req, res) => {
 });
 
 // Add Task
-router.post('/tasks', (req, res) => {
+router.post('/tasks', requireAuth, (req, res) => {
     const { text, type } = req.body;
     const timestamp = new Date().toISOString();
     const taskType = type || 'personal';
@@ -216,7 +223,7 @@ router.post('/tasks', (req, res) => {
 });
 
 // Toggle Task Completion
-router.put('/tasks/:id', (req, res) => {
+router.put('/tasks/:id', requireAuth, (req, res) => {
     const { completed } = req.body;
     const sql = `UPDATE tasks SET completed = ? WHERE id = ?`;
     db.run(sql, [completed ? 1 : 0, req.params.id], function (err) {
@@ -226,7 +233,7 @@ router.put('/tasks/:id', (req, res) => {
 });
 
 // Delete Task
-router.delete('/tasks/:id', (req, res) => {
+router.delete('/tasks/:id', requireAuth, (req, res) => {
     const sql = `DELETE FROM tasks WHERE id = ?`;
     db.run(sql, [req.params.id], function (err) {
         if (err) return res.status(500).json({ error: err.message });
@@ -275,7 +282,7 @@ router.get('/v1/events', requireApiKey, async (req, res) => {
 
 
 // WF01 local demo trigger - API key stays on backend
-router.post('/doctor/workflows/wf01/test', async (req, res) => {
+router.post('/doctor/workflows/wf01/test', requireRole('doctor', 'admin'), async (req, res) => {
     const remote = req.socket.remoteAddress || '';
     if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(remote)) {
         return res.status(403).json({ success: false, error: 'Local access only' });
@@ -809,7 +816,7 @@ router.get('/v1/mission/connection', requireApiKey, (req, res) => {
 
  
 // Local Doctor AI Assistant - Workflow 02
-router.post('/doctor/health-assistant', async (req, res) => {
+router.post('/doctor/health-assistant', requireRole('doctor', 'admin'), async (req, res) => {
     const remoteAddress = req.ip || req.socket.remoteAddress;
     const allowedAddresses = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
 
@@ -876,7 +883,7 @@ router.post('/doctor/health-assistant', async (req, res) => {
 
 
 // Doctor Dashboard: local incidents feed
-router.get('/doctor/incidents', (req, res) => {
+router.get('/doctor/incidents', requireRole('doctor', 'admin'), (req, res) => {
     const ip = req.ip || '';
     if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(ip)) {
         return res.status(403).json({ error: 'Local access only' });
@@ -895,7 +902,7 @@ router.get('/doctor/incidents', (req, res) => {
 
 
 // WF03 Incident Review Proxy
-router.post('/doctor/incidents/:incident_id/actions', async (req, res) => {
+router.post('/doctor/incidents/:incident_id/actions', requireRole('doctor', 'admin'), async (req, res) => {
     const ip = req.ip || '';
     if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(ip)) {
         return res.status(403).json({ error: 'Local access only' });

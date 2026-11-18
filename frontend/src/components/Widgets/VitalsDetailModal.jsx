@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Line } from 'react-chartjs-2';
 import Card from '../Common/Card';
 
@@ -99,7 +99,7 @@ const VitalsDetailModal = ({ isOpen, onClose, history }) => {
         const rows = [];
 
         // Header
-        rows.push(['Timestamp', 'Heart Rate (BPM)', 'SpO2 (%)', 'BP Systolic (mmHg)', 'BP Diastolic (mmHg)', 'Skin Temperature (Â°C)', 'HRV (ms)', 'Respiratory Rate (BPM)']);
+        rows.push(['Timestamp', 'Heart Rate (BPM)', 'SpO2 (%)', 'BP Systolic (mmHg)', 'BP Diastolic (mmHg)', 'Skin Temperature (C)', 'HRV (ms)', 'Respiratory Rate (BPM)']);
 
         // Data rows
         const maxLength = Math.max(
@@ -180,7 +180,7 @@ const VitalsDetailModal = ({ isOpen, onClose, history }) => {
                             padding: '0 10px',
                             cursor: 'pointer',
                             border: 'none'
-                        }}>Ãƒâ€”</button>
+                        }}>X</button>
                     </div>
                 </div>
 
@@ -247,10 +247,10 @@ const VitalsDetailModal = ({ isOpen, onClose, history }) => {
                         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '15px' }}>
                             <Card title="Trend">
                                 <div style={{ height: '200px' }}>
-                                    <Line data={createChartData(history.temperature || [], 'Skin Temperature (Â°C)', '#22c55e')} options={commonOptions} />
+                                    <Line data={createChartData(history.temperature || [], 'Skin Temperature (C)', '#22c55e')} options={commonOptions} />
                                 </div>
                             </Card>
-                            <StatCard title="Statistics" stats={tempStats} unit=" Â°C" />
+                            <StatCard title="Statistics" stats={tempStats} unit={" \u00B0C"} />
                         </div>
                     </div>
                 )}

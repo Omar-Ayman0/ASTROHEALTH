@@ -148,3 +148,152 @@
 @media (max-width: 380px) {
     .selection-grid { grid-template-columns: 1fr; }
 }
+
+/* ASTROHEALTH profile selection polish */
+.selection-page {
+    min-height: 100vh;
+    background:
+        radial-gradient(ellipse at 15% 5%, rgba(14, 165, 233, .16), transparent 35%),
+        radial-gradient(ellipse at 85% 75%, rgba(37, 99, 235, .13), transparent 35%),
+        #07111f;
+    color: #e8f4ff;
+}
+
+.selection-header {
+    border-bottom: 1px solid rgba(125, 181, 220, .14);
+}
+
+.selection-brand {
+    color: #38bdf8;
+    letter-spacing: .13em;
+}
+
+.selection-brand span {
+    color: #e8f4ff;
+}
+
+.selection-hero h1 {
+    color: #f0f9ff;
+    letter-spacing: -.045em;
+}
+
+.selection-hero h1 span {
+    color: #38bdf8;
+}
+
+.selection-hero p {
+    color: #91a9c2;
+}
+
+.selection-card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(145deg, rgba(17, 37, 59, .96), rgba(10, 24, 41, .96));
+    border: 1px solid rgba(125, 181, 220, .17);
+    border-radius: 20px;
+    color: #e8f4ff;
+    box-shadow: 0 16px 40px rgba(0,0,0,.2);
+    transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+    animation: astro-rise .65s both;
+}
+
+.selection-card:nth-child(2) { animation-delay: .08s; }
+.selection-card:nth-child(3) { animation-delay: .16s; }
+.selection-card:nth-child(4) { animation-delay: .24s; }
+.selection-card:nth-child(5) { animation-delay: .32s; }
+
+.selection-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(120deg, transparent 20%, rgba(56,189,248,.07), transparent 75%);
+    transform: translateX(-100%);
+    transition: transform .65s ease;
+}
+
+.selection-card:hover {
+    transform: translateY(-7px);
+    border-color: rgba(56, 189, 248, .48);
+    box-shadow: 0 22px 48px rgba(0,0,0,.3), 0 0 28px rgba(14,165,233,.08);
+}
+
+.selection-card:hover::before {
+    transform: translateX(100%);
+}
+
+.selection-card h2 {
+    color: #f0f9ff;
+}
+
+.selection-role {
+    color: #67c9ef;
+    letter-spacing: .15em;
+}
+
+.selection-status {
+    color: #9bb4ca;
+}
+
+.selection-action {
+    color: #67d8f4;
+    letter-spacing: .1em;
+}
+
+.selection-footer {
+    color: #69839d;
+}
+
+@keyframes astro-rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .selection-card { animation: none; transition: none; }
+}
+
+.selection-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.selection-logout {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 1px solid rgba(105, 190, 220, 0.28);
+    border-radius: 9px;
+    background: rgba(20, 48, 70, 0.45);
+    color: #d9edf8;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 180ms ease;
+}
+
+.selection-logout:hover {
+    border-color: rgba(105, 190, 220, 0.75);
+    background: rgba(45, 130, 165, 0.2);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.selection-logout span {
+    font-size: 17px;
+}
+
+@media (max-width: 600px) {
+    .selection-header-actions {
+        gap: 8px;
+    }
+
+    .selection-logout {
+        padding: 8px 10px;
+        font-size: 9px;
+    }
+}

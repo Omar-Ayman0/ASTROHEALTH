@@ -31,7 +31,8 @@ const HistoryWidget = ({ astronautId = 'ASTRO_01' }) => {
                         since_seq: cursor,
                         limit: 5000
                     },
-                    timeout: 15000
+                    withCredentials: false,
+                timeout: 15000
                 });
 
                 const ticks = Array.isArray(res.data?.ticks)
@@ -253,6 +254,7 @@ const HistoryWidget = ({ astronautId = 'ASTRO_01' }) => {
 };
 
 export default HistoryWidget;
+
 
 
 

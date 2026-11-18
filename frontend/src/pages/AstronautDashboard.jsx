@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import VitalsChart from '../components/Charts/VitalsChart';
@@ -32,33 +32,56 @@ const AstronautDashboard = () => {
         if (!astronaut) return;
 
         let cancelled = false;
+        let cursor = 0;
+        let cachedTicks = [];
+        let inFlight = false;
+        let timer = null;
 
         const loadData = async () => {
-            try {
-                setError('');
+            if (cancelled || inFlight) return;
 
+            inFlight = true;
+            let nextDelay = 2000;
+
+            try {
                 const response = await axios.get(
                     `${ENGINE_URL}/api/v1/live/ticks`,
                     {
                         params: {
                             astronaut_id: astronautId,
-                            since_seq: 0,
-                            limit: 5000
+                            since_seq: cursor,
+                            limit: cursor === 0 ? 5000 : 500
                         },
-                        timeout: 20000
+                        withCredentials: false,
+                        timeout: 10000
                     }
                 );
 
                 if (cancelled) return;
 
-                const ticks = response.data?.ticks || [];
+                const data = response.data || {};
+                const incoming = Array.isArray(data.ticks) ? data.ticks : [];
 
-                if (!ticks.length) {
+                if (data.gap_detected || cursor === 0) {
+                    cachedTicks = incoming.slice(-50);
+                } else if (incoming.length) {
+                    cachedTicks = [...cachedTicks, ...incoming].slice(-50);
+                }
+
+                cursor = Number(data.next_since_seq ?? cursor);
+
+                if (data.has_more) {
+                    nextDelay = 0;
+                }
+
+                if (!cachedTicks.length) {
                     setError('No telemetry readings are available for this astronaut.');
                     return;
                 }
 
-                const recent = ticks.slice(-50);
+                setError('');
+
+                const recent = cachedTicks;
                 const latest = recent[recent.length - 1];
                 const reading = latest.vitals || {};
                 const intelligence = latest.intelligence || {};
@@ -108,10 +131,17 @@ const AstronautDashboard = () => {
                     top_features: factors,
                     explanation: intelligence.explanation
                 });
+
             } catch (err) {
                 console.error('Engine telemetry error:', err);
                 if (!cancelled) {
                     setError('Unable to connect to the Health Intelligence Engine.');
+                }
+            } finally {
+                inFlight = false;
+
+                if (!cancelled) {
+                    timer = setTimeout(loadData, nextDelay);
                 }
             }
         };
@@ -121,8 +151,13 @@ const AstronautDashboard = () => {
                 const response = await axios.get(
                     `${BACKEND_URL}/api/messages/history`
                 );
+
                 if (!cancelled) {
-                    setMessages(Array.isArray(response.data) ? [...response.data].reverse() : []);
+                    setMessages(
+                        Array.isArray(response.data)
+                            ? [...response.data].reverse()
+                            : []
+                    );
                 }
             } catch (err) {
                 console.error('Messages loading failed:', err);
@@ -132,11 +167,9 @@ const AstronautDashboard = () => {
         loadData();
         loadMessages();
 
-        const telemetryTimer = setInterval(loadData, 2000);
-
         return () => {
             cancelled = true;
-            clearInterval(telemetryTimer);
+            clearTimeout(timer);
         };
     }, [astronautId, astronaut]);
 
@@ -189,7 +222,7 @@ const AstronautDashboard = () => {
 
     return (
         <DashboardLayout
-            title={`${astronautId.replace('_', ' ')} — Astronaut Interface`}
+            title={`${astronautId.replace('_', ' ')} | Astronaut Health Dashboard`}
             className={isCritical ? 'critical-alert' : isHighRisk ? 'high-risk-alert' : ''}
             statusBadge={
                 <div className={`status-badge ${isCritical ? 'status-critical' : isHighRisk ? 'status-warning' : 'status-normal'}`}>
@@ -288,6 +321,7 @@ const AstronautDashboard = () => {
 };
 
 export default AstronautDashboard;
+
 
 
 

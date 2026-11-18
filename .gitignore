@@ -1,14 +1,94 @@
-**/.env
-**/.env.*
-!**/.env.example
-**/.venv/
-**/node_modules/
-**/__pycache__/
-**/.pytest_cache/
-**/dist/
-*.db
-*.db-*
-*.sqlite*
-*.log
-**/data/live/
+# General
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# Node.js (Frontend & Backend)
+node_modules/
+npm-debug.log
+yarn-error.log
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build Output
+dist/
+build/
+
+# Python (ML Service)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+.venv/
+env/
+.env/
+venv.bak/
+
+# Docker
+docker-compose.override.yml
+
+# Databases
+*.db
+*.db-journal
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# ML Models (Large Files)
+ml_service/models/*.pkl
+ml_service/ctgan_training_data.csv
+
+# AstroHealth backups and archives
+/BACKUP_BEFORE_DASHBOARD_20261114_163011/
+/for_claude.zip
+*.backup_before_autostart
+
+# Backup files - keep locally, never upload
+*.bak
+*.backup
+*.backup-*
+*.integration-backup
+*backup*.js
+*backup*.py
+*before_*.js
+*before_*.py
+*before_*.bak
+*rollback*/
+
+# Runtime-generated data
+astronaut-health-intelligence/data/live/
+astronaut-health-intelligence/data/processed/
+
+# ML model binary
+ml_service/models/*.pkl
+*.bak*
+*.backup*
+*backup*
+*before-*
+*before_*
+*rollback*

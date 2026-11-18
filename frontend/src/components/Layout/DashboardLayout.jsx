@@ -1,16 +1,18 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import DoctorProfileCard from '../Widgets/DoctorProfileCard';
 import avatar from '../../assets/doctor.jpeg';
 
 const DashboardLayout = ({ title, statusBadge, children, className = '' }) => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { user, logout } = useAuth();
     const isDoctor = location.pathname.includes('doctor');
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     return (
-        <div className="dashboard-layout">
+        <div className={`dashboard-layout ${isDoctor ? 'doctor-shell' : 'astro-shell'}`}>
             <nav className="top-nav">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent-blue)' }}>
@@ -19,9 +21,22 @@ const DashboardLayout = ({ title, statusBadge, children, className = '' }) => {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                    <button className="btn" onClick={() => navigate('/')}
+                    <button className="btn" onClick={async () => {
+                        if (user?.role === 'admin') {
+                            navigate('/', { replace: true });
+                            return;
+                        }
+
+                        try {
+                            await logout();
+                        } catch (error) {
+                            console.error('Logout failed:', error);
+                        } finally {
+                            navigate('/login', { replace: true });
+                        }
+                    }}
                         style={{ padding: '8px 16px', fontSize: '.85rem' }}>
-                        ← Back to Selection
+                        {user?.role === 'admin' ? 'Back to Astronaut Selection' : 'Back to Login'}
                     </button>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

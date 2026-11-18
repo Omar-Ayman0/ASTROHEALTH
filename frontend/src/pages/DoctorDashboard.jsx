@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ChatPanel from '../components/Messaging/ChatPanel';
 import AIHealthReport from '../components/Messaging/AIHealthReport';
@@ -69,37 +69,70 @@ const DoctorDashboard = () => {
 
     useEffect(() => {
         let cancelled = false;
+        let cursor = 0;
+        let cachedTicks = [];
+        let inFlight = false;
+        let timer = null;
 
         setLoading(true);
         setError('');
         setVitals(null);
         setRiskData({});
         setAnomalyData({});
-        setHistory({ heart_rate: [], spo2: [], bp: [], temperature: [], hrv: [], respiratory_rate: [] });
+        setHistory({
+            heart_rate: [],
+            spo2: [],
+            bp: [],
+            temperature: [],
+            hrv: [],
+            respiratory_rate: []
+        });
 
         const loadAstronautData = async () => {
+            if (cancelled || inFlight) return;
+
+            inFlight = true;
+            let nextDelay = 2000;
 
             try {
-                const response = await axios.get(`${ENGINE_URL}/api/v1/live/ticks`, {
-                    params: {
-                        astronaut_id: selectedAstronaut.id,
-                        since_seq: 0,
-                        limit: 5000
-                    },
-                    timeout: 20000
-                });
+                const response = await axios.get(
+                    `${ENGINE_URL}/api/v1/live/ticks`,
+                    {
+                        params: {
+                            astronaut_id: selectedAstronaut.id,
+                            since_seq: cursor,
+                            limit: cursor === 0 ? 5000 : 500
+                        },
+                        withCredentials: false,
+                        timeout: 10000
+                    }
+                );
 
                 if (cancelled) return;
 
-                const ticks = Array.isArray(response.data?.ticks) ? response.data.ticks : [];
+                const data = response.data || {};
+                const incoming = Array.isArray(data.ticks) ? data.ticks : [];
 
-                if (!ticks.length) {
+                if (data.gap_detected || cursor === 0) {
+                    cachedTicks = incoming.slice(-50);
+                } else if (incoming.length) {
+                    cachedTicks = [...cachedTicks, ...incoming].slice(-50);
+                }
+
+                cursor = Number(data.next_since_seq ?? cursor);
+
+                if (data.has_more) {
+                    nextDelay = 0;
+                }
+
+                if (!cachedTicks.length) {
                     setError(`No telemetry data available for ${selectedAstronaut.id}.`);
-                    setLoading(false);
                     return;
                 }
 
-                const recentTicks = ticks.slice(-50);
+                setError('');
+
+                const recentTicks = cachedTicks;
                 const latest = recentTicks[recentTicks.length - 1];
                 const values = latest.vitals || {};
                 const intelligence = latest.intelligence || {};
@@ -145,6 +178,7 @@ const DoctorDashboard = () => {
                 const score = intelligence.anomaly_score ?? 0;
 
                 setVitals(mappedVitals);
+
                 setHistory({
                     heart_rate: heartHistory,
                     spo2: spo2History,
@@ -163,7 +197,11 @@ const DoctorDashboard = () => {
                 });
 
                 setRiskData({
-                    risk_label: latest.trigger_alert ? 'HIGH RISK' : isAnomaly ? 'MONITOR CLOSELY' : 'NOMINAL',
+                    risk_label: latest.trigger_alert
+                        ? 'HIGH RISK'
+                        : isAnomaly
+                            ? 'MONITOR CLOSELY'
+                            : 'NOMINAL',
                     probabilities: {},
                     top_features: Object.entries(intelligence.zscores || {})
                         .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
@@ -177,17 +215,20 @@ const DoctorDashboard = () => {
                     setError('Unable to connect to the Health Intelligence Engine.');
                 }
             } finally {
-                if (!cancelled) setLoading(false);
+                inFlight = false;
+
+                if (!cancelled) {
+                    setLoading(false);
+                    timer = setTimeout(loadAstronautData, nextDelay);
+                }
             }
         };
 
         loadAstronautData();
 
-        const telemetryTimer = setInterval(loadAstronautData, 2000);
-
         return () => {
             cancelled = true;
-            clearInterval(telemetryTimer);
+            clearTimeout(timer);
         };
     }, [selectedAstronaut]);
 
@@ -231,24 +272,17 @@ const sendMessage = async (content) => {
                 },
                 {
                     sender_role: 'AI Assistant',
-                    content: 'Ø¹Ø°Ø±Ø§Ù‹ Ø¯ÙƒØªÙˆØ±ØŒ Ù„Ù… Ø£ÙÙ‡Ù… Ø±Ø³Ø§Ù„ØªÙƒ. Ù…Ù…ÙƒÙ† ØªØ¹ÙŠØ¯ ÙƒØªØ§Ø¨Ø© Ø§Ù„Ø³Ø¤Ø§Ù„ Ø¨Ø´ÙƒÙ„ Ø£ÙˆØ¶Ø­ØŸ',
+                    content: 'Hello Doctor! I am your AI Health Assistant. How can I help?',
                     timestamp: new Date().toISOString()
                 }
             ]);
             return;
         }
-        const normalizedGreeting = question.toLowerCase()
-            .replace(/[.!ØŸ?ØŒ,]/g, '')
-            .trim();
+        const normalizedGreeting = question.toLowerCase().trim();
 
         const greetingReplies = {
-            'Ø§Ù‡Ù„Ø§': 'Ø£Ù‡Ù„Ø§Ù‹ Ø¨Ø­Ø¶Ø±ØªÙƒ Ø¯ÙƒØªÙˆØ±! Ø£Ù†Ø§ Ù…Ø³Ø§Ø¹Ø¯Ùƒ Ø§Ù„Ø·Ø¨ÙŠØŒ Ø¬Ø§Ù‡Ø² Ù„Ù…Ø³Ø§Ø¹Ø¯ØªÙƒ.',
-            'Ø£Ù‡Ù„Ø§': 'Ø£Ù‡Ù„Ø§Ù‹ Ø¨Ø­Ø¶Ø±ØªÙƒ Ø¯ÙƒØªÙˆØ±! Ø£Ù†Ø§ Ù…Ø³Ø§Ø¹Ø¯Ùƒ Ø§Ù„Ø·Ø¨ÙŠØŒ Ø¬Ø§Ù‡Ø² Ù„Ù…Ø³Ø§Ø¹Ø¯ØªÙƒ.',
-            'Ø§Ù„Ø³Ù„Ø§Ù… Ø¹Ù„ÙŠÙƒÙ…': 'ÙˆØ¹Ù„ÙŠÙƒÙ… Ø§Ù„Ø³Ù„Ø§Ù… ÙˆØ±Ø­Ù…Ø© Ø§Ù„Ù„Ù‡ ÙˆØ¨Ø±ÙƒØ§ØªÙ‡! ÙƒÙŠÙ Ø£Ù‚Ø¯Ø± Ø£Ø³Ø§Ø¹Ø¯ÙƒØŸ',
-            'ØµØ¨Ø§Ø­ Ø§Ù„Ø®ÙŠØ±': 'ØµØ¨Ø§Ø­ Ø§Ù„Ù†ÙˆØ± Ø¯ÙƒØªÙˆØ±! Ø¬Ø§Ù‡Ø² Ù„Ù…Ø³Ø§Ø¹Ø¯ØªÙƒ.',
-            'Ù…Ø³Ø§Ø¡ Ø§Ù„Ø®ÙŠØ±': 'Ù…Ø³Ø§Ø¡ Ø§Ù„Ù†ÙˆØ± Ø¯ÙƒØªÙˆØ±! ÙƒÙŠÙ Ø£Ù‚Ø¯Ø± Ø£Ø³Ø§Ø¹Ø¯ÙƒØŸ',
-            'hello': 'Hello Doctor! I am your AI Health Assistant. How can I help?',
-            'hi': 'Hi Doctor! How can I assist you today?',
+            hello: 'Hello Doctor! I am your AI Health Assistant. How can I help?',
+            hi: 'Hi Doctor! How can I assist you today?',
             'good morning': 'Good morning, Doctor! How can I help?'
         };
 
@@ -265,13 +299,12 @@ const sendMessage = async (content) => {
                 {
                     sender_role: 'AI Assistant',
                     content: greetingReplies[normalizedGreeting],
-                    timestamp: new Date().toISOString()
+                    timestamp
                 }
             ]);
 
             return;
         }
-
         setAssistantMessages(prev => [...prev, {
             sender_role: 'Doctor',
             content: question,
@@ -365,7 +398,7 @@ const sendMessage = async (content) => {
     };
 
     return (
-        <DashboardLayout title="Mission Control">
+        <DashboardLayout title="Medical Operations Dashboard">
             <div style={{
                 padding: '20px 24px',
                 marginBottom: '20px',
@@ -561,7 +594,7 @@ const sendMessage = async (content) => {
                                         textAlign: 'center',
                                         color: '#94a3b8'
                                     }}>
-                                        <div style={{ fontSize: '30px' }}>âœ¦</div>
+                                        <div style={{ fontSize: '30px' }}>+</div>
                                         <div style={{ fontWeight: '700' }}>
                                             AI Medical Assistant
                                         </div>
@@ -597,7 +630,7 @@ const sendMessage = async (content) => {
                                                 opacity: 0.75,
                                                 textTransform: 'uppercase'
                                             }}>
-                                                {msg.sender_role} Â· {new Date(msg.timestamp).toLocaleTimeString()}
+                                                {msg.sender_role} | {new Date(msg.timestamp).toLocaleTimeString()}
                                             </div>
 
                                             {isReport ? (
@@ -747,6 +780,7 @@ const sendMessage = async (content) => {
 };
 
 export default DoctorDashboard;
+
 
 
 
