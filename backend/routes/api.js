@@ -352,6 +352,26 @@ router.post('/doctor/workflows/wf01/test', requireRole('doctor', 'admin'), async
     }
 });
 
+
+// WF05: Create triage job and initial escalation
+function createWf05Tasks(incidentId, now, callback) {
+    const delayMinutes = Math.max(1, Number.parseInt(process.env.WF05_REMINDER_DELAY_MINUTES || "5", 10) || 5);
+    const dueAt = new Date(Date.now() + delayMinutes * 60000).toISOString();
+
+    db.run(
+        "INSERT OR IGNORE INTO incident_triage_jobs (incident_id, status, created_at, updated_at) VALUES (?, 'PENDING', ?, ?)",
+        [incidentId, now, now],
+        (err) => {
+            if (err) return callback(err);
+            db.run(
+                "INSERT OR IGNORE INTO incident_escalations (incident_id, status, stage, due_at, reminder_count, created_at, updated_at) VALUES (?, 'ACTIVE', 'REMINDER_1', ?, 0, ?, ?)",
+                [incidentId, dueAt, now, now],
+                callback
+            );
+        }
+    );
+}
+
 // --- Incident Integration APIs ---
 
 // Register or update an incident received from the Health Engine / n8n
@@ -420,7 +440,13 @@ router.post('/v1/incidents/upsert', requireApiKey, (req, res) => {
                                         console.error('[Health Alert] Queue insert error:', queueErr.message);
                                         return res.status(500).json({ success: false, error: 'Failed to queue health alert' });
                                     }
-                                    return respondSuccess();
+                                    createWf05Tasks(existing.incident_id, now, (wf05Err) => {
+                                        if (wf05Err) {
+                                            console.error('[WF05]', wf05Err.message);
+                                            return res.status(500).json({ success: false, error: 'WF05 task creation failed' });
+                                        }
+                                        return respondSuccess();
+                                    });
                                 }
                             );
                             return;
@@ -507,7 +533,13 @@ router.post('/v1/incidents/upsert', requireApiKey, (req, res) => {
                                                         if (queueErr) {
                                                             return res.status(500).json({ error: queueErr.message });
                                                         }
-                                                        respond();
+                                                        createWf05Tasks(duplicate.incident_id, now, (wf05Err) => {
+                                                            if (wf05Err) {
+                                                                console.error('[WF05]', wf05Err.message);
+                                                                return res.status(500).json({ success: false, error: 'WF05 task creation failed' });
+                                                            }
+                                                            respond();
+                                                        });
                                                     }
                                                 );
                                             }
@@ -541,7 +573,12 @@ router.post('/v1/incidents/upsert', requireApiKey, (req, res) => {
                                             console.error('[Health Alert] Queue insert error:', queueErr.message);
                                             return res.status(500).json({ success: false, error: 'Failed to queue health alert' });
                                         }
-                                        return res.status(201).json({
+                                        createWf05Tasks(incidentId, now, (wf05Err) => {
+    if (wf05Err) {
+        console.error('[WF05]', wf05Err.message);
+        return res.status(500).json({ success: false, error: 'WF05 task creation failed' });
+    }
+    return res.status(201).json({
                                             incident_id: incidentId,
                                             event_id: eventId,
                                             astronaut_id: astronautId,
@@ -552,6 +589,7 @@ router.post('/v1/incidents/upsert', requireApiKey, (req, res) => {
                                             assigned_role: 'MEDICAL_OFFICER',
                                             source
                                         });
+});
                                     }
                                 );
                                 return;
@@ -709,25 +747,44 @@ router.post('/v1/incidents/:incident_id/actions', requireApiKey, (req, res) => {
                                                 return rollback(500, { success: false, error: insertErr.message });
                                             }
 
-                                            db.run('COMMIT', (commitErr) => {
-                                                if (commitErr) {
-                                                    return rollback(500, { success: false, error: commitErr.message });
-                                                }
+                                            
+                                            // WF05_ACK_ESCALATION_CANCEL
+                                            const commitAction = () => {
+                                                db.run('COMMIT', (commitErr) => {
+                                                    if (commitErr) {
+                                                        return rollback(500, { success: false, error: commitErr.message });
+                                                    }
 
-                                                return res.json({
-                                                    success: true,
-                                                    request_id,
-                                                    incident_id: incidentId,
-                                                    astronaut_id: incident.astronaut_id,
-                                                    action,
-                                                    previous_status: transition.from,
-                                                    new_status: transition.to,
-                                                    status: transition.to,
-                                                    persisted: true,
-                                                    actor: resolvedActor,
-                                                    created_at: now
+                                                    return res.json({
+                                                        success: true,
+                                                        request_id,
+                                                        incident_id: incidentId,
+                                                        astronaut_id: incident.astronaut_id,
+                                                        action,
+                                                        previous_status: transition.from,
+                                                        new_status: transition.to,
+                                                        status: transition.to,
+                                                        persisted: true,
+                                                        actor: resolvedActor,
+                                                        created_at: now
+                                                    });
                                                 });
-                                            });
+                                            };
+
+                                            if (action === 'ACKNOWLEDGE') {
+                                                db.run(
+                                                    "UPDATE incident_escalations SET status = 'CANCELLED', cancelled_at = ?, updated_at = ? WHERE incident_id = ? AND status = 'ACTIVE'",
+                                                    [now, now, incidentId],
+                                                    (escalationErr) => {
+                                                        if (escalationErr) {
+                                                            return rollback(500, { success: false, error: escalationErr.message });
+                                                        }
+                                                        commitAction();
+                                                    }
+                                                );
+                                            } else {
+                                                commitAction();
+                                            }
                                         }
                                     );
                                 }
@@ -998,6 +1055,536 @@ router.post('/doctor/incidents/:incident_id/actions', requireRole('doctor', 'adm
         }
     );
 });
+
+ 
+// =====================================================
+// WF05 TRIAGE APIs
+// =====================================================
+
+function wf05ParseJson(value, fallback = {}) {
+    try {
+        return typeof value === 'string' ? JSON.parse(value) : (value || fallback);
+    } catch {
+        return fallback;
+    }
+}
+
+function wf05CollectEvidenceRefs(value, prefix, output = []) {
+    if (value === null || value === undefined) return output;
+
+    if (Array.isArray(value)) {
+        value.forEach((item, index) =>
+            wf05CollectEvidenceRefs(item, prefix + '[' + index + ']', output)
+        );
+    } else if (typeof value === 'object') {
+        Object.entries(value).forEach(([key, item]) =>
+            wf05CollectEvidenceRefs(item, prefix + '.' + key, output)
+        );
+    } else {
+        output.push(prefix);
+    }
+
+    return output;
+}
+
+async function wf05LoadTriageContext(incidentId) {
+    const incident = await new Promise((resolve, reject) => {
+        db.get(
+            'SELECT * FROM incidents WHERE incident_id = ?',
+            [incidentId],
+            (err, row) => err ? reject(err) : resolve(row)
+        );
+    });
+
+    if (!incident) return null;
+
+    const eventPayload = wf05ParseJson(incident.payload_json, {});
+    let engineReport = null;
+    let engineEvents = [];
+
+    try {
+        const response = await axios.get(HEALTH_ENGINE_URL + '/api/v1/report', {
+            params: { astronaut_id: incident.astronaut_id },
+            timeout: 10000
+        });
+        engineReport = response.data;
+    } catch (error) {
+        console.warn('[WF05] Engine report unavailable:', error.message);
+    }
+
+    try {
+        const response = await axios.get(HEALTH_ENGINE_URL + '/api/v1/events', {
+            params: { astronaut_id: incident.astronaut_id },
+            timeout: 10000
+        });
+        engineEvents = Array.isArray(response.data)
+            ? response.data
+            : (response.data?.events || []);
+    } catch (error) {
+        console.warn('[WF05] Engine events unavailable:', error.message);
+    }
+
+    const evidenceRefs = [
+        ...wf05CollectEvidenceRefs(eventPayload, 'incident.payload'),
+        ...wf05CollectEvidenceRefs(engineReport, 'engine_report'),
+        ...wf05CollectEvidenceRefs(engineEvents, 'engine_events')
+    ];
+
+    return {
+        incident: {
+            incident_id: incident.incident_id,
+            event_id: incident.event_id,
+            astronaut_id: incident.astronaut_id,
+            status: incident.status,
+            engine_status: incident.engine_status,
+            severity: incident.severity,
+            created_at: incident.created_at,
+            updated_at: incident.updated_at
+        },
+        event: eventPayload,
+        engine_report: engineReport,
+        engine_events: engineEvents,
+        evidence_refs: [...new Set(evidenceRefs)]
+    };
+}
+
+// WF05 Doctor Dashboard: read triage and escalation status
+router.get('/doctor/incidents/:incident_id/wf05-status', requireRole('doctor', 'admin'), (req, res) => {
+    const ip = req.ip || req.socket.remoteAddress || '';
+    if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(ip)) {
+        return res.status(403).json({ success: false, error: 'Local access only' });
+    }
+
+    const incidentId = req.params.incident_id;
+
+    db.get(
+        `SELECT
+            i.incident_id,
+            i.astronaut_id,
+            i.status AS incident_status,
+            i.engine_status,
+            i.severity,
+            i.triage_status,
+            i.triage_generated_at,
+            j.id AS triage_job_id,
+            j.status AS triage_job_status,
+            j.attempt_count AS triage_attempt_count,
+            j.last_error AS triage_last_error,
+            e.id AS escalation_id,
+            e.status AS escalation_status,
+            e.stage AS escalation_stage,
+            e.due_at AS escalation_due_at,
+            e.reminder_count AS escalation_reminder_count,
+            e.cancelled_at AS escalation_cancelled_at
+        FROM incidents i
+        LEFT JOIN incident_triage_jobs j ON j.incident_id = i.incident_id
+        LEFT JOIN incident_escalations e ON e.incident_id = i.incident_id
+        WHERE i.incident_id = ?`,
+        [incidentId],
+        (err, row) => {
+            if (err) {
+                console.error('[WF05 Doctor Status]', err.message);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Failed to read WF05 status'
+                });
+            }
+
+            if (!row) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Incident not found'
+                });
+            }
+
+            return res.json({
+                success: true,
+                incident: {
+                    incident_id: row.incident_id,
+                    astronaut_id: row.astronaut_id,
+                    status: row.incident_status,
+                    engine_status: row.engine_status,
+                    severity: row.severity
+                },
+                triage: {
+                    job_id: row.triage_job_id,
+                    status: row.triage_job_status || row.triage_status || 'NOT_CREATED',
+                    attempt_count: row.triage_attempt_count ?? 0,
+                    last_error: row.triage_last_error,
+                    generated_at: row.triage_generated_at
+                },
+                escalation: {
+                    id: row.escalation_id,
+                    status: row.escalation_status || 'NOT_CREATED',
+                    stage: row.escalation_stage,
+                    due_at: row.escalation_due_at,
+                    reminder_count: row.escalation_reminder_count ?? 0,
+                    cancelled_at: row.escalation_cancelled_at
+                }
+            });
+        }
+    );
+});
+
+// 1. Ready triage jobs
+router.get('/v1/triage/due', requireApiKey, (req, res) => {
+    const limit = Math.min(100, Math.max(1, Number.parseInt(req.query.limit, 10) || 20));
+
+    db.all(
+        "SELECT j.id AS job_id, j.incident_id, j.status AS job_status, " +
+        "j.attempt_count, j.created_at, j.updated_at, " +
+        "i.event_id, i.astronaut_id, i.severity, i.status AS incident_status " +
+        "FROM incident_triage_jobs j " +
+        "JOIN incidents i ON i.incident_id = j.incident_id " +
+        "WHERE j.status IN ('PENDING', 'FAILED') " +
+        "ORDER BY j.created_at ASC LIMIT ?",
+        [limit],
+        (err, rows) => {
+            if (err) {
+                return res.status(500).json({
+                    success: false,
+                    error: 'Failed to fetch due triage jobs',
+                    details: err.message
+                });
+            }
+
+            return res.json({
+                success: true,
+                count: rows.length,
+                jobs: rows
+            });
+        }
+    );
+});
+
+// 2. Incident context and available evidence
+router.get('/v1/incidents/:incident_id/triage-context', requireApiKey, async (req, res) => {
+    try {
+        const context = await wf05LoadTriageContext(req.params.incident_id);
+
+        if (!context) {
+            return res.status(404).json({
+                success: false,
+                error: 'Incident not found'
+            });
+        }
+
+        return res.json({
+            success: true,
+            context
+        });
+    } catch (error) {
+        console.error('[WF05] Triage context error:', error.message);
+        return res.status(500).json({
+            success: false,
+            error: 'Failed to load triage context'
+        });
+    }
+});
+
+// 3. Validate and save AI triage brief
+router.post('/v1/incidents/:incident_id/triage-brief', requireApiKey, async (req, res) => {
+    const body = req.body || {};
+    const requiredFields = [
+        'summary', 'findings', 'evidence_refs',
+        'suggested_checks', 'confidence', 'limitations', 'request_id'
+    ];
+
+    const missing = requiredFields.filter(key =>
+        body[key] === undefined || body[key] === null
+    );
+
+    if (missing.length) {
+        return res.status(400).json({
+            success: false,
+            error: 'Missing required fields',
+            missing
+        });
+    }
+
+    if (!Array.isArray(body.evidence_refs) ||
+        !Array.isArray(body.findings) ||
+        !Array.isArray(body.suggested_checks) ||
+        !Array.isArray(body.limitations)) {
+        return res.status(400).json({
+            success: false,
+            error: 'findings, evidence_refs, suggested_checks and limitations must be arrays'
+        });
+    }
+
+    if (typeof body.confidence !== 'number' ||
+        body.confidence < 0 || body.confidence > 1) {
+        return res.status(400).json({
+            success: false,
+            error: 'confidence must be a number between 0 and 1'
+        });
+    }
+
+    if (typeof body.summary !== 'string' || !body.summary.trim()) {
+        return res.status(400).json({
+            success: false,
+            error: 'summary must be a non-empty string'
+        });
+    }
+
+    try {
+        const context = await wf05LoadTriageContext(req.params.incident_id);
+
+        if (!context) {
+            return res.status(404).json({
+                success: false,
+                error: 'Incident not found'
+            });
+        }
+
+        const allowedRefs = new Set(context.evidence_refs);
+        const invalidRefs = body.evidence_refs.filter(ref =>
+            typeof ref !== 'string' || !allowedRefs.has(ref)
+        );
+
+        if (invalidRefs.length) {
+            return res.status(400).json({
+                success: false,
+                error: 'One or more evidence_refs do not exist in incident context',
+                invalid_evidence_refs: invalidRefs
+            });
+        }
+
+        const now = new Date().toISOString();
+        const briefStatus = body.brief_type === 'FALLBACK' ||
+            body.status === 'FALLBACK' ? 'FALLBACK' : 'COMPLETED';
+
+        const brief = {
+            summary: body.summary,
+            findings: body.findings,
+            evidence_refs: body.evidence_refs,
+            suggested_checks: body.suggested_checks,
+            confidence: body.confidence,
+            limitations: body.limitations,
+            request_id: String(body.request_id),
+            status: briefStatus,
+            generated_at: now
+        };
+
+        db.serialize(() => {
+            db.run('BEGIN IMMEDIATE');
+
+            db.run(
+                'UPDATE incidents SET triage_brief_json = ?, triage_status = ?, triage_generated_at = ?, updated_at = ? WHERE incident_id = ?',
+                [JSON.stringify(brief), briefStatus, now, now, req.params.incident_id],
+                function (updateErr) {
+                    if (updateErr || this.changes === 0) {
+                        return db.run('ROLLBACK', () => res.status(500).json({
+                            success: false,
+                            error: updateErr?.message || 'Failed to save triage brief'
+                        }));
+                    }
+
+                    db.run(
+                        "UPDATE incident_triage_jobs SET status = 'COMPLETED', completed_at = ?, locked_at = NULL, last_error = NULL, updated_at = ? WHERE incident_id = ?",
+                        [now, now, req.params.incident_id],
+                        (jobErr) => {
+                            if (jobErr) {
+                                return db.run('ROLLBACK', () => res.status(500).json({
+                                    success: false,
+                                    error: 'Brief saved but job update failed',
+                                    details: jobErr.message
+                                }));
+                            }
+
+                            db.run('COMMIT', (commitErr) => {
+                                if (commitErr) {
+                                    return res.status(500).json({
+                                        success: false,
+                                        error: 'Failed to commit triage brief'
+                                    });
+                                }
+
+                                return res.json({
+                                    success: true,
+                                    incident_id: req.params.incident_id,
+                                    triage_status: briefStatus,
+                                    triage_generated_at: now,
+                                    brief
+                                });
+                            });
+                        }
+                    );
+                }
+            );
+        });
+    } catch (error) {
+        console.error('[WF05] Save triage brief error:', error.message);
+        return res.status(500).json({
+            success: false,
+            error: 'Failed to process triage brief'
+        });
+    }
+});
+
+// =====================================================
+// END WF05 TRIAGE APIs
+// =====================================================
+
+
+
+// =====================================================
+// WF05 ESCALATION APIs
+// =====================================================
+
+// 1. Get due escalations
+router.get('/v1/escalations/due', requireApiKey, (req, res) => {
+    const now = new Date().toISOString();
+    const limit = Math.min(100, Math.max(1, Number.parseInt(req.query.limit, 10) || 20));
+
+    db.all(
+        "SELECT e.id AS escalation_id, e.incident_id, e.status, e.stage, e.due_at, e.reminder_count, " +
+        "i.event_id, i.astronaut_id, i.severity, i.status AS incident_status " +
+        "FROM incident_escalations e " +
+        "JOIN incidents i ON i.incident_id = e.incident_id " +
+        "WHERE e.status = 'ACTIVE' AND e.due_at <= ? " +
+        "ORDER BY e.due_at ASC LIMIT ?",
+        [now, limit],
+        (err, rows) => {
+            if (err) return res.status(500).json({ success: false, error: err.message });
+            return res.json({ success: true, count: rows.length, escalations: rows });
+        }
+    );
+});
+
+// 2. Advance reminder/escalation stage
+router.post('/v1/escalations/:id/advance', requireApiKey, (req, res) => {
+    const escalationId = Number.parseInt(req.params.id, 10);
+    const requestId = req.body?.request_id;
+
+    if (!Number.isInteger(escalationId) || escalationId < 1 || !requestId) {
+        return res.status(400).json({
+            success: false,
+            error: 'Valid escalation id and request_id are required'
+        });
+    }
+
+    const now = new Date().toISOString();
+    const escalationDelay = Math.max(
+        1,
+        Number.parseInt(process.env.WF05_ESCALATION_DELAY_MINUTES || "5", 10) || 5
+    );
+
+    db.serialize(() => {
+        db.run('BEGIN IMMEDIATE', (beginErr) => {
+            if (beginErr) return res.status(500).json({ success: false, error: beginErr.message });
+
+            const rollback = (status, payload) =>
+                db.run('ROLLBACK', () => res.status(status).json(payload));
+
+            db.get(
+                'SELECT * FROM incident_escalations WHERE id = ?',
+                [escalationId],
+                (err, row) => {
+                    if (err) return rollback(500, { success: false, error: err.message });
+                    if (!row) return rollback(404, { success: false, error: 'Escalation not found' });
+
+                    if (row.last_request_id === String(requestId)) {
+                        return db.run('COMMIT', () => res.json({
+                            success: true,
+                            idempotent: true,
+                            escalation_id: row.id,
+                            incident_id: row.incident_id,
+                            status: row.status,
+                            stage: row.stage
+                        }));
+                    }
+
+                    if (row.status !== 'ACTIVE') {
+                        return rollback(409, {
+                            success: false,
+                            error: 'Escalation is not active',
+                            current_status: row.status
+                        });
+                    }
+
+                    const nextStage = row.stage === 'REMINDER_1' ? 'ESCALATED' : null;
+                    const nextStatus = nextStage ? 'ACTIVE' : 'COMPLETED';
+                    const nextDueAt = nextStage
+                        ? new Date(Date.now() + escalationDelay * 60000).toISOString()
+                        : row.due_at;
+
+                    db.run(
+                        "UPDATE incident_escalations SET " +
+                        "stage = COALESCE(?, stage), status = ?, due_at = ?, " +
+                        "reminder_count = reminder_count + ?, last_request_id = ?, updated_at = ? " +
+                        "WHERE id = ? AND status = 'ACTIVE'",
+                        [
+                            nextStage,
+                            nextStatus,
+                            nextDueAt,
+                            row.stage === 'REMINDER_1' ? 1 : 0,
+                            String(requestId),
+                            now,
+                            escalationId
+                        ],
+                        function (updateErr) {
+                            if (updateErr) return rollback(500, { success: false, error: updateErr.message });
+                            if (this.changes !== 1) return rollback(409, { success: false, error: 'Escalation changed; retry' });
+
+                            db.run('COMMIT', (commitErr) => {
+                                if (commitErr) return res.status(500).json({ success: false, error: commitErr.message });
+
+                                return res.json({
+                                    success: true,
+                                    escalation_id: escalationId,
+                                    incident_id: row.incident_id,
+                                    previous_stage: row.stage,
+                                    stage: nextStage || row.stage,
+                                    status: nextStatus,
+                                    due_at: nextDueAt,
+                                    request_id: String(requestId)
+                                });
+                            });
+                        }
+                    );
+                }
+            );
+        });
+    });
+});
+
+// 3. Cancel active escalation
+router.post('/v1/escalations/:id/cancel', requireApiKey, (req, res) => {
+    const escalationId = Number.parseInt(req.params.id, 10);
+    if (!Number.isInteger(escalationId) || escalationId < 1) {
+        return res.status(400).json({ success: false, error: 'Invalid escalation id' });
+    }
+
+    const now = new Date().toISOString();
+
+    db.run(
+        "UPDATE incident_escalations SET status = 'CANCELLED', cancelled_at = ?, updated_at = ? " +
+        "WHERE id = ? AND status = 'ACTIVE'",
+        [now, now, escalationId],
+        function (err) {
+            if (err) return res.status(500).json({ success: false, error: err.message });
+            if (this.changes === 0) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Active escalation not found'
+                });
+            }
+
+            return res.json({
+                success: true,
+                escalation_id: escalationId,
+                status: 'CANCELLED',
+                cancelled_at: now
+            });
+        }
+    );
+});
+
+// =====================================================
+// END WF05 ESCALATION APIs
+// =====================================================
+
 module.exports = router;
 
 
