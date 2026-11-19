@@ -35,6 +35,97 @@ const DoctorDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    const [wf05Notifications, setWf05Notifications] = useState([]);
+    const [wf05Open, setWf05Open] = useState(false);
+    const [wf05Read, setWf05Read] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('astrohealth_wf05_read') || '[]'); }
+        catch { return []; }
+    });
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const loadWF05 = async () => {
+            try {
+                const response = await axios.get(`${BACKEND_URL}/api/doctor/incidents`, { timeout: 12000 });
+                const rows = (response.data?.incidents || []).slice(0, 30);
+
+                const results = await Promise.all(rows.map(async row => {
+                    try {
+                        const res = await axios.get(
+                            `${BACKEND_URL}/api/doctor/incidents/${encodeURIComponent(row.incident_id)}/wf05-status`,
+                            { timeout: 10000 }
+                        );
+                        return { row, data: res.data };
+                    } catch { return null; }
+                }));
+
+                if (cancelled) return;
+
+                const notices = [];
+                results.filter(Boolean).forEach(({ row, data }) => {
+                    const triage = data.triage || {};
+                    const escalation = data.escalation || {};
+                    const incident = data.incident || {};
+                    const id = row.incident_id;
+                    const astronaut = row.astronaut_id || incident.astronaut_id || 'Unknown';
+                    const severity = row.severity || incident.severity || 'UNKNOWN';
+
+                    const add = (type, version, title, message, priority = 'normal') => {
+                        notices.push({
+                            key: `${id}:${type}:${version}`,
+                            title, message, priority,
+                            timestamp: row.updated_at || row.created_at
+                        });
+                    };
+
+                    const ts = String(triage.status || 'NOT_CREATED').toUpperCase();
+
+                    if (ts === 'PENDING' || ts === 'FAILED') {
+                        add('triage', ts,
+                            ts === 'FAILED' ? 'AI Triage Failed' : 'AI Triage Pending',
+                            `${astronaut} · ${id} · ${severity}`,
+                            ts === 'FAILED' ? 'high' : 'normal');
+                    } else if (ts === 'COMPLETED' || ts === 'FALLBACK') {
+                        add('triage', triage.generated_at || ts,
+                            ts === 'COMPLETED' ? 'AI Triage Completed' : 'AI Triage Fallback',
+                            `${astronaut} · ${id} · ${ts}`);
+                    }
+
+                    if (String(escalation.status).toUpperCase() === 'ACTIVE') {
+                        add('escalation', `${escalation.stage}:${escalation.reminder_count}`,
+                            'Active Medical Escalation',
+                            `${astronaut} · ${id} · ${escalation.stage || 'ACTIVE'} · Reminders: ${escalation.reminder_count || 0}`,
+                            'high');
+                    }
+
+                    const status = String(row.status || incident.status || '').toUpperCase();
+                    if (status === 'PENDING_MEDICAL_REVIEW' || status === 'IN_REVIEW') {
+                        add('review', status, 'Medical Review Required',
+                            `${astronaut} · ${id} · ${status} · ${severity}`, 'high');
+                    }
+                });
+
+                notices.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+                setWf05Notifications(notices);
+            } catch (err) {
+                console.error('WF05 notifications unavailable:', err);
+            }
+        };
+
+        loadWF05();
+        const timer = setInterval(loadWF05, 20000);
+        return () => { cancelled = true; clearInterval(timer); };
+    }, []);
+
+    const unreadWF05 = wf05Notifications.filter(n => !wf05Read.includes(n.key)).length;
+
+    const markWF05Read = () => {
+        const keys = wf05Notifications.map(n => n.key);
+        setWf05Read(keys);
+        localStorage.setItem('astrohealth_wf05_read', JSON.stringify(keys));
+    };
+
     useEffect(() => {
         axios.get(`${BACKEND_URL}/api/messages/history`)
             .then(res => setMessages(Array.isArray(res.data) ? res.data.reverse() : []))
@@ -446,6 +537,68 @@ const sendMessage = async (content) => {
                             </option>
                         ))}
                     </select>
+                    <div style={{ position: 'fixed', top: 5, right: 205, zIndex: 3001 }}>
+                        <button
+                            type="button"
+                            aria-label="Medical notifications"
+                            onClick={() => {
+                                const opening = !wf05Open;
+                                setWf05Open(opening);
+                                if (opening) markWF05Read();
+                            }}
+                            style={{
+                                position: 'relative', width: 46, height: 46,
+                                borderRadius: 12, border: '1px solid #38bdf8',
+                                background: '#0f172a', color: 'white',
+                                fontSize: 22, cursor: 'pointer'
+                            }}
+                        >
+                            🔔
+                            {unreadWF05 > 0 && (
+                                <span style={{
+                                    position: 'absolute', top: -7, right: -7,
+                                    background: '#ef4444', color: 'white',
+                                    borderRadius: 20, minWidth: 20, padding: '2px 5px',
+                                    fontSize: 11, fontWeight: 800
+                                }}>{unreadWF05 > 99 ? '99+' : unreadWF05}</span>
+                            )}
+                        </button>
+
+                        {wf05Open && (
+                            <div style={{
+                                position: 'absolute', right: 0, top: 55,
+                                width: 'min(380px, calc(100vw - 35px))',
+                                maxHeight: 420, overflowY: 'auto', zIndex: 2000,
+                                background: '#0f172a', color: 'white',
+                                border: '1px solid #334155', borderRadius: 12,
+                                boxShadow: '0 12px 35px rgba(0,0,0,.4)'
+                            }}>
+                                <div style={{
+                                    padding: 14, display: 'flex',
+                                    justifyContent: 'space-between',
+                                    borderBottom: '1px solid #334155'
+                                }}>
+                                    <strong>WF05 Medical Notifications</strong>
+                                    <button type="button" onClick={() => setWf05Open(false)}
+                                        style={{ background: 'none', border: 0, color: 'white', cursor: 'pointer' }}>✕</button>
+                                </div>
+                                {wf05Notifications.length === 0 ? (
+                                    <p style={{ padding: 18, color: '#94a3b8' }}>No WF05 notifications.</p>
+                                ) : wf05Notifications.map(n => (
+                                    <div key={n.key} style={{
+                                        padding: 13, borderBottom: '1px solid #334155',
+                                        borderLeft: n.priority === 'high' ? '3px solid #f59e0b' : '3px solid #38bdf8'
+                                    }}>
+                                        <strong style={{ fontSize: 13 }}>{n.title}</strong>
+                                        <div style={{ color: '#cbd5e1', fontSize: 12, marginTop: 5 }}>{n.message}</div>
+                                        <div style={{ color: '#64748b', fontSize: 10, marginTop: 5 }}>
+                                            {n.timestamp ? new Date(n.timestamp).toLocaleString() : 'Live status'}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
