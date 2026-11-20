@@ -1,0 +1,10 @@
+{
+  "name": "health-engine-integration",
+  "version": "1.0.0",
+  "description": "Node.js client, cursor-safe poller and Express router for the Astronaut Health Intelligence Engine (Python). No runtime dependencies besides express (router only).",
+  "main": "src/index.js",
+  "engines": { "node": ">=22.13" },
+  "scripts": { "test": "node --disable-warning=ExperimentalWarning --test test/*.test.js" },
+  "license": "UNLICENSED",
+  "private": true
+}

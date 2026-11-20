@@ -1,0 +1,3 @@
+# Security
+
+Original `.env`, SQLite state, backups, bundled archives and deployment URLs in workflow nodes were excluded or sanitized. Credential IDs removed; names are labels, not credentials. Rebind credentials after import. Backend integration uses timing-safe key comparison; doctor routes and engine are not protected by equivalent authorization. CORS is permissive, Socket.IO accepts all origins, and n8n inbound webhooks lack explicit authentication. Keep local/trusted network only; add authentication, authorization, TLS, restricted CORS and secrets management before exposure. API keys do not establish reviewer identity. No clinical data should be used.

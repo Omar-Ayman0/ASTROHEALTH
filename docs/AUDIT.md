@@ -1,0 +1,5 @@
+# Technical audit
+
+Source priority: integrated root source, latest four separate exports, independent engine reference. Windows ZIP paths normalized. Original files untouched. Active engine launcher verified; backend routes and worker use different engine URL defaults (8001 vs 8000), resolved in environment template. Backend has duplicate OpenAPI route; left unchanged. Legacy ML service excluded; legacy backend routes remain and may require the old service for their original behavior. Docker files/compose excluded to avoid presenting an unverified deployment. Generated examples restored; runtime databases and backups omitted. Frontend source retained, including original assets; attribution provenance should be checked before public release. No dashboard screenshot was captured.
+
+No algorithm, database state machine, or workflow validation logic was rewritten. Workflow changes limited to deployment URL, credential IDs and export metadata. Independent handoff retained as reference, not default runtime. See [verification](TESTING.md) for executed checks.
