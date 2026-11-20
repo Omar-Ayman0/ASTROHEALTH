@@ -1,0 +1,91 @@
+# General
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# Node.js (Frontend & Backend)
+node_modules/
+npm-debug.log
+yarn-error.log
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build Output
+dist/
+build/
+
+# Python (ML Service)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+.venv/
+env/
+.env/
+venv.bak/
+
+# Docker
+docker-compose.override.yml
+
+# Databases
+*.db
+*.db-journal
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# ML Models (Large Files)
+ml_service/models/*.pkl
+ml_service/ctgan_training_data.csv
+
+# AstroHealth backups and archives
+/BACKUP_BEFORE_DASHBOARD_20261114_163011/
+/for_claude.zip
+*.backup_before_autostart
+
+
+# Additional local backups and archives
+*_backup*/
+BACKUP*/
+_backup*/
+*.zip
+/_send/
+*.bak
+*.bak.*
+*.backup*
+*.before*
+*.integration-backup
+/frontend/rollback_*/
+/backend/*.db
+/astronaut-health-intelligence/data/live/*.jsonl
+*_before_*
+*before_*
+*backup*
+*.bak*
+*_backup*
+/frontend/ersITLEGEND*

@@ -1,0 +1,15 @@
+[
+  {
+    "astronaut_id": "ASTRO_01",
+    "status": "REVIEW_REQUIRED",
+    "severity": "HIGH_REVIEW_PRIORITY",
+    "anomaly_score": 1.0,
+    "needs_human_review": true,
+    "latest_reading_at": "2026-11-14 07:00:00",
+    "latest_event_id": "ASTRO_01-EV-20261114T0500",
+    "step_index": 804,
+    "finished": false,
+    "run": 1,
+    "model_version": "hybrid-v2.0"
+  }
+]

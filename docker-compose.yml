@@ -1,0 +1,28 @@
+services:
+  ml_service:
+    build: ./ml_service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ml_service:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  backend:
+    build: ./backend
+    ports:
+      - "4000:4000"
+    environment:
+      - ML_SERVICE_URL=http://ml_service:8000
+      - PORT=4000
+    depends_on:
+      - ml_service
+    volumes:
+      - ./backend:/app
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend

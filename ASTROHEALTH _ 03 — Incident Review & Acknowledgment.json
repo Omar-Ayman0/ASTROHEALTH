@@ -1,0 +1,509 @@
+{
+  "name": "ASTROHEALTH | 03 — Incident Review & Acknowledgment",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "incident-review",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        3344,
+        512
+      ],
+      "id": "f09316df-a9a4-473b-b2d2-6ef7db241e63",
+      "name": "Webhook",
+      "webhookId": "c40137a9-95fa-439d-ac01-f5f0e6af9ef1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "08a32cc6-d3cf-4175-9b06-94fc605a7841",
+              "name": "schema_version",
+              "value": "={{ typeof $json.body?.schema_version === \"string\" ? $json.body.schema_version.trim() : \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "54b7ff73-e660-4d77-a3eb-bad16d11b4fc",
+              "name": "request_id",
+              "value": "={{ typeof $json.body?.request_id === \"string\" ? $json.body.request_id.trim() : \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "939a00cf-95a1-4619-88a3-af9294a78aaa",
+              "name": "incident_id",
+              "value": "={{ typeof $json.body?.incident_id === \"string\" ? $json.body.incident_id.trim() : \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "6be95ce7-1938-4f78-88fe-978d605b7b27",
+              "name": "astronaut_id",
+              "value": "={{ typeof $json.body?.astronaut_id === \"string\" ? $json.body.astronaut_id.trim() : \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "9a99b555-8c59-4442-bbb0-58df6fd590c8",
+              "name": "action",
+              "value": "={{ typeof $json.body?.action === \"string\" ? $json.body.action.trim() : \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "a0d43d1c-a010-46a9-830b-874a795c82eb",
+              "name": "reviewer_id",
+              "value": "={{ typeof $json.body?.reviewer_id === \"string\" ? $json.body.reviewer_id.trim() : \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "0ac2a799-cdc3-4da9-a4ba-1be8b33ad8cc",
+              "name": "notes",
+              "value": "={{ typeof $json.body?.notes === \"string\" ? $json.body.notes : \"\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        3600,
+        512
+      ],
+      "id": "d37a7071-93d6-46bf-b247-dc9bb381ba4e",
+      "name": "Normalize Action"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "eda720c3-03a7-4ee0-99ea-63f9b3f7ffe4",
+              "leftValue": "={{ $json.schema_version }}",
+              "rightValue": "1.0",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "e8043753-6337-4a21-94d7-faf35051c9ab",
+              "leftValue": "={{ $json.request_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "70fb6989-db57-4860-bf03-b2a85aac8e5e",
+              "leftValue": "={{ $json.incident_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "054b1508-b938-4e01-b873-850d5c257309",
+              "leftValue": "={{ $json.astronaut_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "ba8cb174-459a-45f7-9afd-e3073031b70f",
+              "leftValue": "={{ $json.reviewer_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "744b8897-3b41-4089-aa45-d0046c00b306",
+              "leftValue": "={{ [\"ACKNOWLEDGE\", \"START_REVIEW\", \"COMPLETE_REVIEW\"].includes($json.action) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "2c3c059a-b2f9-4c76-a81d-0cb2b23c7061",
+              "leftValue": "={{ $('Webhook').first().json.body?.notes == null || typeof $('Webhook').first().json.body.notes === \"string\" }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3936,
+        512
+      ],
+      "id": "3ae48b4c-0df9-493d-ba29-d340af40bc23",
+      "name": "Validate Review Action"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"accepted\": false,\n  \"error\": \"INVALID_REVIEW_ACTION\",\n  \"message\": \"Invalid incident review request or unsupported action.\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        4304,
+        848
+      ],
+      "id": "8331f608-b22b-4230-ab18-33481eb0ed7d",
+      "name": "Rejected - Invalid Action"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst request = $('Normalize Action').first().json;\nconst response = $input.first().json;\n\nconst statusCode = response.statusCode == null\n  ? NaN\n  : Number(response.statusCode);\n\nconst body = response.body;\n\nfunction fail(httpStatus, error, message) {\n  return [{\n    json: {\n      accepted: false,\n      schema_version: \"1.0\",\n      request_id: request.request_id,\n      incident_id: request.incident_id,\n      astronaut_id: request.astronaut_id,\n      error,\n      message,\n      http_status: httpStatus\n    }\n  }];\n}\n\n// Handle backend HTTP errors\nif (!Number.isInteger(statusCode) || statusCode < 100 || statusCode > 599) {\n  return fail(\n    502,\n    \"INVALID_BACKEND_RESPONSE\",\n    \"The backend returned an invalid response.\"\n  );\n}\n\nif (statusCode === 404) {\n  return fail(\n    404,\n    \"INCIDENT_NOT_FOUND\",\n    \"The requested incident was not found.\"\n  );\n}\n\nif (statusCode === 409) {\n  return fail(\n    409,\n    \"REVIEW_ACTION_CONFLICT\",\n    \"The action conflicts with the incident state or request ID. Check the incident and action history before retrying.\"\n  );\n}\n\nif (statusCode === 401 || statusCode === 403) {\n  return fail(\n    403,\n    \"REVIEW_ACTION_FORBIDDEN\",\n    \"The review action is not authorized.\"\n  );\n}\n\nif (statusCode === 400 || statusCode === 422) {\n  return fail(\n    400,\n    \"BACKEND_VALIDATION_ERROR\",\n    \"The backend rejected the review request.\"\n  );\n}\n\nif (statusCode === 429 || statusCode >= 500) {\n  return fail(\n    503,\n    \"BACKEND_UNAVAILABLE\",\n    \"The incident update could not be confirmed. Check the incident status before retrying with the same request_id.\"\n  );\n}\n\nif (statusCode < 200 || statusCode >= 300) {\n  return fail(\n    502,\n    \"UNEXPECTED_BACKEND_RESPONSE\",\n    \"The backend returned an unexpected response.\"\n  );\n}\n\n// Validate response structure\nif (!body || typeof body !== \"object\" || Array.isArray(body)) {\n  return fail(\n    502,\n    \"INVALID_RESPONSE_BODY\",\n    \"The backend response could not be validated.\"\n  );\n}\n\n// Verify backend reported success\nif (body.success !== true) {\n  return fail(\n    502,\n    \"BACKEND_ACTION_FAILED\",\n    \"The backend did not confirm successful action execution.\"\n  );\n}\n\n// Verify incident and astronaut identity\nif (\n  body.incident_id !== request.incident_id ||\n  body.astronaut_id !== request.astronaut_id\n) {\n  return fail(\n    502,\n    \"IDENTITY_MISMATCH\",\n    \"The backend response does not match the requested incident.\"\n  );\n}\n\n// Verify exact request ID\nif (body.request_id !== request.request_id) {\n  return fail(\n    502,\n    \"REQUEST_ID_MISMATCH\",\n    \"The backend response does not match the review request.\"\n  );\n}\n\n// Verify requested action\nif (body.action !== request.action) {\n  return fail(\n    502,\n    \"ACTION_MISMATCH\",\n    \"The backend response does not match the requested action.\"\n  );\n}\n\n// Verify medical reviewer identity\nif (body.actor !== request.reviewer_id) {\n  return fail(\n    502,\n    \"REVIEWER_MISMATCH\",\n    \"The backend response does not match the requested medical reviewer.\"\n  );\n}\n\n// Expected medical review statuses\n// Aligned with the actual backend API contract.\nconst expectedStatus = {\n  ACKNOWLEDGE: \"ACKNOWLEDGED\",\n  START_REVIEW: \"IN_REVIEW\",\n  COMPLETE_REVIEW: \"REVIEW_COMPLETED\"\n};\n\n// Expected previous status for each action\nconst expectedPreviousStatus = {\n  ACKNOWLEDGE: \"PENDING_MEDICAL_REVIEW\",\n  START_REVIEW: \"ACKNOWLEDGED\",\n  COMPLETE_REVIEW: \"IN_REVIEW\"\n};\n\n// Validate action status transition\nif (\n  typeof body.previous_status !== \"string\" ||\n  !body.previous_status.trim() ||\n  body.new_status !== expectedStatus[request.action]\n) {\n  return fail(\n    502,\n    \"STATUS_MISMATCH\",\n    \"The returned incident status does not match the requested action.\"\n  );\n}\n\n// Verify previous incident status\nif (\n  body.previous_status !== expectedPreviousStatus[request.action]\n) {\n  return fail(\n    502,\n    \"PREVIOUS_STATUS_MISMATCH\",\n    \"The previous incident status does not match the expected transition.\"\n  );\n}\n\n// Verify status consistency\nif (\n  body.status !== undefined &&\n  body.status !== body.new_status\n) {\n  return fail(\n    502,\n    \"INCONSISTENT_STATUS\",\n    \"The backend returned inconsistent incident statuses.\"\n  );\n}\n\n// Verify backend confirmed persistence\nif (body.persisted !== true) {\n  return fail(\n    502,\n    \"UPDATE_NOT_CONFIRMED\",\n    \"The backend did not confirm the incident update.\"\n  );\n}\n\n// Validate backend action timestamp\nconst actionTimestamp =\n  body.created_at ?? body.updated_at ?? null;\n\nif (\n  typeof actionTimestamp !== \"string\" ||\n  !Number.isFinite(Date.parse(actionTimestamp))\n) {\n  return fail(\n    502,\n    \"INVALID_ACTION_TIMESTAMP\",\n    \"The backend did not return a valid action timestamp.\"\n  );\n}\n\n// Build successful acknowledgment\nreturn [{\n  json: {\n    accepted: true,\n    schema_version: \"1.0\",\n    request_id: request.request_id,\n    incident_id: request.incident_id,\n    astronaut_id: request.astronaut_id,\n    action: request.action,\n    reviewer_id: body.actor,\n    previous_status: body.previous_status,\n    new_status: body.new_status,\n    persisted: true,\n    status: body.new_status,\n    updated: true,\n    updated_at: actionTimestamp,\n    http_status: 200\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4640,
+        512
+      ],
+      "id": "43f833fa-976d-4686-98d6-f4ff1d2f7a2b",
+      "name": "Validate Backend Response",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ JSON.stringify({\n  accepted: false,\n  schema_version: \"1.0\",\n  request_id: $('Normalize Action').first().json.request_id,\n  incident_id: $('Normalize Action').first().json.incident_id,\n  astronaut_id: $('Normalize Action').first().json.astronaut_id,\n  error: \"INCIDENT_SERVICE_UNAVAILABLE\",\n  message: \"The incident update could not be confirmed. Check the incident status before retrying with the same request_id.\",\n  http_status: 503\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        4784,
+        816
+      ],
+      "id": "f61e4e68-0bec-425f-a9d4-fee9577596a0",
+      "name": "Build Connection Error"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ Object.fromEntries(Object.entries($json).filter(([key]) => key !== 'http_status')) }}",
+        "options": {
+          "responseCode": "={{ $json.http_status }}"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        4928,
+        496
+      ],
+      "id": "43d115e9-37ac-4884-8389-f9a8ed922d52",
+      "name": "Return Review ACK"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://astrohealth-api.autoflow.cfd/api/v1/incidents/' + encodeURIComponent($json.incident_id) + '/actions' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ ({ request_id: $json.request_id, astronaut_id: $json.astronaut_id, action: $json.action, reviewer_id: $json.reviewer_id, notes: $json.notes }) }}",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        4288,
+        512
+      ],
+      "id": "7b2d6426-02dd-4974-9908-40079755196a",
+      "name": "Update Incident Status",
+      "retryOnFail": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "fRzlXYBmNVRNXjA0",
+          "name": "ASTROHEALTH Backend Auth"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "content": "# ASTROHEALTH\n### 03 | Incident Review & Acknowledgment\nHuman-led medical review; separate from engine event status.\n**Status:** API implemented locally; n8n integration pending.",
+        "height": 192,
+        "width": 720
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3264,
+        160
+      ],
+      "id": "a069a9e8-86b8-469d-bc08-c5f6d370f9dd",
+      "name": "Overview Note"
+    },
+    {
+      "parameters": {
+        "content": "## 01. Action Ingestion\nReceive and normalize authenticated review actions.",
+        "height": 272,
+        "width": 544,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3264,
+        384
+      ],
+      "id": "4321af32-06e9-4eb0-a9d1-7f7d8245db41",
+      "name": "Ingestion Note"
+    },
+    {
+      "parameters": {
+        "content": "## 02. Validation\nVerify required fields and allowed actions.",
+        "height": 272,
+        "width": 336,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3824,
+        384
+      ],
+      "id": "d3477e6c-807e-4eea-9231-ea17bf1854cb",
+      "name": "Validation Note"
+    },
+    {
+      "parameters": {
+        "content": "## 03. Incident Update\nAuthenticated POST to backend.\nNo automatic retry for state-changing actions.",
+        "height": 272,
+        "width": 336,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4192,
+        384
+      ],
+      "id": "575f0165-5959-4d80-bb93-9c5db8ee5c0e",
+      "name": "Processing Note"
+    },
+    {
+      "parameters": {
+        "content": "## 04. Response Processing\nCheck request and incident IDs, previous/new status and persisted=true. Return review ACK.",
+        "height": 288,
+        "width": 608,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4560,
+        384
+      ],
+      "id": "edd3bc55-328b-4527-b7b6-1f66296ccf43",
+      "name": "Response Note"
+    },
+    {
+      "parameters": {
+        "content": "## Invalid Action\nReject malformed or unsupported requests.\n\n**HTTP 400**",
+        "height": 272,
+        "width": 336,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4192,
+        704
+      ],
+      "id": "fd19c60a-951c-4eb6-8f3e-c7d99fd7f212",
+      "name": "Rejection Note"
+    },
+    {
+      "parameters": {
+        "content": "## Connection Failure\nReturn HTTP 503 when the update cannot be confirmed.",
+        "height": 272,
+        "width": 608,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4560,
+        704
+      ],
+      "id": "49d711ad-ff43-47f9-a031-ce90b9340317",
+      "name": "Connection Error Note"
+    },
+    {
+      "parameters": {
+        "content": "## Integration checklist\n- Select existing ASTROHEALTH Backend Auth credential. Public tunnel may change.\n- Verify actual request/response and status names (including COMPLETE_REVIEW).\n- Test each action on a fresh test incident, then duplicate request_id and invalid transitions.\n- Backend must authorize reviewer identity; browser must not hold service secrets.\n- Engine RESOLVED never completes medical review.\n- No automatic retry; reconcile uncertain writes with backend.\n- Keep inactive until integration passes.",
+        "height": 420,
+        "width": 880,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3264,
+        704
+      ],
+      "id": "40c1bc01-acb8-4274-a632-85b9d7126b32",
+      "name": "Integration Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Action": {
+      "main": [
+        [
+          {
+            "node": "Validate Review Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Review Action": {
+      "main": [
+        [
+          {
+            "node": "Update Incident Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rejected - Invalid Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Backend Response": {
+      "main": [
+        [
+          {
+            "node": "Return Review ACK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Connection Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Connection Error": {
+      "main": [
+        [
+          {
+            "node": "Return Review ACK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Incident Status": {
+      "main": [
+        [
+          {
+            "node": "Validate Backend Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Connection Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8fe88a5b-916a-4378-a324-149f05232138",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5b75b63efdfc0f5853f57cb8150b63843de31fa4e8f630ee709540a667f4ef0b"
+  },
+  "nodeGroups": [],
+  "id": "ZztbkFnfhUfES2LM",
+  "tags": []
+}

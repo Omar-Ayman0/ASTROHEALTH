@@ -1,0 +1,12 @@
+{
+  "astronaut_id": "ASTRO_01",
+  "report_date": "2026-11-14",
+  "generated_by": "n8n",
+  "template_version": "1.0",
+  "summary": "Synthetic telemetry review summary.",
+  "review_required_count": 1,
+  "source_event_ids": [
+    "ASTRO_01-EV005"
+  ],
+  "data_source": "synthetic_simulator"
+}
