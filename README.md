@@ -36,6 +36,24 @@ graph TD
     *   **Doctor View**: Detailed analytics, historical trends, and alerts.
 *   **Dockerized**: Fully containerized microservices architecture for easy deployment.
 
+## n8n Automation Layer
+
+ASTROHEALTH includes an n8n automation layer that connects health-engine events with backend incident handling, AI-assisted medical review, and mission-connection monitoring. Workflow exports are stored in [`automation/workflows/`](automation/workflows/).
+
+| Workflow | Purpose | Trigger |
+| --- | --- | --- |
+| **01 — Health Alert Orchestrator** | Validates incoming `HEALTH_REVIEW_REQUIRED` events, registers the incident with the backend, and returns a correlated acknowledgement. | Webhook |
+| **02 — AI Health Assistant** | Builds a structured, evidence-aware response using the health report and review-event APIs; Gemini is optional and requires credentials. | Webhook |
+| **03 — Incident Review & Acknowledgment** | Processes medical-officer actions (`ACKNOWLEDGE`, `START_REVIEW`, `COMPLETE_REVIEW`) and verifies the persisted state transition. | Webhook |
+| **04 — Mission Connection Monitor** | Reads a mission-connection snapshot; it does not own dispatch, retries, or acknowledgements. | Manual |
+| **05 — Smart Triage & Escalation Watcher** | Polls backend triage jobs, creates a structured AI brief grounded in supplied evidence, saves it through the backend, and advances due escalation timers. | Every 60 seconds |
+
+**WF05 safety boundary:** the AI produces a review brief, not a diagnosis or treatment recommendation. The backend validates evidence references and owns durable job/escalation state. The current workflow records escalation progression; it does not itself deliver a doctor-facing notification.
+
+See [Automation setup and API contracts](docs/AUTOMATION.md) before importing or activating workflows. All workflow exports should remain inactive until credentials, webhook authentication, URLs, and end-to-end behavior have been verified in the target n8n instance.
+
+---
+
 ## Tech Stack
 
 *   **Frontend**: React, Vite, Recharts, TailwindCSS.
