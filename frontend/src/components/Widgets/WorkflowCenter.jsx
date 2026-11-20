@@ -8,7 +8,6 @@ export default function WorkflowCenter({ astronautId, onRefresh }) {
     const [busy, setBusy] = useState('');
     const [results, setResults] = useState({});
     const [incidentId, setIncidentId] = useState('');
-    const [triageIncidentId, setTriageIncidentId] = useState('');
 
     const run = async (id, task) => {
         setBusy(id);
@@ -86,7 +85,7 @@ export default function WorkflowCenter({ astronautId, onRefresh }) {
 
                     <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(2,minmax(0,1fr))',
+                        gridTemplateColumns: 'repeat(3,minmax(0,1fr))',
                         gap: 10
                     }}>
                         <div style={card}>
@@ -166,45 +165,6 @@ export default function WorkflowCenter({ astronautId, onRefresh }) {
                                 }), '#7c3aed'
                             )}
                             {status('WF03')}
-                        </div>
-
-                        <div style={card}>
-                            <strong style={{ fontSize: 13 }}>?? WF05</strong>
-                            <p style={{ fontSize: 11, color: '#64748b', minHeight: 30 }}>
-                                AI Triage & Smart Escalation
-                            </p>
-                            <input
-                                value={triageIncidentId}
-                                onChange={e => setTriageIncidentId(e.target.value)}
-                                placeholder="Incident ID"
-                                style={{
-                                    width: '100%', boxSizing: 'border-box',
-                                    padding: 8, marginBottom: 7,
-                                    border: '1px solid #cbd5e1', borderRadius: 6
-                                }}
-                            />
-                            {btn('WF05', 'Check Triage Status', () =>
-                                run('WF05', async () => {
-                                    if (!triageIncidentId.trim()) {
-                                        throw new Error('Enter an Incident ID.');
-                                    }
-
-                                    const r = await axios.get(
-                                        `${API}/api/doctor/incidents/${encodeURIComponent(triageIncidentId.trim())}/wf05-status`,
-                                        { timeout: 15000 }
-                                    );
-
-                                    if (!r.data?.success) {
-                                        throw new Error(r.data?.error || 'Could not retrieve WF05 status.');
-                                    }
-
-                                    const triage = r.data.triage || {};
-                                    const escalation = r.data.escalation || {};
-
-                                    return `Triage: ${triage.status} ? Escalation: ${escalation.status}${escalation.stage ? ' (' + escalation.stage + ')' : ''}`;
-                                }), '#0f766e'
-                            )}
-                            {status('WF05')}
                         </div>
                     </div>
                     <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 12 }}>

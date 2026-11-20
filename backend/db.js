@@ -1,4 +1,4 @@
-const sqlite3 = require('sqlite3').verbose();
+﻿const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const crypto = require('crypto');
 
@@ -162,62 +162,6 @@ function initDb() {
                 }
             }
         );
-
-        // WF05: Smart Escalation + AI Triage Brief migrations
-        const incidentTriageColumns = [
-            ["triage_brief_json", "TEXT"],
-            ["triage_status", "TEXT NOT NULL DEFAULT 'PENDING'"],
-            ["triage_generated_at", "TEXT"]
-        ];
-
-        incidentTriageColumns.forEach(([column, definition]) => {
-            db.run(
-                `ALTER TABLE incidents ADD COLUMN ${column} ${definition}`,
-                (err) => {
-                    if (err && !err.message.includes('duplicate column name')) {
-                        console.error(`WF05 incidents migration (${column}):`, err.message);
-                    }
-                }
-            );
-        });
-
-        db.run(`CREATE TABLE IF NOT EXISTS incident_triage_jobs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            incident_id TEXT NOT NULL UNIQUE,
-            status TEXT NOT NULL DEFAULT 'PENDING'
-                CHECK(status IN ('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED')),
-            attempt_count INTEGER NOT NULL DEFAULT 0,
-            locked_at TEXT,
-            completed_at TEXT,
-            last_error TEXT,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL,
-            FOREIGN KEY (incident_id) REFERENCES incidents(incident_id)
-        )`);
-
-        db.run(`CREATE INDEX IF NOT EXISTS idx_triage_jobs_status_created
-            ON incident_triage_jobs(status, created_at)`);
-
-        db.run(`CREATE TABLE IF NOT EXISTS incident_escalations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            incident_id TEXT NOT NULL UNIQUE,
-            status TEXT NOT NULL DEFAULT 'ACTIVE'
-                CHECK(status IN ('ACTIVE', 'CANCELLED', 'COMPLETED')),
-            stage TEXT NOT NULL DEFAULT 'REMINDER_1'
-                CHECK(stage IN ('REMINDER_1', 'ESCALATED')),
-            due_at TEXT NOT NULL,
-            reminder_count INTEGER NOT NULL DEFAULT 0,
-            last_request_id TEXT UNIQUE,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL,
-            cancelled_at TEXT,
-            FOREIGN KEY (incident_id) REFERENCES incidents(incident_id)
-        )`);
-
-        db.run(`CREATE INDEX IF NOT EXISTS idx_escalations_due
-            ON incident_escalations(status, due_at)`);
-
-        // End WF05 migrations
 
         seedDefaultUsers();
     });

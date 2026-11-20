@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ChatPanel from '../components/Messaging/ChatPanel';
 import AIHealthReport from '../components/Messaging/AIHealthReport';
@@ -84,25 +84,25 @@ const DoctorDashboard = () => {
                     if (ts === 'PENDING' || ts === 'FAILED') {
                         add('triage', ts,
                             ts === 'FAILED' ? 'AI Triage Failed' : 'AI Triage Pending',
-                            `${astronaut} · ${id} · ${severity}`,
+                            `${astronaut} Â· ${id} Â· ${severity}`,
                             ts === 'FAILED' ? 'high' : 'normal');
                     } else if (ts === 'COMPLETED' || ts === 'FALLBACK') {
                         add('triage', triage.generated_at || ts,
                             ts === 'COMPLETED' ? 'AI Triage Completed' : 'AI Triage Fallback',
-                            `${astronaut} · ${id} · ${ts}`);
+                            `${astronaut} Â· ${id} Â· ${ts}`);
                     }
 
                     if (String(escalation.status).toUpperCase() === 'ACTIVE') {
                         add('escalation', `${escalation.stage}:${escalation.reminder_count}`,
                             'Active Medical Escalation',
-                            `${astronaut} · ${id} · ${escalation.stage || 'ACTIVE'} · Reminders: ${escalation.reminder_count || 0}`,
+                            `${astronaut} Â· ${id} Â· ${escalation.stage || 'ACTIVE'} Â· Reminders: ${escalation.reminder_count || 0}`,
                             'high');
                     }
 
                     const status = String(row.status || incident.status || '').toUpperCase();
                     if (status === 'PENDING_MEDICAL_REVIEW' || status === 'IN_REVIEW') {
                         add('review', status, 'Medical Review Required',
-                            `${astronaut} · ${id} · ${status} · ${severity}`, 'high');
+                            `${astronaut} Â· ${id} Â· ${status} Â· ${severity}`, 'high');
                     }
                 });
 
@@ -537,7 +537,7 @@ const sendMessage = async (content) => {
                             </option>
                         ))}
                     </select>
-                    <div style={{ position: 'fixed', top: 5, right: 205, zIndex: 3001 }}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginLeft: 10, zIndex: 50 }}>
                         <button
                             type="button"
                             aria-label="Medical notifications"
@@ -553,7 +553,7 @@ const sendMessage = async (content) => {
                                 fontSize: 22, cursor: 'pointer'
                             }}
                         >
-                            🔔
+                            &#128276;”
                             {unreadWF05 > 0 && (
                                 <span style={{
                                     position: 'absolute', top: -7, right: -7,
@@ -580,7 +580,7 @@ const sendMessage = async (content) => {
                                 }}>
                                     <strong>WF05 Medical Notifications</strong>
                                     <button type="button" onClick={() => setWf05Open(false)}
-                                        style={{ background: 'none', border: 0, color: 'white', cursor: 'pointer' }}>✕</button>
+                                        style={{ background: 'none', border: 0, color: 'white', cursor: 'pointer' }}>&#10005;</button>
                                 </div>
                                 {wf05Notifications.length === 0 ? (
                                     <p style={{ padding: 18, color: '#94a3b8' }}>No WF05 notifications.</p>
@@ -933,6 +933,7 @@ const sendMessage = async (content) => {
 };
 
 export default DoctorDashboard;
+
 
 
 

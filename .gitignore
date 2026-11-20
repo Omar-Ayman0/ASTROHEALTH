@@ -68,27 +68,16 @@ ml_service/ctgan_training_data.csv
 /for_claude.zip
 *.backup_before_autostart
 
-# Backup files - keep locally, never upload
-*.bak
-*.backup
-*.backup-*
-*.integration-backup
-*backup*.js
-*backup*.py
-*before_*.js
-*before_*.py
-*before_*.bak
-*rollback*/
+# Exclude local runtime data and temporary files
+_send/
+**/data/live/
+**/data/processed/
+**/*backup*/
+**/*backup*
+**/*before*
+**/*.bak*
+**/*.integration-backup
+api_full.js
+backend_review.txt
 
-# Runtime-generated data
-astronaut-health-intelligence/data/live/
-astronaut-health-intelligence/data/processed/
-
-# ML model binary
-ml_service/models/*.pkl
-*.bak*
-*.backup*
-*backup*
-*before-*
-*before_*
-*rollback*
+backend/_wf05_migration_test/
