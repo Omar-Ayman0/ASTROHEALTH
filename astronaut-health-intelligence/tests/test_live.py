@@ -111,7 +111,7 @@ def test_live_events_equal_batch_events():
     raw = data()[data().astronaut_id == "ASTRO_01"].reset_index(drop=True)
     t0 = raw["timestamp"].iloc[760]                       # the live system only watched from step 760
     batch = [e for e in HealthEngine().fit(raw).analyze(raw.iloc[:900])["events"]
-             if __import__("pandas").Timestamp(e["start"]) >= t0]
+             if __import__("pandas").Timestamp(e["start"]).tz_localize(None) >= t0]
     live = s.get("ASTRO_01").tracker.all_events()
     assert len(live) >= 2
     key = lambda e: (e["event_id"], e["flagged_readings"], e["needs_human_review"], e["duration_minutes"])

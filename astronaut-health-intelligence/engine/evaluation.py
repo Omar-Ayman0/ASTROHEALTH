@@ -44,6 +44,12 @@ TAIL_ALLOWANCE_STEPS = 18      # a 1 h trend window keeps flagging ~1 h after an
 
 
 # -------------------------------------------------------------- ground truth --
+def _naive(value) -> "pd.Timestamp":
+    """Timestamp without timezone: event times may carry +00:00 while the dataset clock is naive."""
+    ts = pd.Timestamp(value)
+    return ts.tz_localize(None) if ts.tzinfo is not None else ts
+
+
 def truth_events(df: pd.DataFrame) -> list[dict]:
     out = []
     for label in ("ACUTE_ANOMALY", "GRADUAL_DRIFT"):
@@ -73,6 +79,8 @@ def evaluate_astronaut(raw: pd.DataFrame, **engine_kwargs) -> dict:
     df, events = result["df"], result["events"]
     post = df.iloc[BASELINE_WINDOW_STEPS:]
     truths = truth_events(df)
+    # The engine reports UTC-aware times, the generated dataset clock is naive: compare on one clock.
+    ts_naive = df["timestamp"].dt.tz_localize(None) if df["timestamp"].dt.tz is not None else df["timestamp"]
 
     # Grey zone (excluded from row-level scoring, not counted as TP or FP):
     #   - the early part of a drift ramp before the row-truth starts (detecting it is *good*)
@@ -102,19 +110,19 @@ def evaluate_astronaut(raw: pd.DataFrame, **engine_kwargs) -> dict:
         ev_res.append({"type": t["type"], "onset_step": t["onset"], "methods": per_method})
 
     # false alarms: engine events that do not overlap any true window
-    windows = [(df["timestamp"].iloc[t["onset"]],
-                df["timestamp"].iloc[min(len(df) - 1, t["end"] + TAIL_ALLOWANCE_STEPS)]) for t in truths]
+    windows = [(ts_naive.iloc[t["onset"]],
+                ts_naive.iloc[min(len(df) - 1, t["end"] + TAIL_ALLOWANCE_STEPS)]) for t in truths]
     # sensor artifacts are labelled separately: flags on them are impossible by construction
     fa_all = fa_review = fa_review_during_activity = 0
     fa_details = []
     for e in events:
-        s, en = pd.Timestamp(e["start"]), pd.Timestamp(e["end"])
+        s, en = _naive(e["start"]), _naive(e["end"])
         if any(s <= w1 and en >= w0 for w0, w1 in windows):
             continue
         fa_all += 1
         if e["needs_human_review"]:
             fa_review += 1
-            seg = df[(df["timestamp"] >= s) & (df["timestamp"] <= en)]
+            seg = df[(ts_naive >= s) & (ts_naive <= en)]
             if seg["activity_state"].isin(ACTIVE_STATES).mean() > 0.5:
                 fa_review_during_activity += 1
             fa_details.append({"event_id": e["event_id"], "start": e["start"],
@@ -133,7 +141,7 @@ def evaluate_astronaut(raw: pd.DataFrame, **engine_kwargs) -> dict:
     start = pd.Timestamp(START_TIMESTAMP).normalize()
     flagged_nights, evaluated_nights = set(), set()
     for n in result["sleep"].get("nights", []):
-        k = (pd.Timestamp(n["night_start"]).normalize() - start).days
+        k = (_naive(n["night_start"]).normalize() - start).days
         evaluated_nights.add(k)
         if n.get("short_night"):
             flagged_nights.add(k)
