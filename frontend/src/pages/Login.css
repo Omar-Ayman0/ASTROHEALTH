@@ -928,3 +928,116 @@
     from { opacity: 0; transform: translateY(-4px); }
     to { opacity: 1; transform: translateY(0); }
 }
+/* Hologram & 3D Enhancements */
+.hero-column {
+    perspective: 1100px;
+}
+
+.earth-visual.holo-stage {
+    transform-style: preserve-3d;
+}
+
+.holo-grid-base {
+    position: absolute;
+    width: 78%;
+    height: 26%;
+    bottom: 5%;
+    left: 11%;
+    border-radius: 50%;
+    border: 1px solid rgba(34, 211, 238, 0.42);
+    background:
+        repeating-radial-gradient(circle, rgba(34, 211, 238, 0.14) 0 1px, transparent 1px 14px);
+    box-shadow: 0 0 24px rgba(34, 211, 238, 0.24);
+    transform: rotateX(72deg);
+}
+
+.holo-projection-beam {
+    position: absolute;
+    width: 62%;
+    height: 44%;
+    bottom: 14%;
+    left: 19%;
+    clip-path: polygon(16% 100%, 84% 100%, 66% 0%, 34% 0%);
+    background: linear-gradient(180deg, rgba(34, 211, 238, 0.02) 0%, rgba(34, 211, 238, 0.16) 100%);
+    pointer-events: none;
+}
+
+.holo-planet {
+    transform: translateZ(26px);
+    box-shadow:
+        0 0 28px rgba(34, 211, 238, 0.5),
+        0 0 65px rgba(6, 182, 212, 0.25),
+        inset 0 0 22px rgba(103, 232, 249, 0.25) !important;
+}
+
+.holo-scanlines {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: repeating-linear-gradient(
+        180deg,
+        rgba(34, 211, 238, 0.14) 0px,
+        rgba(34, 211, 238, 0.14) 1.5px,
+        transparent 1.5px,
+        transparent 5px
+    );
+    mix-blend-mode: screen;
+    opacity: 0.72;
+    pointer-events: none;
+    animation: holo-scan-drift 6s linear infinite;
+}
+
+.earth-orbit-one {
+    animation: holo-orbit-a 14s linear infinite;
+}
+
+.earth-orbit-two {
+    animation: holo-orbit-b 20s linear infinite reverse;
+}
+
+.holo-3d-card {
+    --gx: 50%;
+    --gy: 20%;
+    position: relative;
+    overflow: hidden;
+    transform-style: preserve-3d;
+}
+
+.holo-card-glare {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+        circle at var(--gx) var(--gy),
+        rgba(34, 211, 238, 0.16),
+        transparent 52%
+    );
+    transition: opacity 0.2s ease;
+}
+
+.holo-beacon-ring.outer {
+    animation: holo-spin 8s linear infinite;
+}
+
+.holo-beacon-ring.inner {
+    animation: holo-spin 5s linear infinite reverse;
+}
+
+@keyframes holo-scan-drift {
+    from { background-position: 0 0; }
+    to { background-position: 0 24px; }
+}
+
+@keyframes holo-orbit-a {
+    from { transform: rotateZ(0deg) rotateX(62deg); }
+    to { transform: rotateZ(360deg) rotateX(62deg); }
+}
+
+@keyframes holo-orbit-b {
+    from { transform: rotateZ(0deg) rotateY(58deg); }
+    to { transform: rotateZ(360deg) rotateY(58deg); }
+}
+
+@keyframes holo-spin {
+    to { transform: rotate(360deg); }
+}
