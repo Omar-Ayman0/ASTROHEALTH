@@ -75,7 +75,11 @@ function dispatchPendingHealthAlerts() {
                         });
                         console.log('[Health Alert] Delivered:', row.event_id);
                     } catch (sendError) {
-                        console.error('[Health Alert] Delivery failed:', row.event_id, sendError.message);
+                        console.error('[Health Alert] Delivery failed:', row.event_id, {
+                            status: sendError.response?.status || null,
+                            response: sendError.response?.data || null,
+                            message: sendError.message
+                        });
                     }
                 }
             } finally {
@@ -959,6 +963,118 @@ router.get('/doctor/incidents', requireRole('doctor', 'admin'), (req, res) => {
 });
 
 
+// WF05: Manually queue triage for a doctor-selected incident
+router.post('/doctor/incidents/:incident_id/wf05-trigger', requireRole('doctor', 'admin'), (req, res) => {
+    const ip = req.ip || '';
+    if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(ip)) {
+        return res.status(403).json({ success: false, error: 'Local access only' });
+    }
+
+    if (req.body?.schema_version !== '1.0') {
+        return res.status(400).json({ success: false, error: 'schema_version 1.0 is required' });
+    }
+
+    const incidentId = req.params.incident_id;
+    const now = new Date().toISOString();
+
+    db.get(
+        'SELECT incident_id, astronaut_id, triage_status FROM incidents WHERE incident_id = ?',
+        [incidentId],
+        (err, incident) => {
+            if (err) return res.status(500).json({ success: false, error: err.message });
+            if (!incident) return res.status(404).json({ success: false, error: 'Incident not found' });
+
+            if (['COMPLETED', 'FALLBACK'].includes(String(incident.triage_status || '').toUpperCase())) {
+                return res.status(409).json({
+                    success: false,
+                    error: 'Triage has already been completed for this incident',
+                    triage_status: incident.triage_status
+                });
+            }
+
+            db.get(
+                'SELECT id, status FROM incident_triage_jobs WHERE incident_id = ? ORDER BY id DESC LIMIT 1',
+                [incidentId],
+                (jobErr, job) => {
+                    if (jobErr) return res.status(500).json({ success: false, error: jobErr.message });
+
+                    if (job && job.status === 'PENDING') {
+                        return res.json({
+                            success: true,
+                            queued: true,
+                            existing: true,
+                            incident_id: incidentId,
+                            job_id: job.id,
+                            job_status: 'PENDING',
+                            message: 'Triage job is already waiting in the queue'
+                        });
+                    }
+
+                    if (job && job.status === 'PROCESSING') {
+                        return res.status(409).json({
+                            success: false,
+                            error: 'Triage job is already processing',
+                            job_status: job.status
+                        });
+                    }
+
+                    if (job && job.status === 'COMPLETED') {
+                        return res.status(409).json({
+                            success: false,
+                            error: 'Triage job has already been completed',
+                            job_status: job.status
+                        });
+                    }
+
+                    const done = (writeErr, jobId) => {
+                        if (writeErr) {
+                            return res.status(500).json({
+                                success: false,
+                                error: 'Failed to queue WF05',
+                                details: writeErr.message
+                            });
+                        }
+
+                        return res.json({
+                            success: true,
+                            queued: true,
+                            incident_id: incidentId,
+                            astronaut_id: incident.astronaut_id,
+                            job_id: jobId,
+                            job_status: 'PENDING',
+                            schema_version: '1.0',
+                            message: 'Triage job queued for the existing WF05 scheduler'
+                        });
+                    };
+
+                    if (job && job.status === 'FAILED') {
+                        db.run(
+                            "UPDATE incident_triage_jobs SET status = 'PENDING', locked_at = NULL, completed_at = NULL, last_error = NULL, updated_at = ? WHERE id = ?",
+                            [now, job.id],
+                            function (updateErr) {
+                                done(updateErr, job.id);
+                            }
+                        );
+                    } else if (!job) {
+                        db.run(
+                            "INSERT INTO incident_triage_jobs (incident_id, status, attempt_count, created_at, updated_at) VALUES (?, 'PENDING', 0, ?, ?)",
+                            [incidentId, now, now],
+                            function (insertErr) {
+                                done(insertErr, this?.lastID);
+                            }
+                        );
+                    } else {
+                        return res.status(409).json({
+                            success: false,
+                            error: 'Unsupported triage job state',
+                            job_status: job.status
+                        });
+                    }
+                }
+            );
+        }
+    );
+});
 // WF05: Doctor Dashboard notification status
 router.get('/doctor/incidents/:incident_id/wf05-status', requireRole('doctor', 'admin'), (req, res) => {
     const ip = req.ip || '';
@@ -970,7 +1086,7 @@ router.get('/doctor/incidents/:incident_id/wf05-status', requireRole('doctor', '
 
     db.get(
         `SELECT i.incident_id, i.astronaut_id, i.severity, i.status,
-                i.triage_status, i.triage_generated_at,
+                i.triage_status, i.triage_generated_at, i.triage_brief_json,
                 (SELECT status FROM incident_triage_jobs
                  WHERE incident_id = i.incident_id ORDER BY id DESC LIMIT 1) AS job_status,
                 (SELECT status FROM incident_escalations
@@ -990,7 +1106,8 @@ router.get('/doctor/incidents/:incident_id/wf05-status', requireRole('doctor', '
                 incident: row,
                 triage: {
                     status: row.triage_status || row.job_status || 'NOT_CREATED',
-                    generated_at: row.triage_generated_at
+                    generated_at: row.triage_generated_at,
+                    brief: wf05ParseJson(row.triage_brief_json, null)
                 },
                 escalation: {
                     status: row.escalation_status,

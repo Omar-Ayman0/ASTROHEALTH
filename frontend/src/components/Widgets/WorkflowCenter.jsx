@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { API_URL } from '../../config';
 
@@ -290,45 +290,121 @@ export default function WorkflowCenter({ astronautId, onRefresh }) {
                         <div style={card}>
                             <strong style={{ fontSize: 13 }}>🧠 WF05 · Triage & Escalation</strong>
                             <p style={description}>
-                                Refresh existing AI triage and medical escalation statuses.
+                                Run AI triage for a selected incident and monitor its result.
                             </p>
 
-                            {button('WF05', 'Sync WF05 Status', () =>
-                                run('WF05', async () => {
-                                    const r = await axios.get(
-                                        `${API}/api/doctor/incidents`,
-                                        { params: { astronaut_id: astronautId }, timeout: 15000 }
+                            <input
+                                value={incidentId}
+                                onChange={e => setIncidentId(e.target.value)}
+                                placeholder="Incident ID (e.g. INC-0036)"
+                                style={{
+                                    width: '100%',
+                                    boxSizing: 'border-box',
+                                    padding: 10,
+                                    marginBottom: 9,
+                                    background: '#0f172a',
+                                    color: '#fff',
+                                    border: '1px solid #334155',
+                                    borderRadius: 8
+                                }}
+                            />
+
+                            {button('WF05_RUN', 'Run Triage for Incident', () =>
+                                run('WF05_RUN', async () => {
+                                    const id = incidentId.trim();
+                                    if (!id) throw new Error('Enter an Incident ID.');
+
+                                    const queued = await axios.post(
+                                        `${API}/api/doctor/incidents/${encodeURIComponent(id)}/wf05-trigger`,
+                                        { schema_version: '1.0' },
+                                        { timeout: 15000 }
                                     );
 
-                                    const incidents = r.data?.incidents || [];
+                                    if (!queued.data?.success || !queued.data?.queued) {
+                                        throw new Error(queued.data?.error || 'WF05 was not queued.');
+                                    }
 
-                                    const statuses = await Promise.all(
-                                        incidents.map(async incident => {
-                                            try {
-                                                const result = await axios.get(
-                                                    `${API}/api/doctor/incidents/${encodeURIComponent(incident.incident_id)}/wf05-status`,
-                                                    { timeout: 12000 }
-                                                );
-                                                return result.data;
-                                            } catch {
-                                                return null;
-                                            }
-                                        })
-                                    );
+                                    for (let attempt = 0; attempt < 18; attempt++) {
+                                        await new Promise(resolve => setTimeout(resolve, 5000));
 
-                                    const available = statuses.filter(Boolean);
-                                    const triage = available.filter(
-                                        x => x.triage?.status
-                                    ).length;
-                                    const escalations = available.filter(
-                                        x => String(x.escalation?.status).toUpperCase() === 'ACTIVE'
-                                    ).length;
+                                        const result = await axios.get(
+                                            `${API}/api/doctor/incidents/${encodeURIComponent(id)}/wf05-status`,
+                                            { timeout: 12000 }
+                                        );
 
-                                    return `${available.length} incidents checked · ${triage} triage records · ${escalations} active escalations`;
+                                        const triage = result.data?.triage || {};
+                                        const jobStatus = result.data?.incident?.job_status;
+
+                                        if (triage.brief) {
+                                            return `Triage ${triage.status}: ${triage.brief.summary || 'Brief generated'} · Confidence: ${Math.round((triage.brief.confidence || 0) * 100)}%`;
+                                        }
+
+                                        if (['COMPLETED', 'FALLBACK'].includes(String(triage.status).toUpperCase())) {
+                                            return `Triage finished with status: ${triage.status}. Use Sync WF05 Status to refresh details.`;
+                                        }
+                                    }
+
+                                    return 'Job queued successfully. WF05 scheduler checks the queue every 60 seconds. Click Sync WF05 Status shortly to see the result.';
                                 }),
                                 '#0891b2'
                             )}
-                            {status('WF05')}
+
+                            <div style={{ marginTop: 9 }}>
+                                {button('WF05_SYNC', 'Sync WF05 Status', () =>
+                                    run('WF05_SYNC', async () => {
+                                        const id = incidentId.trim();
+
+                                        if (id) {
+                                            const r = await axios.get(
+                                                `${API}/api/doctor/incidents/${encodeURIComponent(id)}/wf05-status`,
+                                                { timeout: 12000 }
+                                            );
+
+                                            const triage = r.data?.triage || {};
+                                            const brief = triage.brief;
+
+                                            if (brief) {
+                                                return `${triage.status} · ${brief.summary || 'Brief generated'} · Confidence: ${Math.round((brief.confidence || 0) * 100)}%`;
+                                            }
+
+                                            return `Incident ${id} · Triage: ${triage.status || 'NOT_CREATED'} · Job: ${r.data?.incident?.job_status || 'N/A'}`;
+                                        }
+
+                                        const r = await axios.get(
+                                            `${API}/api/doctor/incidents`,
+                                            { params: { astronaut_id: astronautId }, timeout: 15000 }
+                                        );
+
+                                        const incidents = r.data?.incidents || [];
+                                        const statuses = await Promise.all(
+                                            incidents.map(async incident => {
+                                                try {
+                                                    const result = await axios.get(
+                                                        `${API}/api/doctor/incidents/${encodeURIComponent(incident.incident_id)}/wf05-status`,
+                                                        { timeout: 12000 }
+                                                    );
+                                                    return result.data;
+                                                } catch {
+                                                    return null;
+                                                }
+                                            })
+                                        );
+
+                                        const available = statuses.filter(Boolean);
+                                        const triage = available.filter(x =>
+                                            x.triage?.status && x.triage.status !== 'NOT_CREATED'
+                                        ).length;
+                                        const escalations = available.filter(x =>
+                                            String(x.escalation?.status).toUpperCase() === 'ACTIVE'
+                                        ).length;
+
+                                        return `${available.length} incidents checked · ${triage} triage records · ${escalations} active escalations`;
+                                    }),
+                                    '#0e7490'
+                                )}
+                            </div>
+                            {status('WF05_RUN')}
+                            {status('WF05_SYNC')}
                         </div>
                     </div>
 

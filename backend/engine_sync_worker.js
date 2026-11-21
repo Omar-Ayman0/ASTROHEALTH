@@ -133,8 +133,8 @@ async function processEvent(event, instanceId) {
     validateEvent(event, instanceId);
 
     const receipt = await dbGet(
-        'SELECT emission_id FROM engine_event_receipts WHERE emission_id = ?',
-        [event.emission_id]
+        'SELECT emission_id FROM engine_event_receipts WHERE engine_instance_id = ? AND emission_id = ?',
+        [instanceId, event.emission_id]
     );
 
     if (!receipt) {

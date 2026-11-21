@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import Card from '../Common/Card';
 
 const AlertsWidget = ({ incidents = [], onAction, style }) => {
@@ -41,6 +41,63 @@ const AlertsWidget = ({ incidents = [], onAction, style }) => {
                             <div>
                                 Medical Review Status:{' '}
                                 <strong>{incident.status || 'UNKNOWN'}</strong>
+                            </div>
+
+                            <div style={{
+                                marginTop: '12px', padding: '12px',
+                                borderRadius: '8px',
+                                background: 'var(--bg-primary, #f8fafc)',
+                                border: '1px solid var(--border-color, #cbd5e1)'
+                            }}>
+                                <strong>AI Triage · {incident.triage?.status || 'NOT_CREATED'}</strong>
+
+                                {incident.triage?.brief ? (
+                                    <>
+                                        <p style={{ margin: '8px 0' }}>
+                                            {incident.triage.brief.summary || 'No summary available.'}
+                                        </p>
+
+                                        <div style={{ fontSize: '0.85rem', marginBottom: '8px' }}>
+                                            Confidence: {Math.round((Number(incident.triage.brief.confidence) || 0) * 100)}%
+                                        </div>
+
+                                        {Array.isArray(incident.triage.brief.findings) &&
+                                            incident.triage.brief.findings.length > 0 && (
+                                            <div style={{ marginTop: '8px' }}>
+                                                <strong>Findings</strong>
+                                                <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
+                                                    {incident.triage.brief.findings.slice(0, 4).map((item, i) => (
+                                                        <li key={i} style={{ marginBottom: '4px' }}>
+                                                            {typeof item === 'string' ? item : JSON.stringify(item)}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+
+                                        {Array.isArray(incident.triage.brief.suggested_checks) &&
+                                            incident.triage.brief.suggested_checks.length > 0 && (
+                                            <div style={{ marginTop: '8px' }}>
+                                                <strong>Suggested Checks</strong>
+                                                <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
+                                                    {incident.triage.brief.suggested_checks.slice(0, 4).map((item, i) => (
+                                                        <li key={i} style={{ marginBottom: '4px' }}>
+                                                            {typeof item === 'string' ? item : JSON.stringify(item)}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+
+                                        <small style={{ display: 'block', marginTop: '8px', color: 'var(--text-secondary)' }}>
+                                            AI-generated information for human medical review — not a diagnosis.
+                                        </small>
+                                    </>
+                                ) : (
+                                    <p style={{ margin: '8px 0', fontSize: '0.85rem' }}>
+                                        Triage details are not available yet.
+                                    </p>
+                                )}
                             </div>
 
                             <div style={{ fontSize: '0.8rem', marginTop: '8px', color: 'var(--text-secondary)' }}>

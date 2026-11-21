@@ -48,7 +48,7 @@ const DoctorDashboard = () => {
         const loadWF05 = async () => {
             try {
                 const response = await axios.get(`${BACKEND_URL}/api/doctor/incidents`, { timeout: 12000 });
-                const rows = (response.data?.incidents || []).slice(0, 30);
+                const rows = (response.data?.incidents || []).slice(0, 10);
 
                 const results = await Promise.all(rows.map(async row => {
                     try {
@@ -84,25 +84,25 @@ const DoctorDashboard = () => {
                     if (ts === 'PENDING' || ts === 'FAILED') {
                         add('triage', ts,
                             ts === 'FAILED' ? 'AI Triage Failed' : 'AI Triage Pending',
-                            `${astronaut} Ã‚Â· ${id} Ã‚Â· ${severity}`,
+                            `${astronaut} | ${id} | ${severity}`,
                             ts === 'FAILED' ? 'high' : 'normal');
                     } else if (ts === 'COMPLETED' || ts === 'FALLBACK') {
                         add('triage', triage.generated_at || ts,
                             ts === 'COMPLETED' ? 'AI Triage Completed' : 'AI Triage Fallback',
-                            `${astronaut} Ã‚Â· ${id} Ã‚Â· ${ts}`);
+                            `${astronaut} | ${id} | ${ts}`);
                     }
 
                     if (String(escalation.status).toUpperCase() === 'ACTIVE') {
                         add('escalation', `${escalation.stage}:${escalation.reminder_count}`,
                             'Active Medical Escalation',
-                            `${astronaut} Ã‚Â· ${id} Ã‚Â· ${escalation.stage || 'ACTIVE'} Ã‚Â· Reminders: ${escalation.reminder_count || 0}`,
+                            `${astronaut} | ${id} | ${escalation.stage || 'ACTIVE'} | Reminders: ${escalation.reminder_count || 0}`,
                             'high');
                     }
 
                     const status = String(row.status || incident.status || '').toUpperCase();
                     if (status === 'PENDING_MEDICAL_REVIEW' || status === 'IN_REVIEW') {
                         add('review', status, 'Medical Review Required',
-                            `${astronaut} Ã‚Â· ${id} Ã‚Â· ${status} Ã‚Â· ${severity}`, 'high');
+                            `${astronaut} | ${id} | ${severity}`, 'high');
                     }
                 });
 
@@ -114,7 +114,7 @@ const DoctorDashboard = () => {
         };
 
         loadWF05();
-        const timer = setInterval(loadWF05, 20000);
+        const timer = setInterval(loadWF05, 60000);
         return () => { cancelled = true; clearInterval(timer); };
     }, []);
 
@@ -142,7 +142,24 @@ const DoctorDashboard = () => {
                 });
 
                 if (!cancelled) {
-                    setIncidents(res.data?.incidents || []);
+                    const rows = (res.data?.incidents || []).slice(0, 10);
+                const enrichedRows = await Promise.all(rows.map(async incident => {
+                    try {
+                        const statusRes = await axios.get(
+                            `${BACKEND_URL}/api/doctor/incidents/${encodeURIComponent(incident.incident_id)}/wf05-status`,
+                            { timeout: 10000 }
+                        );
+                        return {
+                            ...incident,
+                            triage: statusRes.data?.triage || {},
+                            escalation: statusRes.data?.escalation || {}
+                        };
+                    } catch {
+                        return incident;
+                    }
+                }));
+
+                if (!cancelled) setIncidents(enrichedRows);
                 }
             } catch (err) {
                 console.error('Incidents unavailable:', err);
@@ -150,7 +167,7 @@ const DoctorDashboard = () => {
         };
 
         loadIncidents();
-        const timer = setInterval(loadIncidents, 5000);
+        const timer = setInterval(loadIncidents, 30000);
 
         return () => {
             cancelled = true;
@@ -563,7 +580,7 @@ const sendMessage = async (content) => {
                                 transition: 'all .2s ease'
                             }}
                         >
-                            &#128276;â€
+                            &#128276;
                             {unreadWF05 > 0 && (
                                 <span style={{
                                     position: 'absolute', top: -7, right: -7,

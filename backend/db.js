@@ -105,12 +105,13 @@ function initDb() {
         )`);
 
         db.run(`CREATE TABLE IF NOT EXISTS engine_event_receipts (
-            emission_id TEXT PRIMARY KEY,
+            emission_id TEXT NOT NULL,
             engine_instance_id TEXT NOT NULL,
             sequence INTEGER NOT NULL,
             event_id TEXT NOT NULL,
             event_type TEXT NOT NULL,
-            processed_at TEXT NOT NULL
+            processed_at TEXT NOT NULL,
+            PRIMARY KEY (engine_instance_id, emission_id)
         )`);
 
         // Authentication users

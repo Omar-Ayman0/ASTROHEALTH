@@ -30,6 +30,7 @@ from engine.config import BASELINE_WINDOW_STEPS
 from engine.generator import ALL_ASTRONAUTS, DEFAULT_ASTRONAUTS, generate_dataset
 from engine.health_engine import evaluate_instant
 from engine.live import LiveSystem, EVENT_TYPES
+from engine.demo_injector import make_live_system, register_demo_routes   # demo mode: off unless HEALTH_DEMO_MODE=1
 from engine.schemas import SingleVitalReading, AnalyzeRequest, LiveReading
 
 SYSTEM: LiveSystem | None = None
@@ -41,7 +42,7 @@ def _boot() -> LiveSystem:
         count = max(1, min(int(os.environ.get("HEALTH_ASTRONAUT_COUNT", len(DEFAULT_ASTRONAUTS))),
                            len(ALL_ASTRONAUTS)))
         ids = ALL_ASTRONAUTS[:count]          # 4 by default; HEALTH_ASTRONAUT_COUNT=6 for six astronauts
-        SYSTEM = LiveSystem(
+        SYSTEM = make_live_system(
             generate_dataset(ids), ids,
             start_step=int(os.environ.get("HEALTH_START_STEP", BASELINE_WINDOW_STEPS)),
             push_url=os.environ.get("HEALTH_PUSH_URL") or None,
@@ -67,6 +68,7 @@ app = FastAPI(
                 "Research prototype - not a medical device.",
 )
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+register_demo_routes(app, _boot)          # no-op (no route, no import) unless HEALTH_DEMO_MODE=1
 
 
 def _astro(astronaut_id: str):
