@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth, getUserDestination } from '../context/AuthContext';
 import './Login.css';
@@ -51,23 +51,39 @@ function Brand() {
     );
 }
 
-function EarthVisual() {
+function EarthVisual({ tilt }) {
+    const style = {
+        transform: `perspective(1200px) rotateX(${tilt.y * -8}deg) rotateY(${tilt.x * 10}deg) translateZ(18px)`
+    };
+
     return (
-        <div className="earth-visual" aria-hidden="true">
+        <div className="earth-visual holo-3d-stage" style={style} aria-hidden="true">
             <div className="earth-light earth-light-one" />
             <div className="earth-light earth-light-two" />
 
-            <div className="earth-orbit earth-orbit-one">
+            <div
+                className="earth-orbit earth-orbit-one"
+                style={{ transform: `translate3d(${tilt.x * 12}px, ${tilt.y * 10}px, 28px)` }}
+            >
                 <span className="orbit-satellite satellite-one"><i /></span>
             </div>
 
-            <div className="earth-orbit earth-orbit-two">
+            <div
+                className="earth-orbit earth-orbit-two"
+                style={{ transform: `translate3d(${tilt.x * -10}px, ${tilt.y * -8}px, 16px)` }}
+            >
                 <span className="orbit-satellite satellite-two"><i /></span>
             </div>
 
-            <div className="earth-orbit earth-orbit-three" />
+            <div
+                className="earth-orbit earth-orbit-three"
+                style={{ transform: `translate3d(${tilt.x * 6}px, ${tilt.y * 6}px, 8px)` }}
+            />
 
-            <div className="earth-planet">
+            <div
+                className="earth-planet holo-3d-core"
+                style={{ transform: `translate3d(${tilt.x * 16}px, ${tilt.y * 14}px, 42px)` }}
+            >
                 <img
                     className="earth-photo"
                     src="/images/earth.webp"
@@ -98,6 +114,7 @@ export default function Login() {
     const [helpMessage, setHelpMessage] = useState('');
     const [showUsernameOptions, setShowUsernameOptions] = useState(false);
     const [activeUsernameIndex, setActiveUsernameIndex] = useState(-1);
+    const [tilt, setTilt] = useState({ x: 0, y: 0 });
     const usernameContainerRef = useRef(null);
 
     const filteredAccounts = AVAILABLE_ACCOUNTS.filter((account) =>
@@ -115,6 +132,18 @@ export default function Login() {
         document.addEventListener('mousedown', handleOutsideClick);
         return () => document.removeEventListener('mousedown', handleOutsideClick);
     }, []);
+
+    const handleMouseMove = (event) => {
+        const { clientX, clientY, currentTarget } = event;
+        const rect = currentTarget.getBoundingClientRect();
+        const nx = ((clientX - rect.left) / rect.width - 0.5) * 2;
+        const ny = ((clientY - rect.top) / rect.height - 0.5) * 2;
+        setTilt({ x: nx, y: ny });
+    };
+
+    const handleMouseLeave = () => {
+        setTilt({ x: 0, y: 0 });
+    };
 
     const selectUsername = (account) => {
         setUsername(account);
@@ -211,8 +240,16 @@ export default function Login() {
         }
     };
 
+    const card3DStyle = {
+        transform: `perspective(1100px) rotateX(${tilt.y * -3.5}deg) rotateY(${tilt.x * 4.5}deg) translateZ(12px)`
+    };
+
     return (
-        <main className="astro-login-page">
+        <main
+            className="astro-login-page"
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+        >
             <div className="login-space-background" aria-hidden="true">
                 <div className="space-stars stars-back" />
                 <div className="space-stars stars-front" />
@@ -263,11 +300,11 @@ export default function Login() {
                         </div>
                     </div>
 
-                    <EarthVisual />
+                    <EarthVisual tilt={tilt} />
                 </section>
 
                 <section className="form-column" aria-label="Sign in">
-                    <div className="login-card">
+                    <div className="login-card holo-3d-card" style={card3DStyle}>
                         <div className="card-top-accent" />
 
                         <div className="card-brand-icon">
@@ -331,7 +368,7 @@ export default function Login() {
                                                 >
                                                     <span className="username-option-avatar">{account === 'admin' ? 'A' : account === 'doctor' ? 'D' : 'A'}</span>
                                                     <span className="username-option-name">{account}</span>
-                                                    <span className="username-option-arrow">?</span>
+                                                    <span className="username-option-arrow">→</span>
                                                 </button>
                                             ))}
                                         </div>
@@ -438,12 +475,4 @@ export default function Login() {
             <footer className="login-footer">
                 <span>© 2026 AstroHealth</span>
                 <div>
-                    <a href="#privacy">Privacy</a>
-                    <i>·</i>
-                    <a href="#terms">Terms</a>
-                </div>
-            </footer>
-        </main>
-    );
-}
-
+                    <a href="#privacy
