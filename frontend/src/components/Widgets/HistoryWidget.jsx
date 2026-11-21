@@ -1,8 +1,9 @@
 ﻿import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Card from '../Common/Card';
+import { ENGINE_URL as ENGINE_BASE_URL } from '../../config';
 
-const ENGINE_URL = 'http://127.0.0.1:8000/api/v1/live/ticks';
+const ENGINE_TICKS_URL = `${ENGINE_BASE_URL}/api/v1/live/ticks`;
 
 const HistoryWidget = ({ astronautId = 'ASTRO_01' }) => {
     const [history, setHistory] = useState([]);
@@ -25,7 +26,7 @@ const HistoryWidget = ({ astronautId = 'ASTRO_01' }) => {
             const maxPages = 20;
 
             while (hasMore && pages < maxPages) {
-                const res = await axios.get(ENGINE_URL, {
+                const res = await axios.get(ENGINE_TICKS_URL, {
                     params: {
                         astronaut_id: astronautId,
                         since_seq: cursor,

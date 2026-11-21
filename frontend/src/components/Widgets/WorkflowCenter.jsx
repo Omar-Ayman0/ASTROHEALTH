@@ -1,7 +1,8 @@
 ﻿import React, { useState } from 'react';
 import axios from 'axios';
+import { API_URL } from '../../config';
 
-const API = 'http://localhost:4000';
+const API = API_URL;
 
 export default function WorkflowCenter({ astronautId, onRefresh }) {
     const [open, setOpen] = useState(false);

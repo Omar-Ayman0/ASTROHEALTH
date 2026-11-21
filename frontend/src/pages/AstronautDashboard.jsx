@@ -12,9 +12,9 @@ import AstronautProfileCard from '../components/Widgets/AstronautProfileCard';
 import TaskWidget from '../components/Widgets/TaskWidget';
 import HistoryWidget from '../components/Widgets/HistoryWidget';
 import { astronauts } from '../utils/astronauts';
+import { API_URL, ENGINE_URL } from '../config';
 
-const BACKEND_URL = 'http://localhost:4000';
-const ENGINE_URL = 'http://127.0.0.1:8000';
+const BACKEND_URL = API_URL;
 
 const AstronautDashboard = () => {
     const { astronautId } = useParams();

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Card from '../Common/Card';
+import { API_URL } from '../../config';
 
-const BACKEND_URL = 'http://localhost:4000';
+const BACKEND_URL = API_URL;
 
 const AssignTaskWidget = () => {
     const [tasks, setTasks] = useState([]);
