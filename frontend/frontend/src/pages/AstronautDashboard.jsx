@@ -11,10 +11,11 @@ import AISuggestionsWidget from '../components/Widgets/AISuggestionsWidget';
 import AstronautProfileCard from '../components/Widgets/AstronautProfileCard';
 import TaskWidget from '../components/Widgets/TaskWidget';
 import HistoryWidget from '../components/Widgets/HistoryWidget';
+import HoloBody from '../components/Widgets/HoloBody';
 import { astronauts } from '../utils/astronauts';
-import { API_URL, ENGINE_URL } from '../config';
 
-const BACKEND_URL = API_URL;
+const BACKEND_URL = 'http://localhost:4000';
+const ENGINE_URL = 'http://127.0.0.1:8000';
 
 const AstronautDashboard = () => {
     const { astronautId } = useParams();
@@ -26,6 +27,7 @@ const AstronautDashboard = () => {
     const [history, setHistory] = useState({ heart_rate: [], spo2: [] });
     const [messages, setMessages] = useState([]);
     const [isChatOpen, setIsChatOpen] = useState(false);
+    const [showHoloInProfile, setShowHoloInProfile] = useState(false);
     const [error, setError] = useState('');
 
     useEffect(() => {
@@ -231,8 +233,53 @@ const AstronautDashboard = () => {
             }
         >
             <div className="col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                <AstronautProfileCard astronaut={astronaut} />
+                <div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+                        <button
+                            type="button"
+                            onClick={() => setShowHoloInProfile(prev => !prev)}
+                            style={{
+                                padding: '5px 12px',
+                                borderRadius: 8,
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                background: showHoloInProfile
+                                    ? 'rgba(34, 211, 238, 0.18)'
+                                    : 'rgba(15, 31, 51, 0.85)',
+                                color: '#67e8f9',
+                                border: '1px solid rgba(56, 189, 248, 0.35)'
+                            }}
+                        >
+                            {showHoloInProfile ? 'Show Profile View' : 'Holo Scan View'}
+                        </button>
+                    </div>
+
+                    {showHoloInProfile ? (
+                        <Card title={`${astronaut.name || astronautId} // Holo Scan`}>
+                            <HoloBody
+                                heartRate={vitals.heart_rate}
+                                spo2={vitals.spo2}
+                                temperature={vitals.temperature}
+                                isAlert={isCritical}
+                                compact
+                            />
+                        </Card>
+                    ) : (
+                        <AstronautProfileCard astronaut={astronaut} />
+                    )}
+                </div>
+
                 <DiagnosticsWidget riskData={riskData} anomalyData={anomalyData} />
+
+                <Card title="Biometric Hologram">
+                    <HoloBody
+                        heartRate={vitals.heart_rate}
+                        spo2={vitals.spo2}
+                        temperature={vitals.temperature}
+                        isAlert={isCritical}
+                    />
+                </Card>
             </div>
 
             <div className="col-span-8" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -321,8 +368,3 @@ const AstronautDashboard = () => {
 };
 
 export default AstronautDashboard;
-
-
-
-
-
