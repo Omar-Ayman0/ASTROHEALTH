@@ -21,7 +21,7 @@ function Icon({ name, size = 20 }) {
         shield: <><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" /><path d="m9 12 2 2 4-4" /></>,
         arrow: <><path d="M5 12h14M13 6l6 6-6 6" /></>,
         globe: <><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" /></>,
-        help: <><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.5 2.5 0 1 1 4.2 1.8c-1.1 1-1.7 1.3-1.7 2.7M12 17h.01" /></>,
+        help: <><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.5 2.5 0 1 1 4.2 1.8c-1.1 1-1.7 1.3-1.7 2.7M12 17h.01" /></>
     };
 
     return (
@@ -119,12 +119,13 @@ export default function Login() {
     const [helpMessage, setHelpMessage] = useState('');
     const [showUsernameOptions, setShowUsernameOptions] = useState(false);
     const [activeUsernameIndex, setActiveUsernameIndex] = useState(-1);
-    const [tilt, setTilt] = useState({ rx: 0, ry: 0, gx: 50, gy: 20 });
+    const [cardStyle, setCardStyle] = useState({});
     const usernameContainerRef = useRef(null);
 
-    const filteredAccounts = AVAILABLE_ACCOUNTS.filter((account) =>
-        account.id.toLowerCase().includes(username.trim().toLowerCase()) ||
-        account.role.toLowerCase().includes(username.trim().toLowerCase())
+    const filteredAccounts = AVAILABLE_ACCOUNTS.filter(
+        (account) =>
+            account.id.toLowerCase().includes(username.trim().toLowerCase()) ||
+            account.role.toLowerCase().includes(username.trim().toLowerCase())
     );
 
     useEffect(() => {
@@ -177,16 +178,22 @@ export default function Login() {
         const rect = event.currentTarget.getBoundingClientRect();
         const px = (event.clientX - rect.left) / rect.width;
         const py = (event.clientY - rect.top) / rect.height;
-        setTilt({
-            rx: Number(((0.5 - py) * 7).toFixed(2)),
-            ry: Number(((px - 0.5) * 8).toFixed(2)),
-            gx: Math.round(px * 100),
-            gy: Math.round(py * 100)
+        const rx = ((0.5 - py) * 6).toFixed(2);
+        const ry = ((px - 0.5) * 7).toFixed(2);
+
+        setCardStyle({
+            transform: `perspective(1050px) rotateX(${rx}deg) rotateY(${ry}deg)`,
+            '--gx': `${Math.round(px * 100)}%`,
+            '--gy': `${Math.round(py * 100)}%`
         });
     };
 
     const handleCardMouseLeave = () => {
-        setTilt({ rx: 0, ry: 0, gx: 50, gy: 20 });
+        setCardStyle({
+            transform: 'perspective(1050px) rotateX(0deg) rotateY(0deg)',
+            '--gx': '50%',
+            '--gy': '20%'
+        });
     };
 
     if (authLoading) {
@@ -310,11 +317,7 @@ export default function Login() {
                         className="login-card holo-3d-card"
                         onMouseMove={handleCardMouseMove}
                         onMouseLeave={handleCardMouseLeave}
-                        style={{
-                            transform: `perspective(1050px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
-                            '--gx': `${tilt.gx}%`,
-                            '--gy': `${tilt.gy}%`
-                        }}
+                        style={cardStyle}
                     >
                         <div className="holo-card-glare" aria-hidden="true" />
                         <div className="card-top-accent" />
