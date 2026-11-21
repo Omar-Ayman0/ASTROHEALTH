@@ -9,6 +9,7 @@ const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:8000';
  * Main loop to fetch simulation data and send to ML service.
  * @param {SocketIO.Server} io 
  */
+let lastSimErrorLogAt = 0;
 async function startDataGeneration(io) {
     console.log("Starting PROPHET-DRIVEN SIMULATION engine...");
 
@@ -59,7 +60,11 @@ async function startDataGeneration(io) {
             }
 
         } catch (error) {
-            console.error("Simulation error (ML Service might be down):", error.message);
+            // The legacy stream polls every ~2 s; log a failure at most once a minute.
+        if (Date.now() - lastSimErrorLogAt > 60000) {
+            lastSimErrorLogAt = Date.now();
+            console.error("Simulation error (legacy ML service not reachable at " + ML_SERVICE_URL + "):", error.message);
+        }
         }
 
     }, process.env.VITALS_INTERVAL || 2000); // Update interval based on env or default to 2s

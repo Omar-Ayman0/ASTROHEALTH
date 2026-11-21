@@ -1,12 +1,14 @@
-FROM node:18-alpine
+FROM node:22-bookworm-slim
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+RUN npm ci --omit=dev
 
 COPY . .
 
+# SQLite database and sessions live here; mount a volume to persist them
+ENV NODE_ENV=production
 EXPOSE 4000
 
-CMD ["npm", "start"]
+CMD ["node", "server.js"]

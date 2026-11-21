@@ -2,7 +2,10 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const crypto = require('crypto');
 
-const dbPath = path.resolve(__dirname, 'health_monitor.db');
+// DB_PATH lets containers keep the database on a mounted volume (default: next to this file)
+const dbPath = process.env.DB_PATH
+    ? path.resolve(process.env.DB_PATH)
+    : path.resolve(__dirname, 'health_monitor.db');
 
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
@@ -225,13 +228,19 @@ function initDb() {
 }
 
 function seedDefaultUsers() {
+    // Demo accounts are created once (INSERT OR IGNORE). Set SEED_PASSWORD before the FIRST start
+    // of a deployment that is reachable from the internet; existing users are never modified.
+    const SEED_PASSWORD = process.env.SEED_PASSWORD || '123456';
+    if (SEED_PASSWORD === '123456' && process.env.NODE_ENV === 'production') {
+        console.warn('[security] Demo accounts use the default password. Set SEED_PASSWORD before first start, or change the passwords.');
+    }
     const accounts = [
-        { username: 'admin', password: '123456', role: 'admin', astronautId: null },
-        { username: 'astro01', password: '123456', role: 'astronaut', astronautId: 'ASTRO_01' },
-        { username: 'astro02', password: '123456', role: 'astronaut', astronautId: 'ASTRO_02' },
-        { username: 'astro03', password: '123456', role: 'astronaut', astronautId: 'ASTRO_03' },
-        { username: 'astro04', password: '123456', role: 'astronaut', astronautId: 'ASTRO_04' },
-        { username: 'doctor', password: '123456', role: 'doctor', astronautId: null }
+        { username: 'admin', password: SEED_PASSWORD, role: 'admin', astronautId: null },
+        { username: 'astro01', password: SEED_PASSWORD, role: 'astronaut', astronautId: 'ASTRO_01' },
+        { username: 'astro02', password: SEED_PASSWORD, role: 'astronaut', astronautId: 'ASTRO_02' },
+        { username: 'astro03', password: SEED_PASSWORD, role: 'astronaut', astronautId: 'ASTRO_03' },
+        { username: 'astro04', password: SEED_PASSWORD, role: 'astronaut', astronautId: 'ASTRO_04' },
+        { username: 'doctor', password: SEED_PASSWORD, role: 'doctor', astronautId: null }
     ];
 
     const insert = db.prepare(`

@@ -246,7 +246,7 @@ router.delete('/tasks/:id', requireAuth, (req, res) => {
 });
 
 // --- Health Engine Read APIs ---
-const HEALTH_ENGINE_URL = process.env.HEALTH_ENGINE_URL || 'http://127.0.0.1:8001';
+const HEALTH_ENGINE_URL = process.env.HEALTH_ENGINE_URL || 'http://127.0.0.1:8000';
 
 router.get('/v1/report', requireApiKey, async (req, res) => {
     try {

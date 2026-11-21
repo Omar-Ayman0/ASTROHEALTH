@@ -25,8 +25,20 @@ const FRONTEND_ORIGIN = (process.env.FRONTEND_ORIGIN || 'http://localhost:5173')
 const IS_PROD = process.env.NODE_ENV === 'production'
     || Boolean(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_ENVIRONMENT_NAME);
 
-// Railway terminates TLS at a proxy; needed for secure cookies
+if (!process.env.SESSION_SECRET) {
+    console.error('SESSION_SECRET is not set. Copy backend/.env.example to backend/.env and set a long random value.');
+    process.exit(1);
+}
+
+// Behind a TLS-terminating reverse proxy (nginx, Caddy, a PaaS); needed for secure cookies
 app.set('trust proxy', 1);
+
+// Cookie flags follow NODE_ENV by default. Override only when needed (e.g. plain-HTTP staging):
+//   COOKIE_SECURE=true|false   COOKIE_SAMESITE=lax|strict|none
+const COOKIE_SECURE = process.env.COOKIE_SECURE
+    ? process.env.COOKIE_SECURE === 'true'
+    : IS_PROD;
+const COOKIE_SAMESITE = process.env.COOKIE_SAMESITE || (IS_PROD ? 'none' : 'lax');
 
 const io = socketIo(server, {
     cors: {
@@ -52,8 +64,8 @@ app.use(session({
     rolling: true,
     cookie: {
         httpOnly: true,
-        secure: IS_PROD,
-        sameSite: IS_PROD ? 'none' : 'lax',
+        secure: COOKIE_SECURE,
+        sameSite: COOKIE_SAMESITE,
         maxAge: 30 * 24 * 60 * 60 * 1000
     }
 }));
