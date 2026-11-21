@@ -50,6 +50,55 @@ const getProgress = (val, min, max) => {
     return Math.max(8, Math.min(100, ratio));
 };
 
+const HologramCore = ({ isHeartActive }) => (
+    <div
+        title="Holographic Telemetry Emitter"
+        style={{
+            position: 'relative',
+            width: 38,
+            height: 38,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(34, 211, 238, 0.16) 0%, rgba(6, 20, 38, 0.2) 70%)',
+            boxShadow: isHeartActive
+                ? '0 0 14px rgba(34, 211, 238, 0.25), 0 0 10px rgba(239, 68, 68, 0.2)'
+                : '0 0 14px rgba(34, 211, 238, 0.25)',
+            flexShrink: 0
+        }}
+    >
+        <div
+            style={{
+                position: 'absolute',
+                inset: 2,
+                borderRadius: '50%',
+                border: '1px dashed rgba(34, 211, 238, 0.75)'
+            }}
+        />
+        <div
+            style={{
+                position: 'absolute',
+                inset: 8,
+                borderRadius: '50%',
+                border: '1px solid rgba(103, 232, 249, 0.45)',
+                transform: 'rotateX(55deg)'
+            }}
+        />
+        <div
+            style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                background: isHeartActive ? '#ef4444' : '#22d3ee',
+                boxShadow: isHeartActive
+                    ? '0 0 10px rgba(239, 68, 68, 0.9)'
+                    : '0 0 10px rgba(34, 211, 238, 0.9)'
+            }}
+        />
+    </div>
+);
+
 const VitalsWidget = ({ vitals, onClick }) => {
     const [activeKey, setActiveKey] = useState(null);
 
@@ -72,11 +121,42 @@ const VitalsWidget = ({ vitals, onClick }) => {
             style={{
                 ...(onClick ? { cursor: 'pointer' } : {}),
                 background: 'linear-gradient(165deg, rgba(6, 20, 38, 0.95), rgba(4, 12, 24, 0.98))',
-                border: '1px solid rgba(34, 211, 238, 0.35)',
-                boxShadow: '0 0 24px rgba(34, 211, 238, 0.08)'
+                border: '1px solid rgba(34, 211, 238, 0.38)',
+                boxShadow: '0 0 24px rgba(34, 211, 238, 0.09)'
             }}
             onClick={onClick}
         >
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                    marginBottom: 14,
+                    paddingBottom: 10,
+                    borderBottom: '1px solid rgba(34, 211, 238, 0.16)'
+                }}
+            >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <HologramCore isHeartActive={Boolean(vitals.heart_rate)} />
+                    <div>
+                        <div
+                            style={{
+                                fontFamily: 'monospace',
+                                fontSize: '0.68rem',
+                                letterSpacing: '0.1em',
+                                color: '#67e8f9'
+                            }}
+                        >
+                            HOLO-LINK // ACTIVE
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+                            Biometric telemetry stream
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div
                 style={{
                     display: 'grid',
@@ -101,10 +181,10 @@ const VitalsWidget = ({ vitals, onClick }) => {
                                 borderRadius: 10,
                                 background: meta.isHeart
                                     ? isHovered
-                                        ? 'linear-gradient(155deg, rgba(127, 29, 29, 0.35), rgba(6, 22, 42, 0.94))'
+                                        ? 'linear-gradient(155deg, rgba(127, 29, 29, 0.36), rgba(6, 22, 42, 0.94))'
                                         : 'linear-gradient(155deg, rgba(127, 29, 29, 0.2), rgba(6, 22, 42, 0.88))'
                                     : isHovered
-                                        ? 'linear-gradient(155deg, rgba(8, 145, 178, 0.22), rgba(6, 22, 42, 0.94))'
+                                        ? 'linear-gradient(155deg, rgba(8, 145, 178, 0.24), rgba(6, 22, 42, 0.94))'
                                         : 'rgba(6, 22, 42, 0.78)',
                                 border: `1px solid ${
                                     meta.isHeart
@@ -112,16 +192,14 @@ const VitalsWidget = ({ vitals, onClick }) => {
                                             ? 'rgba(248, 113, 113, 0.85)'
                                             : 'rgba(239, 68, 68, 0.5)'
                                         : isHovered
-                                            ? 'rgba(34, 211, 238, 0.9)'
-                                            : 'rgba(34, 211, 238, 0.36)'
+                                            ? 'rgba(34, 211, 238, 0.92)'
+                                            : 'rgba(34, 211, 238, 0.38)'
                                 }`,
                                 boxShadow: isHovered
                                     ? meta.isHeart
                                         ? '0 12px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(239, 68, 68, 0.22)'
-                                        : '0 12px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(34, 211, 238, 0.24)'
-                                    : meta.isHeart
-                                        ? '0 0 10px rgba(239, 68, 68, 0.08)'
-                                        : '0 0 12px rgba(34, 211, 238, 0.08)',
+                                        : '0 12px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(34, 211, 238, 0.25)'
+                                    : '0 0 12px rgba(34, 211, 238, 0.08)',
                                 transform: isHovered
                                     ? 'translateY(-4px) rotateX(5deg) rotateY(-4deg) translateZ(8px)'
                                     : 'translateY(0) rotateX(0deg) rotateY(0deg) translateZ(0px)',
