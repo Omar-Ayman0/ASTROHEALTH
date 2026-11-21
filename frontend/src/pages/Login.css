@@ -3,7 +3,7 @@
 .astro-login-page {
     --bg-deep: #040c18;
     --bg-blue: #081a38;
-    --card-bg: rgba(10, 24, 48, 0.88);
+    --card-bg: rgba(10, 24, 48, 0.9);
     --cyan: #22d3ee;
     --cyan-light: #67e8f9;
     --blue: #0284c7;
@@ -21,7 +21,7 @@
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    padding: 0 clamp(18px, 3.5vw, 56px);
+    padding: 0 clamp(14px, 2.2vw, 36px);
     color: var(--text);
     background: linear-gradient(125deg, var(--bg-deep) 0%, #061327 48%, var(--bg-blue) 100%);
     font-family: 'Inter', Arial, sans-serif;
@@ -79,11 +79,11 @@
 
 .space-nebula {
     position: absolute;
-    width: 540px;
-    height: 540px;
+    width: 560px;
+    height: 560px;
     border-radius: 50%;
     filter: blur(95px);
-    opacity: 0.15;
+    opacity: 0.16;
 }
 
 .nebula-left { left: -220px; top: 8%; background: #06b6d4; }
@@ -91,7 +91,7 @@
 
 .login-header {
     width: 100%;
-    height: 62px;
+    height: 58px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -180,15 +180,15 @@
     flex: 1;
     min-height: 0;
     width: 100%;
-    max-width: 1420px;
+    max-width: 1540px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: minmax(0, 1.18fr) minmax(370px, 450px);
+    grid-template-columns: minmax(0, 1.32fr) minmax(420px, 500px);
     align-items: center;
     position: relative;
     z-index: 1;
-    gap: clamp(20px, 2.8vw, 44px);
-    padding: 6px 0;
+    gap: clamp(16px, 2.2vw, 32px);
+    padding: 4px 0;
 }
 
 .hero-column {
@@ -196,23 +196,23 @@
     min-width: 0;
     width: 100%;
     height: 100%;
-    max-height: 560px;
+    max-height: 620px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 12px;
     overflow: hidden;
-    border-radius: 20px;
-    padding: 24px 28px;
-    background: rgba(5, 16, 33, 0.42);
-    border: 1px solid rgba(34, 211, 238, 0.22);
+    border-radius: 22px;
+    padding: 20px 24px;
+    background: rgba(5, 16, 33, 0.45);
+    border: 1px solid rgba(34, 211, 238, 0.24);
     perspective: 1100px;
 }
 
 .hero-content {
     min-width: 0;
-    flex: 1 1 52%;
-    max-width: 410px;
+    flex: 1 1 46%;
+    max-width: 390px;
     position: relative;
     z-index: 4;
     animation: hero-enter 0.75s ease both;
@@ -223,7 +223,7 @@
     align-items: center;
     gap: 9px;
     color: var(--cyan);
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 700;
     letter-spacing: 0.13em;
 }
@@ -238,8 +238,8 @@
 .hero-content h1 {
     margin: 12px 0 14px;
     width: 100%;
-    font: 700 clamp(32px, 3vw, 46px)/1.12 'Space Grotesk', 'Inter', sans-serif;
-    letter-spacing: -1.2px;
+    font: 700 clamp(36px, 3.3vw, 52px)/1.1 'Space Grotesk', 'Inter', sans-serif;
+    letter-spacing: -1.3px;
     color: #fff;
     overflow-wrap: break-word;
 }
@@ -254,8 +254,8 @@
 .hero-description {
     width: 100%;
     margin: 0;
-    color: rgba(240, 249, 255, 0.78);
-    font-size: 14px;
+    color: rgba(240, 249, 255, 0.8);
+    font-size: 14.5px;
     line-height: 1.6;
 }
 
@@ -266,7 +266,7 @@
     gap: 12px;
     margin-top: 18px;
     padding-top: 12px;
-    border-top: 1px solid rgba(34, 211, 238, 0.2);
+    border-top: 1px solid rgba(34, 211, 238, 0.22);
 }
 
 .hero-indicator {
@@ -274,33 +274,33 @@
     align-items: center;
     gap: 8px;
     color: #cffafe;
-    font-size: 10.5px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.9px;
 }
 
 .indicator-dot {
-    width: 6.5px;
-    height: 6.5px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: #22d3ee;
-    box-shadow: 0 0 10px rgba(34, 211, 238, 0.85);
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.9);
     animation: status-pulse 2s ease-in-out infinite;
 }
 
 .hero-coordinate {
     color: #88a4be;
-    font-size: 10.5px;
+    font-size: 11px;
     letter-spacing: 0.9px;
     font-family: monospace;
 }
 
-/* Larger 3D Hologram Orbital Stage */
+/* Big 3D Hologram Orbital Stage */
 .earth-visual.holo-stage {
     position: relative;
     flex: 0 0 auto;
     z-index: 2;
-    width: clamp(265px, 28vw, 380px);
+    width: clamp(320px, 34vw, 460px);
     aspect-ratio: 1;
     pointer-events: none;
     transform-style: preserve-3d;
@@ -308,67 +308,67 @@
 
 .holo-grid-base {
     position: absolute;
-    width: 82%;
+    width: 84%;
     height: 28%;
-    bottom: 4%;
-    left: 9%;
+    bottom: 3%;
+    left: 8%;
     border-radius: 50%;
-    border: 1px solid rgba(34, 211, 238, 0.45);
-    background: repeating-radial-gradient(circle, rgba(34, 211, 238, 0.16) 0 1px, transparent 1px 14px);
-    box-shadow: 0 0 26px rgba(34, 211, 238, 0.26);
+    border: 1px solid rgba(34, 211, 238, 0.48);
+    background: repeating-radial-gradient(circle, rgba(34, 211, 238, 0.17) 0 1px, transparent 1px 15px);
+    box-shadow: 0 0 28px rgba(34, 211, 238, 0.28);
     transform: rotateX(72deg);
 }
 
 .holo-projection-beam {
     position: absolute;
-    width: 64%;
-    height: 46%;
-    bottom: 13%;
-    left: 18%;
+    width: 66%;
+    height: 48%;
+    bottom: 12%;
+    left: 17%;
     clip-path: polygon(16% 100%, 84% 100%, 66% 0%, 34% 0%);
-    background: linear-gradient(180deg, rgba(34, 211, 238, 0.02) 0%, rgba(34, 211, 238, 0.18) 100%);
+    background: linear-gradient(180deg, rgba(34, 211, 238, 0.02) 0%, rgba(34, 211, 238, 0.2) 100%);
     pointer-events: none;
 }
 
 .earth-light {
     position: absolute;
     border-radius: 50%;
-    filter: blur(42px);
+    filter: blur(44px);
     pointer-events: none;
 }
 
 .earth-light-one {
-    width: 72%;
-    height: 72%;
-    top: 14%;
-    left: 14%;
-    background: rgba(34, 211, 238, 0.25);
+    width: 74%;
+    height: 74%;
+    top: 13%;
+    left: 13%;
+    background: rgba(34, 211, 238, 0.26);
     animation: atmosphere-pulse 8s ease-in-out infinite;
 }
 
 .earth-light-two {
-    width: 48%;
-    height: 48%;
-    top: 26%;
-    left: 28%;
-    background: rgba(103, 232, 249, 0.18);
+    width: 50%;
+    height: 50%;
+    top: 25%;
+    left: 25%;
+    background: rgba(103, 232, 249, 0.2);
 }
 
 .earth-planet.holo-planet {
     position: absolute;
     z-index: 3;
-    width: 60%;
+    width: 62%;
     aspect-ratio: 1;
-    top: 20%;
-    left: 20%;
+    top: 19%;
+    left: 19%;
     border-radius: 50%;
     overflow: hidden;
     background: transparent;
-    transform: translateZ(26px);
+    transform: translateZ(28px);
     box-shadow:
-        0 0 32px rgba(34, 211, 238, 0.52),
-        0 0 75px rgba(6, 182, 212, 0.26),
-        inset 0 0 24px rgba(103, 232, 249, 0.25);
+        0 0 36px rgba(34, 211, 238, 0.56),
+        0 0 85px rgba(6, 182, 212, 0.28),
+        inset 0 0 26px rgba(103, 232, 249, 0.26);
 }
 
 .astro-login-page .earth-photo {
@@ -378,7 +378,7 @@
     object-fit: cover;
     border-radius: 50%;
     mix-blend-mode: screen;
-    filter: saturate(1.18) contrast(1.1) brightness(1.08);
+    filter: saturate(1.2) contrast(1.1) brightness(1.08);
     user-select: none;
     animation: earth-rotate 100s linear infinite;
 }
@@ -395,7 +395,7 @@
         transparent 5px
     );
     mix-blend-mode: screen;
-    opacity: 0.75;
+    opacity: 0.78;
     pointer-events: none;
     animation: holo-scan-drift 6s linear infinite;
 }
@@ -405,49 +405,49 @@
     pointer-events: none;
     inset: 0;
     border-radius: 50%;
-    border: 1.5px solid rgba(34, 211, 238, 0.62);
-    box-shadow: inset 0 0 18px rgba(34, 211, 238, 0.22);
+    border: 1.5px solid rgba(34, 211, 238, 0.65);
+    box-shadow: inset 0 0 20px rgba(34, 211, 238, 0.22);
 }
 
 .earth-orbit {
     position: absolute;
     z-index: 4;
-    border: 1px solid rgba(34, 211, 238, 0.38);
+    border: 1px solid rgba(34, 211, 238, 0.4);
     border-radius: 50%;
     left: 50%;
     top: 50%;
 }
 
 .earth-orbit-one {
-    width: 96%;
-    height: 38%;
-    margin-left: -48%;
-    margin-top: -19%;
+    width: 98%;
+    height: 39%;
+    margin-left: -49%;
+    margin-top: -19.5%;
     animation: holo-orbit-a 14s linear infinite;
 }
 
 .earth-orbit-two {
-    width: 108%;
-    height: 50%;
-    margin-left: -54%;
-    margin-top: -25%;
-    border-color: rgba(34, 211, 238, 0.24);
+    width: 110%;
+    height: 52%;
+    margin-left: -55%;
+    margin-top: -26%;
+    border-color: rgba(34, 211, 238, 0.26);
     animation: holo-orbit-b 20s linear infinite reverse;
 }
 
 .earth-orbit-three {
-    width: 78%;
-    height: 74%;
-    margin-left: -39%;
-    margin-top: -37%;
+    width: 80%;
+    height: 76%;
+    margin-left: -40%;
+    margin-top: -38%;
     border-color: rgba(103, 232, 249, 0.18);
 }
 
 .orbit-satellite {
     position: absolute;
     display: block;
-    width: 7.5px;
-    height: 7.5px;
+    width: 8px;
+    height: 8px;
     background: #ecfeff;
     border-radius: 2px;
     transform: rotate(45deg);
@@ -455,26 +455,26 @@
 }
 .orbit-satellite i {
     position: absolute;
-    width: 20px;
+    width: 22px;
     height: 2px;
-    left: -6px;
-    top: 2.5px;
+    left: -7px;
+    top: 3px;
     background: #22d3ee;
 }
 .satellite-one { top: 6%; left: 22%; }
-.satellite-two { right: 5%; top: 55%; width: 5.5px; height: 5.5px; }
+.satellite-two { right: 5%; top: 55%; width: 6px; height: 6px; }
 
 .earth-star {
     position: absolute;
     color: #67e8f9;
-    font-size: 16px;
+    font-size: 17px;
     animation: star-twinkle 3s ease-in-out infinite;
 }
 .earth-star-one { top: 14%; left: 12%; }
 .earth-star-two { bottom: 14%; right: 12%; animation-delay: 1s; }
 .earth-star-three { top: 44%; right: 5%; animation-delay: 1.8s; }
 
-/* Larger Form Column & 3D Card */
+/* Big Form Column & 3D Card */
 .form-column {
     width: 100%;
     min-width: 0;
@@ -490,28 +490,28 @@
     --gy: 20%;
     position: relative;
     width: 100%;
-    max-width: 450px;
-    padding: 24px 28px;
-    border: 1px solid rgba(34, 211, 238, 0.4);
-    border-radius: 20px;
+    max-width: 500px;
+    padding: 26px 32px;
+    border: 1px solid rgba(34, 211, 238, 0.42);
+    border-radius: 22px;
     overflow: hidden;
-    background: linear-gradient(160deg, rgba(8, 25, 50, 0.93) 0%, rgba(5, 15, 32, 0.97) 100%);
+    background: linear-gradient(160deg, rgba(8, 25, 50, 0.94) 0%, rgba(5, 15, 32, 0.98) 100%);
     backdrop-filter: blur(22px);
     -webkit-backdrop-filter: blur(22px);
     box-shadow:
-        0 24px 60px rgba(0, 0, 0, 0.5),
-        0 0 36px rgba(34, 211, 238, 0.14),
-        inset 0 1px 0 rgba(165, 243, 252, 0.24);
+        0 26px 64px rgba(0, 0, 0, 0.52),
+        0 0 40px rgba(34, 211, 238, 0.16),
+        inset 0 1px 0 rgba(165, 243, 252, 0.25);
     transform-style: preserve-3d;
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .login-card.holo-3d-card:hover {
-    border-color: rgba(34, 211, 238, 0.72);
+    border-color: rgba(34, 211, 238, 0.75);
     box-shadow:
-        0 28px 66px rgba(0, 0, 0, 0.56),
-        0 0 42px rgba(34, 211, 238, 0.2),
-        inset 0 1px 0 rgba(165, 243, 252, 0.3);
+        0 30px 72px rgba(0, 0, 0, 0.58),
+        0 0 46px rgba(34, 211, 238, 0.22),
+        inset 0 1px 0 rgba(165, 243, 252, 0.32);
 }
 
 .holo-card-glare {
@@ -544,26 +544,26 @@
 
 .card-telemetry-tag {
     font-family: monospace;
-    font-size: 0.72rem;
+    font-size: 0.74rem;
     letter-spacing: 0.1em;
     color: #67e8f9;
 }
 
 .holo-beacon {
     position: relative;
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(34, 211, 238, 0.22), transparent 72%);
+    background: radial-gradient(circle, rgba(34, 211, 238, 0.24), transparent 72%);
 }
 
 .holo-beacon-ring {
     position: absolute;
     border-radius: 50%;
-    border: 1px dashed rgba(34, 211, 238, 0.78);
+    border: 1px dashed rgba(34, 211, 238, 0.8);
 }
 
 .holo-beacon-ring.outer {
@@ -572,15 +572,15 @@
 }
 
 .holo-beacon-ring.inner {
-    inset: 5.5px;
+    inset: 6px;
     border-style: solid;
     border-color: rgba(103, 232, 249, 0.55);
     animation: holo-spin 5s linear infinite reverse;
 }
 
 .holo-beacon-core {
-    width: 6.5px;
-    height: 6.5px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: #22d3ee;
     box-shadow: 0 0 10px rgba(34, 211, 238, 0.95);
@@ -588,62 +588,292 @@
 
 .card-brand-icon {
     position: relative;
-    width: 42px;
-    height: 42px;
+    width: 46px;
+    height: 46px;
     display: grid;
     place-items: center;
-    border: 1px solid rgba(34, 211, 238, 0.38);
-    border-radius: 12px;
-    background: rgba(34, 211, 238, 0.13);
+    border: 1px solid rgba(34, 211, 238, 0.4);
+    border-radius: 13px;
+    background: rgba(34, 211, 238, 0.14);
 }
 
 .mini-orbit {
     position: absolute;
-    width: 28px;
-    height: 12px;
+    width: 30px;
+    height: 13px;
     border: 1.5px solid var(--cyan);
     border-radius: 50%;
 }
 .mini-orbit-one { transform: rotate(-35deg); }
 .mini-orbit-two { transform: rotate(55deg); border-color: #67e8f9; }
 .mini-core {
-    width: 6.5px;
-    height: 6.5px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: white;
-    box-shadow: 0 0 9px var(--cyan);
+    box-shadow: 0 0 10px var(--cyan);
 }
 
-.card-heading { margin-top: 10px; }
+.card-heading { margin-top: 12px; }
 .card-heading h2 {
     margin: 0;
-    font: 700 28px/1.15 'Space Grotesk', 'Inter', sans-serif;
-    letter-spacing: -0.8px;
+    font: 700 32px/1.15 'Space Grotesk', 'Inter', sans-serif;
+    letter-spacing: -0.9px;
 }
 .card-heading h2 span { color: var(--cyan); }
 .card-heading p {
-    margin: 4px 0 0;
-    color: rgba(240, 249, 255, 0.74);
-    font-size: 13.5px;
+    margin: 5px 0 0;
+    color: rgba(240, 249, 255, 0.76);
+    font-size: 14px;
     line-height: 1.45;
 }
 
-.login-form { display: flex; flex-direction: column; gap: 13px; margin-top: 14px; }
+.login-form { display: flex; flex-direction: column; gap: 15px; margin-top: 16px; }
 .form-field { display: flex; flex-direction: column; min-width: 0; }
 .form-field label {
     margin-bottom: 6px;
     color: #f0f9ff;
-    font-size: 13px;
+    font-size: 13.5px;
     font-weight: 600;
 }
 
 .input-shell {
     min-width: 0;
-    height: 44px;
+    height: 48px;
     display: flex;
     align-items: center;
-    border: 1px solid rgba(34, 211, 238, 0.28);
-    border-radius: 10px;
-    background: rgba(4, 15, 32, 0.78);
+    border: 1px solid rgba(34, 211, 238, 0.3);
+    border-radius: 11px;
+    background: rgba(4, 15, 32, 0.8);
     box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.35);
-    transition: border-color 0.2s, box-shadow 0.2s, background
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.input-shell:focus-within {
+    border-color: var(--cyan);
+    box-shadow:
+        0 0 0 2px rgba(34, 211, 238, 0.24),
+        0 0 18px rgba(34, 211, 238, 0.16),
+        inset 0 2px 6px rgba(0, 0, 0, 0.35);
+    background: rgba(6, 23, 46, 0.95);
+}
+
+.input-shell.input-error {
+    border-color: #f87171;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.22);
+}
+
+.input-icon {
+    flex: 0 0 44px;
+    display: grid;
+    place-items: center;
+    color: #67e8f9;
+}
+
+.input-shell input {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: 0;
+    color: #fff;
+    background: transparent;
+    font-size: 14px;
+    padding: 0 12px 0 0;
+}
+
+.input-shell input::placeholder { color: rgba(207, 250, 254, 0.45); }
+.input-shell input:disabled { opacity: 0.65; cursor: wait; }
+
+.password-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.forgot-link {
+    border: 0;
+    padding: 0 0 6px;
+    color: #67e8f9;
+    background: transparent;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+}
+.forgot-link:hover { color: white; text-decoration: underline; }
+
+.password-toggle {
+    flex: 0 0 44px;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    border: 0;
+    color: #94a3b8;
+    background: transparent;
+    cursor: pointer;
+}
+.password-toggle:hover { color: var(--cyan); }
+
+.field-error-message {
+    margin: 4px 0 0;
+    color: #fca5a5;
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.general-error, .help-feedback {
+    padding: 8px 11px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    line-height: 1.4;
+}
+.general-error {
+    color: #fecaca;
+    background: rgba(127, 29, 29, 0.32);
+    border: 1px solid rgba(248, 113, 113, 0.5);
+}
+.help-feedback {
+    color: #cffafe;
+    background: rgba(8, 145, 178, 0.2);
+    border: 1px solid rgba(34, 211, 238, 0.36);
+}
+
+.login-submit {
+    width: 100%;
+    height: 50px;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 1px solid rgba(34, 211, 238, 0.5);
+    border-radius: 11px;
+    color: #fff;
+    background: linear-gradient(105deg, #0891b2, #0284c7);
+    box-shadow:
+        0 9px 24px rgba(8, 145, 178, 0.32),
+        0 3px 0 rgba(4, 12, 24, 0.72),
+        inset 0 1px rgba(255, 255, 255, 0.24);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+}
+.login-submit:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+    box-shadow:
+        0 13px 30px rgba(34, 211, 238, 0.34),
+        0 5px 0 rgba(4, 12, 24, 0.75),
+        inset 0 1px rgba(255, 255, 255, 0.28);
+}
+.login-submit:active:not(:disabled) {
+    transform: translateY(1px);
+}
+.login-submit:focus-visible,
+.password-toggle:focus-visible,
+.forgot-link:focus-visible,
+.header-links a:focus-visible,
+.login-footer a:focus-visible {
+    outline: 2px solid #67e8f9;
+    outline-offset: 3px;
+}
+.login-submit:disabled { opacity: 0.7; cursor: wait; }
+
+.button-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spinner-rotate 0.7s linear infinite;
+}
+
+.security-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    margin-top: 13px;
+    color: rgba(240, 249, 255, 0.76);
+    font-size: 12px;
+    text-align: center;
+}
+.security-line svg { flex: 0 0 auto; color: #22d3ee; }
+.security-line span { display: inline-flex; align-items: center; gap: 7px; }
+.security-line i { width: 3px; height: 3px; border-radius: 50%; background: #22d3ee; }
+
+.card-help {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(34, 211, 238, 0.16);
+    text-align: center;
+}
+.card-help p { margin: 0; color: rgba(240, 249, 255, 0.76); font-size: 12px; line-height: 1.4; }
+.card-help a { color: #67e8f9; text-decoration: none; }
+.card-help a:hover { color: white; text-decoration: underline; }
+
+.login-footer {
+    width: 100%;
+    height: 36px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    position: relative;
+    z-index: 5;
+    border-top: 1px solid rgba(34, 211, 238, 0.16);
+    color: rgba(240, 249, 255, 0.62);
+    font-size: 12px;
+}
+.login-footer div { display: flex; align-items: center; gap: 11px; }
+.login-footer a { color: inherit; text-decoration: none; }
+.login-footer a:hover { color: var(--cyan); }
+.login-footer i { font-style: normal; color: #66859f; }
+
+.astro-loading-screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    color: #cffafe;
+    background: #040c18;
+    font: 500 14px 'Inter', sans-serif;
+}
+.loading-orbit {
+    width: 34px;
+    height: 34px;
+    border: 2px solid rgba(34, 211, 238, 0.22);
+    border-top-color: var(--cyan);
+    border-radius: 50%;
+    animation: spinner-rotate 0.8s linear infinite;
+}
+
+@keyframes spinner-rotate { to { transform: rotate(360deg); } }
+@keyframes stars-drift { to { transform: translate3d(120px, 80px, 0); } }
+@keyframes earth-rotate { to { rotate: 360deg; } }
+@keyframes atmosphere-pulse { 0%,100% { opacity: 0.65; scale: 0.96; } 50% { opacity: 1; scale: 1.05; } }
+@keyframes status-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+@keyframes star-twinkle { 0%,100% { opacity: 0.4; scale: 0.8; } 50% { opacity: 1; scale: 1.15; } }
+@keyframes hero-enter { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes holo-scan-drift { from { background-position: 0 0; } to { background-position: 0 24px; } }
+@keyframes holo-orbit-a { from { transform: rotateZ(0deg) rotateX(62deg); } to { transform: rotateZ(360deg) rotateX(62deg); } }
+@keyframes holo-orbit-b { from { transform: rotateZ(0deg) rotateY(58deg); } to { transform: rotateZ(360deg) rotateY(58deg); } }
+@keyframes holo-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 960px) {
+    .astro-login-page {
+        height: auto;
+        min-height: 100dvh;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    .login-layout {
+        grid-template-columns: 1fr;
+        gap: 18px;
+        padding: 14
