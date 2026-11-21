@@ -2,5 +2,5 @@
 // Set VITE_API_URL (and optionally VITE_ENGINE_URL) in frontend/.env, then restart `npm run dev`.
 const clean = (u) => String(u).replace(/\/+$/, '');
 
-export const API_URL = clean(import.meta.env.VITE_API_URL || 'http://localhost:4000');
-export const ENGINE_URL = clean(import.meta.env.VITE_ENGINE_URL || 'http://127.0.0.1:8000');
+export const API_URL = clean(import.meta.env.VITE_API_URL || 'https://astrohealth-production-1ebf5e79.up.railway.app');
+export const ENGINE_URL = clean(import.meta.env.VITE_ENGINE_URL || 'https://engine-production-ec9fea5d.up.railway.app');
