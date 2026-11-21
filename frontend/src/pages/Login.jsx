@@ -70,7 +70,7 @@ function HologramBeacon() {
 
 function EarthVisual() {
     return (
-        <div className="earth-visual" aria-hidden="true">
+        <div className="earth-visual holo-3d-stage" aria-hidden="true">
             <div className="earth-light earth-light-one" />
             <div className="earth-light earth-light-two" />
 
@@ -84,7 +84,7 @@ function EarthVisual() {
 
             <div className="earth-orbit earth-orbit-three" />
 
-            <div className="earth-planet">
+            <div className="earth-planet holo-3d-core">
                 <img
                     className="earth-photo"
                     src="/images/earth.webp"
@@ -301,7 +301,7 @@ export default function Login() {
 
                 <section className="form-column" aria-label="Sign in">
                     <div
-                        className="login-card"
+                        className="login-card holo-3d-card"
                         onMouseMove={handleCardMouseMove}
                         onMouseLeave={handleCardMouseLeave}
                         style={{
