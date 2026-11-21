@@ -1,45 +1,73 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import Card from '../Common/Card';
 
-const RANGES = {
-    heart_rate: { min: 50, max: 110, normalMin: 60, normalMax: 100, tag: 'ECG // HR' },
-    spo2: { min: 90, max: 100, normalMin: 95, normalMax: 100, tag: 'O2 SAT' },
-    temperature: { min: 35.5, max: 38.0, normalMin: 36.1, normalMax: 37.2, tag: 'THRM // SKN' },
-    hrv: { min: 20, max: 120, normalMin: 40, normalMax: 100, tag: 'R-R // HRV' },
-    respiratory_rate: { min: 8, max: 24, normalMin: 12, normalMax: 20, tag: 'RESP // BIO' }
+const TELEMETRY_META = {
+    heart_rate: {
+        code: 'CH-01 // ECG',
+        label: 'Heart Rate',
+        unit: 'BPM',
+        min: 45,
+        max: 120,
+        isHeart: true
+    },
+    spo2: {
+        code: 'CH-02 // O2',
+        label: 'Blood Oxygen',
+        unit: '%',
+        min: 88,
+        max: 100,
+        isHeart: false
+    },
+    temperature: {
+        code: 'CH-03 // THRM',
+        label: 'Skin Temp',
+        unit: '°C',
+        min: 35.0,
+        max: 38.5,
+        isHeart: false
+    },
+    hrv: {
+        code: 'CH-04 // HRV',
+        label: 'HRV Index',
+        unit: 'ms',
+        min: 15,
+        max: 130,
+        isHeart: false
+    },
+    respiratory_rate: {
+        code: 'CH-05 // RESP',
+        label: 'Resp. Rate',
+        unit: 'BPM',
+        min: 8,
+        max: 26,
+        isHeart: false
+    }
 };
 
-const getBarPercent = (value, min, max) => {
-    if (value === null || value === undefined || Number.isNaN(Number(value))) return 0;
-    const pct = ((Number(value) - min) / (max - min)) * 100;
-    return Math.max(6, Math.min(100, pct));
-};
-
-const isOutOfNominal = (key, value) => {
-    if (value === null || value === undefined || Number.isNaN(Number(value))) return false;
-    const r = RANGES[key];
-    if (!r) return false;
-    return Number(value) < r.normalMin || Number(value) > r.normalMax;
+const getProgress = (val, min, max) => {
+    if (val === null || val === undefined || Number.isNaN(Number(val))) return 0;
+    const ratio = ((Number(val) - min) / (max - min)) * 100;
+    return Math.max(8, Math.min(100, ratio));
 };
 
 const VitalsWidget = ({ vitals, onClick }) => {
-    const [hoveredKey, setHoveredKey] = useState(null);
+    const [activeKey, setActiveKey] = useState(null);
 
     if (!vitals) {
-        return <Card title="LIVE TELEMETRY // VITALS">Acquiring telemetry stream...</Card>;
+        return <Card title="ORBITAL TELEMETRY // LIVE VITALS">Syncing sensor stream...</Card>;
     }
 
-    const metrics = [
-        { key: 'heart_rate', label: 'Heart Rate', value: vitals.heart_rate, unit: 'BPM', isHeart: true },
-        { key: 'spo2', label: 'Blood Oxygen', value: vitals.spo2, unit: '%', isHeart: false },
-        { key: 'temperature', label: 'Skin Temp', value: vitals.temperature, unit: '°C', isHeart: false },
-        { key: 'hrv', label: 'HRV', value: vitals.hrv, unit: 'ms', isHeart: false },
-        { key: 'respiratory_rate', label: 'Resp. Rate', value: vitals.respiratory_rate, unit: 'BPM', isHeart: false }
+    const items = [
+        { key: 'heart_rate', value: vitals.heart_rate },
+        { key: 'spo2', value: vitals.spo2 },
+        { key: 'temperature', value: vitals.temperature },
+        { key: 'hrv', value: vitals.hrv },
+        { key: 'respiratory_rate', value: vitals.respiratory_rate }
     ];
 
     return (
         <Card
-            title="LIVE TELEMETRY // VITALS"
+            title="ORBITAL TELEMETRY // LIVE VITALS"
             className={onClick ? 'clickable-card' : ''}
             style={onClick ? { cursor: 'pointer' } : {}}
             onClick={onClick}
@@ -47,123 +75,119 @@ const VitalsWidget = ({ vitals, onClick }) => {
             <div
                 style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(155px, 1fr))',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
                     gap: 14,
-                    perspective: '900px'
+                    perspective: '1000px'
                 }}
             >
-                {metrics.map((item) => {
-                    const range = RANGES[item.key];
-                    const isHovered = hoveredKey === item.key;
-                    const abnormal = isOutOfNominal(item.key, item.value);
-                    const pct = getBarPercent(item.value, range.min, range.max);
-
-                    const accentColor = item.isHeart
-                        ? '#ef4444'
-                        : abnormal
-                            ? '#f87171'
-                            : '#38bdf8';
+                {items.map(({ key, value }) => {
+                    const meta = TELEMETRY_META[key];
+                    const isHovered = activeKey === key;
+                    const progress = getProgress(value, meta.min, meta.max);
 
                     return (
                         <div
-                            key={item.key}
-                            onMouseEnter={() => setHoveredKey(item.key)}
-                            onMouseLeave={() => setHoveredKey(null)}
+                            key={key}
+                            onMouseEnter={() => setActiveKey(key)}
+                            onMouseLeave={() => setActiveKey(null)}
                             style={{
                                 position: 'relative',
-                                padding: '12px 14px',
-                                borderRadius: 10,
+                                padding: '13px 14px',
+                                borderRadius: 12,
+                                background: meta.isHeart
+                                    ? isHovered
+                                        ? 'linear-gradient(155deg, rgba(127, 29, 29, 0.34), rgba(15, 23, 42, 0.92))'
+                                        : 'linear-gradient(155deg, rgba(127, 29, 29, 0.22), rgba(15, 23, 42, 0.85))'
+                                    : isHovered
+                                        ? 'linear-gradient(155deg, rgba(30, 58, 95, 0.55), rgba(15, 23, 42, 0.92))'
+                                        : 'rgba(15, 23, 42, 0.72)',
                                 border: `1px solid ${
-                                    isHovered
-                                        ? item.isHeart
-                                            ? 'rgba(239, 68, 68, 0.45)'
-                                            : 'rgba(56, 189, 248, 0.4)'
-                                        : 'rgba(125, 181, 220, 0.14)'
+                                    meta.isHeart
+                                        ? isHovered
+                                            ? 'rgba(248, 113, 113, 0.65)'
+                                            : 'rgba(239, 68, 68, 0.38)'
+                                        : isHovered
+                                            ? 'rgba(125, 211, 252, 0.45)'
+                                            : 'rgba(148, 163, 184, 0.18)'
                                 }`,
-                                borderTop: `2px solid ${accentColor}`,
-                                background: isHovered
-                                    ? 'linear-gradient(160deg, rgba(15, 34, 58, 0.92), rgba(8, 20, 36, 0.92))'
-                                    : 'rgba(9, 22, 40, 0.55)',
                                 boxShadow: isHovered
-                                    ? '0 10px 22px rgba(0, 0, 0, 0.28)'
-                                    : 'none',
+                                    ? meta.isHeart
+                                        ? '0 14px 26px rgba(0, 0, 0, 0.35), 0 0 18px rgba(239, 68, 68, 0.16)'
+                                        : '0 14px 26px rgba(0, 0, 0, 0.35)'
+                                    : '0 4px 12px rgba(0, 0, 0, 0.16)',
                                 transform: isHovered
-                                    ? 'translateY(-3px) rotateX(3.5deg) rotateY(-3deg)'
-                                    : 'translateY(0) rotateX(0deg) rotateY(0deg)',
+                                    ? 'translateY(-4px) rotateX(5deg) rotateY(-4deg) translateZ(8px)'
+                                    : 'translateY(0) rotateX(0deg) rotateY(0deg) translateZ(0px)',
                                 transformStyle: 'preserve-3d',
-                                transition: 'all 0.22s ease'
+                                transition: 'transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease, background 0.24s ease'
                             }}
                         >
-                            {/* Telemetry channel tag & status dot */}
+                            {/* Top channel header */}
                             <div
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'space-between',
-                                    fontSize: '0.65rem',
                                     fontFamily: 'monospace',
+                                    fontSize: '0.64rem',
                                     letterSpacing: '0.08em',
-                                    color: item.isHeart ? '#fca5a5' : 'var(--text-secondary, #91a9c2)',
-                                    marginBottom: 4
+                                    color: meta.isHeart ? '#fca5a5' : '#94a3b8',
+                                    marginBottom: 5
                                 }}
                             >
-                                <span>{range.tag}</span>
+                                <span>{meta.code}</span>
                                 <span
                                     style={{
-                                        width: 6,
-                                        height: 6,
+                                        width: 7,
+                                        height: 7,
                                         borderRadius: '50%',
-                                        backgroundColor: abnormal ? '#ef4444' : item.isHeart ? '#ef4444' : '#38bdf8',
-                                        opacity: item.isHeart || abnormal ? 0.95 : 0.65
+                                        backgroundColor: meta.isHeart ? '#ef4444' : '#38bdf8',
+                                        boxShadow: meta.isHeart ? '0 0 8px rgba(239, 68, 68, 0.8)' : 'none'
                                     }}
                                 />
                             </div>
 
-                            {/* Readable metric title */}
+                            {/* Metric Name */}
                             <div
                                 style={{
                                     fontSize: '0.78rem',
                                     fontWeight: 600,
-                                    color: 'var(--text-secondary, #91a9c2)',
-                                    marginBottom: 6
+                                    color: '#cbd5e1',
+                                    marginBottom: 8
                                 }}
                             >
-                                {item.label}
+                                {meta.label}
                             </div>
 
-                            {/* Clean numeric readout without heavy glow/box */}
+                            {/* Value & Unit */}
                             <div
                                 style={{
-                                    fontSize: '1.55rem',
-                                    fontWeight: 700,
-                                    lineHeight: 1.15,
-                                    color: 'var(--text-primary, #e8f4ff)',
-                                    background: 'transparent',
-                                    boxShadow: 'none',
-                                    padding: 0,
                                     display: 'flex',
                                     alignItems: 'baseline',
-                                    gap: 5
+                                    gap: 5,
+                                    color: '#f8fafc',
+                                    fontSize: '1.6rem',
+                                    fontWeight: 700,
+                                    lineHeight: 1.15
                                 }}
                             >
-                                <span>{item.value ?? '—'}</span>
+                                <span>{value ?? '—'}</span>
                                 <span
                                     style={{
-                                        fontSize: '0.76rem',
+                                        fontSize: '0.75rem',
                                         fontWeight: 500,
-                                        color: 'var(--text-secondary, #91a9c2)'
+                                        color: '#94a3b8'
                                     }}
                                 >
-                                    {item.unit}
+                                    {meta.unit}
                                 </span>
                             </div>
 
-                            {/* Minimal mission-control scale bar */}
+                            {/* NASA/HUD telemetry scale bar */}
                             <div
                                 style={{
-                                    marginTop: 10,
-                                    height: 3,
-                                    width: '100%',
+                                    marginTop: 11,
+                                    height: 4,
                                     borderRadius: 999,
                                     background: 'rgba(148, 163, 184, 0.16)',
                                     overflow: 'hidden'
@@ -172,13 +196,11 @@ const VitalsWidget = ({ vitals, onClick }) => {
                                 <div
                                     style={{
                                         height: '100%',
-                                        width: `${pct}%`,
+                                        width: `${progress}%`,
                                         borderRadius: 999,
-                                        background: item.isHeart
+                                        background: meta.isHeart
                                             ? 'linear-gradient(90deg, #dc2626, #f87171)'
-                                            : abnormal
-                                                ? '#ef4444'
-                                                : '#38bdf8',
+                                            : 'linear-gradient(90deg, #0284c7, #38bdf8)',
                                         transition: 'width 0.35s ease'
                                     }}
                                 />
@@ -193,17 +215,17 @@ const VitalsWidget = ({ vitals, onClick }) => {
                     style={{
                         marginTop: 14,
                         paddingTop: 10,
-                        borderTop: '1px solid rgba(125, 181, 220, 0.12)',
+                        borderTop: '1px solid rgba(148, 163, 184, 0.14)',
                         display: 'flex',
                         justifyContent: 'space-between',
                         flexWrap: 'wrap',
                         gap: 8,
-                        color: 'var(--text-secondary, #91a9c2)',
-                        fontSize: '0.75rem',
-                        fontFamily: 'monospace'
+                        fontFamily: 'monospace',
+                        fontSize: '0.74rem',
+                        color: '#94a3b8'
                     }}
                 >
-                    <span>SYNC // CAIRO</span>
+                    <span>DOWNLINK // CAIRO-EET</span>
                     <span>
                         {new Intl.DateTimeFormat('en-GB', {
                             timeZone: 'Africa/Cairo',
