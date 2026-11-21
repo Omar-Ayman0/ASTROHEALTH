@@ -322,7 +322,7 @@ const AstronautDashboard = () => {
 
 export default AstronautDashboard;
 
-
+import './AstronautDashboard.css';
 
 
 
