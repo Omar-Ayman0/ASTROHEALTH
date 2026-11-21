@@ -69,7 +69,12 @@ const VitalsWidget = ({ vitals, onClick }) => {
         <Card
             title="ORBITAL TELEMETRY // LIVE VITALS"
             className={onClick ? 'clickable-card' : ''}
-            style={onClick ? { cursor: 'pointer' } : {}}
+            style={{
+                ...(onClick ? { cursor: 'pointer' } : {}),
+                background: 'linear-gradient(165deg, rgba(6, 20, 38, 0.95), rgba(4, 12, 24, 0.98))',
+                border: '1px solid rgba(34, 211, 238, 0.35)',
+                boxShadow: '0 0 24px rgba(34, 211, 238, 0.08)'
+            }}
             onClick={onClick}
         >
             <div
@@ -93,28 +98,30 @@ const VitalsWidget = ({ vitals, onClick }) => {
                             style={{
                                 position: 'relative',
                                 padding: '13px 14px',
-                                borderRadius: 12,
+                                borderRadius: 10,
                                 background: meta.isHeart
                                     ? isHovered
-                                        ? 'linear-gradient(155deg, rgba(127, 29, 29, 0.34), rgba(15, 23, 42, 0.92))'
-                                        : 'linear-gradient(155deg, rgba(127, 29, 29, 0.22), rgba(15, 23, 42, 0.85))'
+                                        ? 'linear-gradient(155deg, rgba(127, 29, 29, 0.35), rgba(6, 22, 42, 0.94))'
+                                        : 'linear-gradient(155deg, rgba(127, 29, 29, 0.2), rgba(6, 22, 42, 0.88))'
                                     : isHovered
-                                        ? 'linear-gradient(155deg, rgba(30, 58, 95, 0.55), rgba(15, 23, 42, 0.92))'
-                                        : 'rgba(15, 23, 42, 0.72)',
+                                        ? 'linear-gradient(155deg, rgba(8, 145, 178, 0.22), rgba(6, 22, 42, 0.94))'
+                                        : 'rgba(6, 22, 42, 0.78)',
                                 border: `1px solid ${
                                     meta.isHeart
                                         ? isHovered
-                                            ? 'rgba(248, 113, 113, 0.65)'
-                                            : 'rgba(239, 68, 68, 0.38)'
+                                            ? 'rgba(248, 113, 113, 0.85)'
+                                            : 'rgba(239, 68, 68, 0.5)'
                                         : isHovered
-                                            ? 'rgba(125, 211, 252, 0.45)'
-                                            : 'rgba(148, 163, 184, 0.18)'
+                                            ? 'rgba(34, 211, 238, 0.9)'
+                                            : 'rgba(34, 211, 238, 0.36)'
                                 }`,
                                 boxShadow: isHovered
                                     ? meta.isHeart
-                                        ? '0 14px 26px rgba(0, 0, 0, 0.35), 0 0 18px rgba(239, 68, 68, 0.16)'
-                                        : '0 14px 26px rgba(0, 0, 0, 0.35)'
-                                    : '0 4px 12px rgba(0, 0, 0, 0.16)',
+                                        ? '0 12px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(239, 68, 68, 0.22)'
+                                        : '0 12px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(34, 211, 238, 0.24)'
+                                    : meta.isHeart
+                                        ? '0 0 10px rgba(239, 68, 68, 0.08)'
+                                        : '0 0 12px rgba(34, 211, 238, 0.08)',
                                 transform: isHovered
                                     ? 'translateY(-4px) rotateX(5deg) rotateY(-4deg) translateZ(8px)'
                                     : 'translateY(0) rotateX(0deg) rotateY(0deg) translateZ(0px)',
@@ -122,7 +129,6 @@ const VitalsWidget = ({ vitals, onClick }) => {
                                 transition: 'transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease, background 0.24s ease'
                             }}
                         >
-                            {/* Top channel header */}
                             <div
                                 style={{
                                     display: 'flex',
@@ -131,7 +137,7 @@ const VitalsWidget = ({ vitals, onClick }) => {
                                     fontFamily: 'monospace',
                                     fontSize: '0.64rem',
                                     letterSpacing: '0.08em',
-                                    color: meta.isHeart ? '#fca5a5' : '#94a3b8',
+                                    color: meta.isHeart ? '#fca5a5' : '#67e8f9',
                                     marginBottom: 5
                                 }}
                             >
@@ -141,13 +147,14 @@ const VitalsWidget = ({ vitals, onClick }) => {
                                         width: 7,
                                         height: 7,
                                         borderRadius: '50%',
-                                        backgroundColor: meta.isHeart ? '#ef4444' : '#38bdf8',
-                                        boxShadow: meta.isHeart ? '0 0 8px rgba(239, 68, 68, 0.8)' : 'none'
+                                        backgroundColor: meta.isHeart ? '#ef4444' : '#22d3ee',
+                                        boxShadow: meta.isHeart
+                                            ? '0 0 8px rgba(239, 68, 68, 0.85)'
+                                            : '0 0 8px rgba(34, 211, 238, 0.75)'
                                     }}
                                 />
                             </div>
 
-                            {/* Metric Name */}
                             <div
                                 style={{
                                     fontSize: '0.78rem',
@@ -159,13 +166,12 @@ const VitalsWidget = ({ vitals, onClick }) => {
                                 {meta.label}
                             </div>
 
-                            {/* Value & Unit */}
                             <div
                                 style={{
                                     display: 'flex',
                                     alignItems: 'baseline',
                                     gap: 5,
-                                    color: '#f8fafc',
+                                    color: '#f0f9ff',
                                     fontSize: '1.6rem',
                                     fontWeight: 700,
                                     lineHeight: 1.15
@@ -183,13 +189,12 @@ const VitalsWidget = ({ vitals, onClick }) => {
                                 </span>
                             </div>
 
-                            {/* NASA/HUD telemetry scale bar */}
                             <div
                                 style={{
                                     marginTop: 11,
                                     height: 4,
                                     borderRadius: 999,
-                                    background: 'rgba(148, 163, 184, 0.16)',
+                                    background: 'rgba(34, 211, 238, 0.14)',
                                     overflow: 'hidden'
                                 }}
                             >
@@ -200,7 +205,7 @@ const VitalsWidget = ({ vitals, onClick }) => {
                                         borderRadius: 999,
                                         background: meta.isHeart
                                             ? 'linear-gradient(90deg, #dc2626, #f87171)'
-                                            : 'linear-gradient(90deg, #0284c7, #38bdf8)',
+                                            : 'linear-gradient(90deg, #06b6d4, #22d3ee)',
                                         transition: 'width 0.35s ease'
                                     }}
                                 />
@@ -215,18 +220,18 @@ const VitalsWidget = ({ vitals, onClick }) => {
                     style={{
                         marginTop: 14,
                         paddingTop: 10,
-                        borderTop: '1px solid rgba(148, 163, 184, 0.14)',
+                        borderTop: '1px solid rgba(34, 211, 238, 0.18)',
                         display: 'flex',
                         justifyContent: 'space-between',
                         flexWrap: 'wrap',
                         gap: 8,
                         fontFamily: 'monospace',
                         fontSize: '0.74rem',
-                        color: '#94a3b8'
+                        color: '#67e8f9'
                     }}
                 >
                     <span>DOWNLINK // CAIRO-EET</span>
-                    <span>
+                    <span style={{ color: '#94a3b8' }}>
                         {new Intl.DateTimeFormat('en-GB', {
                             timeZone: 'Africa/Cairo',
                             dateStyle: 'medium',
