@@ -3,7 +3,14 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth, getUserDestination } from '../context/AuthContext';
 import './Login.css';
 
-const AVAILABLE_ACCOUNTS = ['admin', 'doctor', 'astro01', 'astro02', 'astro03', 'astro04'];
+const AVAILABLE_ACCOUNTS = [
+    { id: 'admin', role: 'COMMAND' },
+    { id: 'doctor', role: 'MEDICAL' },
+    { id: 'astro01', role: 'CREW 01' },
+    { id: 'astro02', role: 'CREW 02' },
+    { id: 'astro03', role: 'CREW 03' },
+    { id: 'astro04', role: 'CREW 04' }
+];
 
 function Icon({ name, size = 20 }) {
     const icons = {
@@ -45,45 +52,39 @@ function Brand() {
             </span>
             <span className="brand-copy">
                 <span className="brand-name">Astro<span>Health</span></span>
-                <span className="brand-tagline">MISSION HEALTH SYSTEMS</span>
+                <span className="brand-tagline">NASA // MISSION TELEMETRY</span>
             </span>
         </a>
     );
 }
 
-function EarthVisual({ tilt }) {
-    const style = {
-        transform: `perspective(1200px) rotateX(${tilt.y * -8}deg) rotateY(${tilt.x * 10}deg) translateZ(18px)`
-    };
-
+function HologramBeacon() {
     return (
-        <div className="earth-visual holo-3d-stage" style={style} aria-hidden="true">
+        <div className="holo-beacon" aria-hidden="true" title="Orbital Link Ready">
+            <span className="holo-beacon-ring outer" />
+            <span className="holo-beacon-ring inner" />
+            <span className="holo-beacon-core" />
+        </div>
+    );
+}
+
+function EarthVisual() {
+    return (
+        <div className="earth-visual" aria-hidden="true">
             <div className="earth-light earth-light-one" />
             <div className="earth-light earth-light-two" />
 
-            <div
-                className="earth-orbit earth-orbit-one"
-                style={{ transform: `translate3d(${tilt.x * 12}px, ${tilt.y * 10}px, 28px)` }}
-            >
+            <div className="earth-orbit earth-orbit-one">
                 <span className="orbit-satellite satellite-one"><i /></span>
             </div>
 
-            <div
-                className="earth-orbit earth-orbit-two"
-                style={{ transform: `translate3d(${tilt.x * -10}px, ${tilt.y * -8}px, 16px)` }}
-            >
+            <div className="earth-orbit earth-orbit-two">
                 <span className="orbit-satellite satellite-two"><i /></span>
             </div>
 
-            <div
-                className="earth-orbit earth-orbit-three"
-                style={{ transform: `translate3d(${tilt.x * 6}px, ${tilt.y * 6}px, 8px)` }}
-            />
+            <div className="earth-orbit earth-orbit-three" />
 
-            <div
-                className="earth-planet holo-3d-core"
-                style={{ transform: `translate3d(${tilt.x * 16}px, ${tilt.y * 14}px, 42px)` }}
-            >
+            <div className="earth-planet">
                 <img
                     className="earth-photo"
                     src="/images/earth.webp"
@@ -114,11 +115,12 @@ export default function Login() {
     const [helpMessage, setHelpMessage] = useState('');
     const [showUsernameOptions, setShowUsernameOptions] = useState(false);
     const [activeUsernameIndex, setActiveUsernameIndex] = useState(-1);
-    const [tilt, setTilt] = useState({ x: 0, y: 0 });
+    const [cardTilt, setCardTilt] = useState({ rotateX: 0, rotateY: 0 });
     const usernameContainerRef = useRef(null);
 
     const filteredAccounts = AVAILABLE_ACCOUNTS.filter((account) =>
-        account.toLowerCase().includes(username.trim().toLowerCase())
+        account.id.toLowerCase().includes(username.trim().toLowerCase()) ||
+        account.role.toLowerCase().includes(username.trim().toLowerCase())
     );
 
     useEffect(() => {
@@ -133,20 +135,8 @@ export default function Login() {
         return () => document.removeEventListener('mousedown', handleOutsideClick);
     }, []);
 
-    const handleMouseMove = (event) => {
-        const { clientX, clientY, currentTarget } = event;
-        const rect = currentTarget.getBoundingClientRect();
-        const nx = ((clientX - rect.left) / rect.width - 0.5) * 2;
-        const ny = ((clientY - rect.top) / rect.height - 0.5) * 2;
-        setTilt({ x: nx, y: ny });
-    };
-
-    const handleMouseLeave = () => {
-        setTilt({ x: 0, y: 0 });
-    };
-
-    const selectUsername = (account) => {
-        setUsername(account);
+    const selectUsername = (accountId) => {
+        setUsername(accountId);
         setShowUsernameOptions(false);
         setActiveUsernameIndex(-1);
         setUsernameError('');
@@ -175,8 +165,22 @@ export default function Login() {
             );
         } else if (event.key === 'Enter' && activeUsernameIndex >= 0) {
             event.preventDefault();
-            selectUsername(filteredAccounts[activeUsernameIndex]);
+            selectUsername(filteredAccounts[activeUsernameIndex].id);
         }
+    };
+
+    const handleCardMouseMove = (event) => {
+        const rect = event.currentTarget.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width - 0.5;
+        const y = (event.clientY - rect.top) / rect.height - 0.5;
+        setCardTilt({
+            rotateX: (-y * 4.5).toFixed(2),
+            rotateY: (x * 5.5).toFixed(2)
+        });
+    };
+
+    const handleCardMouseLeave = () => {
+        setCardTilt({ rotateX: 0, rotateY: 0 });
     };
 
     if (authLoading) {
@@ -240,16 +244,8 @@ export default function Login() {
         }
     };
 
-    const card3DStyle = {
-        transform: `perspective(1100px) rotateX(${tilt.y * -3.5}deg) rotateY(${tilt.x * 4.5}deg) translateZ(12px)`
-    };
-
     return (
-        <main
-            className="astro-login-page"
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-        >
+        <main className="astro-login-page">
             <div className="login-space-background" aria-hidden="true">
                 <div className="space-stars stars-back" />
                 <div className="space-stars stars-front" />
@@ -278,7 +274,7 @@ export default function Login() {
                     <div className="hero-content">
                         <div className="hero-eyebrow">
                             <span className="eyebrow-line" />
-                            SPACE HEALTH INTELLIGENCE
+                            FLIGHT SURGEON & CREW TELEMETRY
                         </div>
 
                         <h1 id="hero-title">
@@ -287,25 +283,37 @@ export default function Login() {
                         </h1>
 
                         <p className="hero-description">
-                            Advanced astronaut health intelligence. One mission.
-                            One team. One connected system.
+                            Orbital crew health monitoring and mission telemetry.
+                            Fast access for flight surgeons, command, and astronauts.
                         </p>
 
                         <div className="hero-bottom">
                             <div className="hero-indicator">
                                 <span className="indicator-dot" />
-                                <span>YOUR HEALTH. OUR MISSION.</span>
+                                <span>TELEMETRY LINK // NOMINAL</span>
                             </div>
-                            <span className="hero-coordinate">EARTH ORBIT · 001</span>
+                            <span className="hero-coordinate">LEO · ISS / ORBIT 01</span>
                         </div>
                     </div>
 
-                    <EarthVisual tilt={tilt} />
+                    <EarthVisual />
                 </section>
 
                 <section className="form-column" aria-label="Sign in">
-                    <div className="login-card holo-3d-card" style={card3DStyle}>
+                    <div
+                        className="login-card"
+                        onMouseMove={handleCardMouseMove}
+                        onMouseLeave={handleCardMouseLeave}
+                        style={{
+                            transform: `perspective(1100px) rotateX(${cardTilt.rotateX}deg) rotateY(${cardTilt.rotateY}deg)`
+                        }}
+                    >
                         <div className="card-top-accent" />
+
+                        <div className="card-header-strip">
+                            <span className="card-telemetry-tag">UPLINK // AUTH-01</span>
+                            <HologramBeacon />
+                        </div>
 
                         <div className="card-brand-icon">
                             <span className="mini-orbit mini-orbit-one" />
@@ -315,7 +323,7 @@ export default function Login() {
 
                         <div className="card-heading">
                             <h2>Welcome <span>aboard.</span></h2>
-                            <p>Sign in to access your mission workspace.</p>
+                            <p>Select or enter your mission account to continue.</p>
                         </div>
 
                         <form className="login-form" onSubmit={handleSubmit} noValidate>
@@ -340,7 +348,7 @@ export default function Login() {
                                                 setShowUsernameOptions(true);
                                                 setActiveUsernameIndex(-1);
                                             }}
-                                            placeholder="Enter your username"
+                                            placeholder="Enter or pick username"
                                             autoComplete="off"
                                             autoCapitalize="none"
                                             spellCheck="false"
@@ -358,16 +366,19 @@ export default function Login() {
                                             <div className="username-options-heading">AVAILABLE ACCOUNTS</div>
                                             {filteredAccounts.map((account, index) => (
                                                 <button
-                                                    key={account}
+                                                    key={account.id}
                                                     type="button"
                                                     className={`username-option ${activeUsernameIndex === index ? 'active' : ''}`}
                                                     role="option"
-                                                    aria-selected={username === account}
+                                                    aria-selected={username === account.id}
                                                     onMouseDown={(event) => event.preventDefault()}
-                                                    onClick={() => selectUsername(account)}
+                                                    onClick={() => selectUsername(account.id)}
                                                 >
-                                                    <span className="username-option-avatar">{account === 'admin' ? 'A' : account === 'doctor' ? 'D' : 'A'}</span>
-                                                    <span className="username-option-name">{account}</span>
+                                                    <span className="username-option-avatar">
+                                                        {account.id.slice(0, 1).toUpperCase()}
+                                                    </span>
+                                                    <span className="username-option-name">{account.id}</span>
+                                                    <span className="username-option-role">{account.role}</span>
                                                     <span className="username-option-arrow">→</span>
                                                 </button>
                                             ))}
@@ -475,4 +486,11 @@ export default function Login() {
             <footer className="login-footer">
                 <span>© 2026 AstroHealth</span>
                 <div>
-                    <a href="#privacy
+                    <a href="#privacy">Privacy</a>
+                    <i>·</i>
+                    <a href="#terms">Terms</a>
+                </div>
+            </footer>
+        </main>
+    );
+}
