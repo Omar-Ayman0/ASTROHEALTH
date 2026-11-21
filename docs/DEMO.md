@@ -9,4 +9,4 @@ Follow [README](../README.md) to install dependencies, copy backend `.env.exampl
 5. With n8n configured, run assistant briefing and inspect evidence references; test unavailable model separately.
 6. Run WF04 manually; describe it as a fixed prototype status snapshot.
 
-No Docker deployment is asserted. The supplied compose targeted legacy ML; excluded rather than imply compatibility. Fresh SQLite state is created by backend.
+A `docker-compose.yml` for engine + backend + frontend is provided but has not been built by the authors (see [DEPLOYMENT.md](DEPLOYMENT.md)); the original compose that targeted the legacy ML service was replaced. Fresh SQLite state is created by backend.

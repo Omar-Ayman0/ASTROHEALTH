@@ -6,10 +6,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        1200,
-        592
+        192,
+        400
       ],
-      "id": "df3c9cc6-ac89-4868-8ece-f761dbd6cc23",
+      "id": "2e6f9cff-fb7f-4c3d-87a4-9d8d1ed5ff78",
       "name": "Manual Trigger"
     },
     {
@@ -36,10 +36,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        1456,
-        592
+        448,
+        400
       ],
-      "id": "f8ba70f2-1ff1-4fc9-aac3-71963efaa202",
+      "id": "b0332d81-c88c-46ce-9b95-9ceceb67de28",
       "name": "Check Earth Connection",
       "retryOnFail": false,
       "credentials": {
@@ -58,10 +58,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        2128,
-        528
+        1120,
+        336
       ],
-      "id": "7264bb1c-dab9-468b-b00e-921df180db16",
+      "id": "c29b2080-cbf4-48a9-ae58-f9d5f660805b",
       "name": "Build Sync Summary"
     },
     {
@@ -73,10 +73,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        2128,
-        768
+        1120,
+        576
       ],
-      "id": "bb62bc32-7535-432c-85af-91c0b139c7ed",
+      "id": "ad8c9724-d8ad-4a64-92ca-a8a30c2e0939",
       "name": "Backend Unreachable"
     },
     {
@@ -85,13 +85,13 @@
         "height": 200,
         "width": 900
       },
-      "id": "b5fd8f1c-2aab-43c2-a841-1a02f7e79770",
+      "id": "32b9f02a-577c-482e-8bb4-3015b5c5fb0d",
       "name": "Overview Note",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        1008,
-        192
+        0,
+        0
       ]
     },
     {
@@ -101,13 +101,13 @@
         "width": 500,
         "color": 5
       },
-      "id": "dddb8909-4409-44e1-ae00-27fcf2756b2b",
+      "id": "e3786cf7-0297-484e-b671-372825e2cd76",
       "name": "Status Note",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        1168,
-        464
+        160,
+        272
       ]
     },
     {
@@ -117,13 +117,13 @@
         "width": 480,
         "color": 6
       },
-      "id": "4789037b-4fbc-42fd-91ae-4fcf1ebc5774",
+      "id": "b15d0815-5cd7-4447-aa73-29836d5981a3",
       "name": "Summary Note",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        1936,
-        272
+        928,
+        80
       ]
     }
   ],
@@ -164,6 +164,5 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "nodeGroups": [],
   "tags": []
 }

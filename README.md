@@ -1,132 +1,124 @@
-# Astronaut Health Monitoring System
+<p align="center"><img src="docs/assets/banner.svg" alt="ASTROHEALTH" width="100%"></p>
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg) ![React](https://img.shields.io/badge/Frontend-React-61DAFB) ![Node](https://img.shields.io/badge/Backend-Node.js-339933) ![Python](https://img.shields.io/badge/ML-FastAPI-009688)
+<h1 align="center">ASTROHEALTH</h1>
+<p align="center"><b>Astronaut health monitoring: a Python intelligence engine, a Node incident backend, n8n automation and mission-control dashboards.</b></p>
 
-> **Astronaut Health Monitoring System** is a comprehensive 3-tier architecture designed to safeguard astronaut health in deep space missions. It combines a **React** frontend for mission control dashboards, a **Node.js** backend for real-time data orchestration, and a **Python/FastAPI** machine learning service that detects anomalies and predicts health risks in real-time.
+<p align="center">
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg">
+  <img alt="Engine" src="https://img.shields.io/badge/engine-Python%203.13-3776AB">
+  <img alt="Backend" src="https://img.shields.io/badge/backend-Node.js%2022-339933">
+  <img alt="Frontend" src="https://img.shields.io/badge/frontend-React%20%2B%20Vite-61DAFB">
+  <img alt="Automation" src="https://img.shields.io/badge/automation-n8n-EA4B71">
+</p>
 
----
+> **Research prototype on synthetic telemetry.** ASTROHEALTH flags deviations from each astronaut's own baseline for human review. It does not diagnose, prescribe or replace a medical officer, and it must not be used with real patient data. See [Limitations](docs/LIMITATIONS.md) and [Security](docs/SECURITY.md).
 
-## System Architecture
+<p align="center"><a href="docs/assets/demo.mp4"><b>▶ Watch the demo recording</b></a></p>
+
+## What it does
+
+1. **Engine** (`astronaut-health-intelligence/`) builds a personal circadian and sleep-aware baseline per astronaut, validates sensor data (no imputation, flatline and gap detection) and raises incidents only when a hybrid statistical and Isolation-Forest score persists. Every event carries the vitals involved, observed vs expected values, and a `needs_human_review` flag.
+2. **Backend** (`backend/`) pulls the engine's event feed with a replay-safe cursor, stores incidents, triage jobs and escalation timers in SQLite, and owns every medical-review state transition (`ACKNOWLEDGE`, `START_REVIEW`, `COMPLETE_REVIEW`).
+3. **n8n workflows** (`automation/`) validate alerts, produce evidence-grounded AI briefs (Gemini, optional) and advance escalation timers. The AI writes a review brief, never a diagnosis.
+4. **Dashboards** (`frontend/`) give astronauts a live status view and medical officers analytics, history, incidents and the workflow center.
+
+| | |
+|---|---|
+| ![Medical officer dashboard](docs/assets/screenshots/medical-officer-dashboard.png) | ![Astronaut dashboard](docs/assets/screenshots/astronaut-dashboard.png) |
+| ![Incident review](docs/assets/screenshots/incident-review.png) | ![AI health assistant](docs/assets/screenshots/ai-health-assistant.png) |
+
+## Architecture
 
 ```mermaid
-graph TD
-    subgraph "Space Station / Client"
-        A[Astronaut Vitals Source] -->|Socket.io| B(Node.js Backend)
-        D[Frontend: Astronaut Dashboard] <-->|Socket.io| B
-        E[Frontend: Doctor Dashboard] <-->|Socket.io| B
-    end
-    
-    subgraph "Server / Cloud"
-        B <-->|HTTP/REST| C(ML Service: FastAPI)
-        C -->|Training| F[(Historical Data)]
-        B -->|Persistence| G[(SQLite DB)]
-    end
+flowchart LR
+  E["Health engine<br/>FastAPI, :8000"] -->|"events + reports, cursor pull"| B["Node backend<br/>Express, SQLite, :4000"]
+  B -->|"alert webhook"| N["n8n<br/>workflows 01-05"]
+  N -->|"x-api-key"| B
+  N -.->|optional| G["Gemini"]
+  B --> F["React dashboards"]
+  F -->|"live ticks (read-only)"| E
 ```
 
-## Key Features
+The backend is the source of truth for incidents and review state; n8n orchestrates but never owns state. The JSON contract between engine and backend is `schema_version: 1.0` ([JSON_CONTRACT](astronaut-health-intelligence/docs/JSON_CONTRACT.md)).
 
-*    **Real-time Telemetry**: Sub-second latency monitoring of heart rate, oxygen saturation, and stress levels.
-*   **AI Risk Assessment**: 
-    *   **Random Forest**: Classifies health risk (Low/High/Critical).
-    *   **Isolation Forest**: Detects anomalies in vital signs.
-*   **Predictive Forecasting**: Uses **Prophet** to forecast heart rate trends for proactive intervention.
-*   **Emergency Comms**: Integrated secure chat between astronauts and medical officers.
-*   **Interactive Dashboards**: 
-    *   **Astronaut View**: Simplified live status and chat.
-    *   **Doctor View**: Detailed analytics, historical trends, and alerts.
-*   **Dockerized**: Fully containerized microservices architecture for easy deployment.
+## Automation
 
-## n8n Automation Layer
+| # | Workflow | Trigger | Purpose |
+|---|---|---|---|
+| 01 | Health Alert Orchestrator | Webhook `health-alert` | Validates `HEALTH_REVIEW_REQUIRED` events, upserts the incident, returns a correlated acknowledgement |
+| 02 | AI Health Assistant | Webhook `health-assistant` | Evidence-grounded explanation from backend report and events |
+| 03 | Incident Review & Acknowledgment | Webhook `incident-review` | Applies `ACKNOWLEDGE` / `START_REVIEW` / `COMPLETE_REVIEW` and verifies persistence |
+| 04 | Mission Connection Monitor | Manual | Read-only status snapshot |
+| 05 | Smart Triage & Escalation Watcher | Every 60 s | AI triage brief per due job, advances escalation timers |
 
-ASTROHEALTH includes an n8n automation layer that connects health-engine events with backend incident handling, AI-assisted medical review, and mission-connection monitoring. Workflow exports are stored in [`automation/workflows/`](automation/workflows/).
+Exports are **inactive** and contain no credentials. Point them at your backend with one command and import the result:
 
-| Workflow | Purpose | Trigger |
-| --- | --- | --- |
-| **01 — Health Alert Orchestrator** | Validates incoming `HEALTH_REVIEW_REQUIRED` events, registers the incident with the backend, and returns a correlated acknowledgement. | Webhook |
-| **02 — AI Health Assistant** | Builds a structured, evidence-aware response using the health report and review-event APIs; Gemini is optional and requires credentials. | Webhook |
-| **03 — Incident Review & Acknowledgment** | Processes medical-officer actions (`ACKNOWLEDGE`, `START_REVIEW`, `COMPLETE_REVIEW`) and verifies the persisted state transition. | Webhook |
-| **04 — Mission Connection Monitor** | Reads a mission-connection snapshot; it does not own dispatch, retries, or acknowledgements. | Manual |
-| **05 — Smart Triage & Escalation Watcher** | Polls backend triage jobs, creates a structured AI brief grounded in supplied evidence, saves it through the backend, and advances due escalation timers. | Every 60 seconds |
-
-**WF05 safety boundary:** the AI produces a review brief, not a diagnosis or treatment recommendation. The backend validates evidence references and owns durable job/escalation state. The current workflow records escalation progression; it does not itself deliver a doctor-facing notification.
-
-See [Automation setup and API contracts](docs/AUTOMATION.md) before importing or activating workflows. All workflow exports should remain inactive until credentials, webhook authentication, URLs, and end-to-end behavior have been verified in the target n8n instance.
-
----
-
-## Tech Stack
-
-*   **Frontend**: React, Vite, Recharts, TailwindCSS.
-*   **Backend**: Node.js, Express, Socket.io.
-*   **ML Service**: Python, FastAPI, Scikit-learn, Prophet, Pandas.
-*   **Database**: SQLite (for chat/logs), In-memory (for real-time vitals).
-
-## Quick Start
-
-### Prerequisites
-*   Docker & Docker Compose
-
-### Run with Docker (Recommended)
-
-1.  **Clone the repository**
-    ```bash
-    git clone https://github.com/chinmai-sd-123/astronaut_health_monitoring.git
-    cd astronaut_health_monitoring
-    ```
-
-2.  **Build and Start Services**
-    ```bash
-    docker-compose up --build
-    ```
-    *Note: The ML service will take a moment to train models on the first run.*
-
-3.  **Access the Application**
-    *   **Frontend**: [http://localhost:5173](http://localhost:5173)
-    *   **Backend API**: [http://localhost:4000](http://localhost:4000)
-    *   **ML Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
-
-## Manual Development Setup
-
-If you prefer running services individually:
-
-### 1. ML Service (Python)
 ```bash
-cd ml_service
-# Create venv (optional but recommended)
-python -m venv venv
-source venv/bin/activate # or venv\Scripts\activate on Windows
-pip install -r requirements.txt
-python train_models.py  # Train initial models
-uvicorn main:app --reload --port 8000
+node scripts/configure-workflows.js https://api.example.com   # writes automation/workflows.configured/
 ```
 
-### 2. Backend (Node.js)
+Details and contracts: [automation/README.md](automation/README.md), [docs/AUTOMATION.md](docs/AUTOMATION.md).
+
+## Quick start (local, Windows launcher)
+
+```bat
+:: 1. engine environment (once)
+cd astronaut-health-intelligence
+py -m venv .venv && .venv\Scripts\pip install -r requirements.txt
+cd ..\backend && npm install && copy .env.example .env   :: set SESSION_SECRET and API_KEY
+cd ..\frontend && npm install
+cd .. && START_ASTROHEALTH.bat
+```
+
+Open <http://localhost:5173>. Demo accounts (`admin`, `doctor`, `astro01`..`astro04`) are created on first start; their password is `SEED_PASSWORD` or `123456` if unset.
+
+## Quick start (Linux / macOS)
+
 ```bash
-cd backend
-npm install
-node seed.js # Optional: Seed initial data
-node server.js
+# engine
+cd astronaut-health-intelligence && python3 -m venv .venv && . .venv/bin/activate
+pip install -r requirements-tested-py313.txt fastapi==0.162.4
+HEALTH_SIM_AUTOSTART=1 uvicorn api_server:app --host 127.0.0.1 --port 8000
+
+# backend (new terminal)
+cd backend && npm install && cp .env.example .env     # set SESSION_SECRET and API_KEY
+HEALTH_ENGINE_URL=http://127.0.0.1:8000 node server.js
+
+# frontend (new terminal)
+cd frontend && npm install && cp .env.example .env && npm run dev
 ```
 
-### 3. Frontend (React)
+## Deploy on a VPS
+
+See **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**: environment variables, reverse proxy ([deploy/nginx.conf.example](deploy/nginx.conf.example)), n8n wiring, optional `docker compose`, and a hardening checklist. Read it before exposing anything to the internet.
+
+## Testing
+
 ```bash
-cd frontend
-npm install
-npm run dev
+cd astronaut-health-intelligence
+python tests/test_engine.py   # 23 tests
+python tests/test_live.py     # 16 tests
 ```
 
-## Project Structure
+Verified status and everything that was **not** tested: [docs/FINAL_VERIFICATION.md](docs/FINAL_VERIFICATION.md) and [CHANGELOG.md](CHANGELOG.md).
+
+## Repository layout
 
 ```
-/health_monitoring
-├── /ml_service     # Python FastAPI (Model training & Inference)
-├── /backend        # Node.js Express (Socket.io & API)
-├── /frontend       # React Vite (Dashboards)
-└── docker-compose.yml
+astronaut-health-intelligence/  Python engine (active runtime: hybrid-v2.0, schema 1.0), tests, integration/node
+reference/engine-v4.1.1/        newer engine handoff, kept for comparison, not imported (see docs/VERSIONS.md)
+backend/                        Express API, SQLite, engine sync worker, incident / triage / escalation routes
+frontend/                       React + Vite dashboards
+automation/                     n8n workflow exports (01-05) and setup guide
+ml_service/                     legacy Prophet / Random-Forest service, not required by the engine-based stack
+deploy/  scripts/               nginx example, workflow URL configurator
+docs/                           architecture, automation, security, limitations, verification
 ```
 
-## Contributing
+## Engine versions
 
-Contributions are welcome! Please fork the repository and submit a pull request.
+The active engine is `hybrid-v2.0` (API advertises 2.1.0). The `reference/engine-v4.1.1` handoff (`hybrid-v2.1`) is **not** wired in; promoting it requires compatibility tests and a coordinated JSON-contract review ([docs/VERSIONS.md](docs/VERSIONS.md)).
 
+## License
 
+MIT. See [LICENSE](LICENSE).

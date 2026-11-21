@@ -1,0 +1,13 @@
+Environment: Linux, Python 3.12.3, numpy/pandas 3.0.6 stack as installed in the sandbox, no network.
+
+$ cd astronaut-health-intelligence
+$ python tests/test_engine.py
+...
+23/23 passed
+$ python tests/test_live.py
+...
+16/16 passed
+
+Before the timestamp normalisation in engine/evaluation.py and tests/test_live.py: 20/23 and 15/16
+(TypeError: tz-naive vs tz-aware comparison; see docs/test-results/engine-pytest.txt).
+pytest itself was not installed in this environment; the scripts were run directly.

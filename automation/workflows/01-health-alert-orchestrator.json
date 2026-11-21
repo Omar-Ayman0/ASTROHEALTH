@@ -11,10 +11,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -880,
-        -96
+        384,
+        432
       ],
-      "id": "c0b6f48c-b8a4-44f6-b3be-1c06490e9039",
+      "id": "fa3d220e-3592-482b-9ff1-9df56d822b8e",
       "name": "Webhook",
       "webhookId": "2e483a6a-4e28-4ee7-81bb-e6601b20acd8"
     },
@@ -25,31 +25,31 @@
             {
               "id": "835cfe19-851e-40f7-9799-93f8a88ebe2b",
               "name": "schema_version",
-              "value": "={{ typeof $json.body?.schema_version === 'string' ? $json.body?.schema_version : '' }}",
+              "value": "={{ $json.body?.schema_version || '' }}",
               "type": "string"
             },
             {
               "id": "f92e6cd2-f139-40a1-b9ed-33f2f4a58b15",
               "name": "event_type",
-              "value": "={{ typeof $json.body?.event_type === 'string' ? $json.body?.event_type : '' }}",
+              "value": "={{ $json.body?.event_type || '' }}",
               "type": "string"
             },
             {
               "id": "dec608ab-f100-45a8-b089-ecd1f5ac5fbc",
               "name": "event_id",
-              "value": "={{ typeof $json.body?.event_id === 'string' ? $json.body?.event_id : '' }}",
+              "value": "={{ typeof $json.body?.event_id === 'string' ? $json.body.event_id : '' }}",
               "type": "string"
             },
             {
               "id": "102fff46-7d5b-4382-a6bb-ef361349cb9f",
               "name": "astronaut_id",
-              "value": "={{ typeof $json.body?.astronaut_id === 'string' ? $json.body?.astronaut_id : '' }}",
+              "value": "={{ typeof $json.body?.astronaut_id === 'string' ? $json.body.astronaut_id : '' }}",
               "type": "string"
             },
             {
               "id": "a3ce9672-35ef-4fa4-ad96-b849b4dc868a",
               "name": "severity",
-              "value": "={{ typeof $json.body?.event?.severity === 'string' ? $json.body?.event?.severity : '' }}",
+              "value": "={{ $json.body?.event?.severity || '' }}",
               "type": "string"
             },
             {
@@ -61,50 +61,50 @@
             {
               "id": "17ace7da-5059-40fb-aa03-be64dc310bd8",
               "name": "anomaly_score",
-              "value": "={{ typeof $json.body?.event?.anomaly_score === 'number' && Number.isFinite($json.body?.event?.anomaly_score) ? $json.body?.event?.anomaly_score : 0 }}",
+              "value": "={{ typeof $json.body?.event?.anomaly_score === 'number' ? $json.body.event.anomaly_score : null }}",
               "type": "number"
             },
             {
               "id": "d5873fcc-3a54-4026-a227-5c8b3745e7d9",
               "name": "explanation",
-              "value": "={{ typeof $json.body?.event?.explanation === 'string' ? $json.body?.event?.explanation : '' }}",
+              "value": "={{ typeof $json.body?.event?.explanation === 'string' ? $json.body.event.explanation : '' }}",
               "type": "string"
             },
             {
               "id": "37e53fc1-ed1a-4f76-9f69-fb1ed8ce7beb",
               "name": "created_at",
-              "value": "={{ $json.body?.event?.created_at || $json.body?.event?.timestamp || $json.body?.timestamp || $json.body?.emitted_at || '' }}",
+              "value": "={{ $json.body?.event?.created_at || $json.body?.created_at || $json.body?.event?.timestamp || $json.body?.timestamp || '' }}",
               "type": "string"
             },
             {
               "id": "ceb9a7bb-2197-4d9b-9a1e-3d024c82f454",
               "name": "emission_id",
               "type": "string",
-              "value": "={{ typeof $json.body?.emission_id === 'string' ? $json.body?.emission_id : '' }}"
+              "value": "={{ typeof $json.body?.emission_id === 'string' ? $json.body.emission_id : '' }}"
             },
             {
               "id": "cda9d969-3e58-476f-832d-7c3c61d62be4",
               "name": "engine_instance_id",
               "type": "string",
-              "value": "={{ typeof $json.body?.engine_instance_id === 'string' ? $json.body?.engine_instance_id : '' }}"
+              "value": "={{ typeof $json.body?.engine_instance_id === 'string' ? $json.body.engine_instance_id : '' }}"
             },
             {
               "id": "5d027627-3149-4ae4-a95e-f36923d798ca",
               "name": "emitted_at",
               "type": "string",
-              "value": "={{ typeof $json.body?.emitted_at === 'string' ? $json.body?.emitted_at : '' }}"
+              "value": "={{ typeof $json.body?.emitted_at === 'string' ? $json.body.emitted_at : '' }}"
             },
             {
               "id": "e4cc7fde-4f30-4f72-9d0e-83550eb5b9ed",
               "name": "run",
               "type": "number",
-              "value": "={{ Number.isInteger($json.body?.run) ? $json.body?.run : 0 }}"
+              "value": "={{ Number.isInteger($json.body?.run) && $json.body.run >= 1 ? $json.body.run : null }}"
             },
             {
               "id": "fedcd9b6-517d-485a-824c-557d2924630d",
               "name": "sequence",
               "type": "number",
-              "value": "={{ Number.isInteger($json.body?.sequence) ? $json.body?.sequence : 0 }}"
+              "value": "={{ Number.isInteger($json.body?.sequence) && $json.body.sequence >= 1 ? $json.body.sequence : null }}"
             },
             {
               "id": "1b990c20-0e5d-4b51-82f0-e6ad3576bac9",
@@ -115,7 +115,7 @@
             {
               "id": "d25d0af6-ec74-4d3d-bd4b-5df5ea32e120",
               "name": "source",
-              "value": "={{ typeof $json.body?.source === 'string' ? $json.body.source : '' }}",
+              "value": "={{ $json.body?.source || $json.body?.event?.source || '' }}",
               "type": "string"
             },
             {
@@ -137,10 +137,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        -640,
-        -96
+        624,
+        432
       ],
-      "id": "8cd54785-a1e0-4320-a039-53a2efe806c3",
+      "id": "07b2d7a8-60b2-437b-9b0c-d7d8bc5a6f25",
       "name": "Normalize Alert"
     },
     {
@@ -204,7 +204,7 @@
             },
             {
               "id": "e67180c4-fbae-4d16-92e6-f7bdcabcb3b1",
-              "leftValue": "=\n{{ (() => {\n  const b = $('Webhook').first().json.body;\n  const e = b?.event;\n\n  const id = v =>\n    typeof v === 'string' &&\n    v.trim().length > 0 &&\n    v === v.trim();\n\n  const createdAt =\n    e?.created_at ||\n    b?.created_at ||\n    e?.timestamp ||\n    b?.timestamp;\n\n  const needsHumanReview =\n    e?.needs_human_review ??\n    b?.needs_human_review;\n\n  return !!(\n    b &&\n    typeof b === 'object' &&\n    !Array.isArray(b) &&\n    e &&\n    typeof e === 'object' &&\n    !Array.isArray(e) &&\n\n    b.schema_version === '1.0' &&\n    b.event_type === 'HEALTH_REVIEW_REQUIRED' &&\n\n    id(b.event_id) &&\n    id(b.astronaut_id) &&\n    id(b.emission_id) &&\n    id(b.engine_instance_id) &&\n\n    Number.isInteger(b.run) &&\n    b.run >= 1 &&\n\n    Number.isInteger(b.sequence) &&\n    b.sequence >= 1 &&\n\n    typeof createdAt === 'string' &&\n    Number.isFinite(Date.parse(createdAt)) &&\n\n    typeof b.emitted_at === 'string' &&\n    Number.isFinite(Date.parse(b.emitted_at)) &&\n\n    e.event_id === b.event_id &&\n    e.astronaut_id === b.astronaut_id &&\n\n    needsHumanReview === true &&\n\n    typeof e.anomaly_score === 'number' &&\n    Number.isFinite(e.anomaly_score) &&\n    e.anomaly_score >= 0 &&\n    e.anomaly_score <= 1 &&\n\n    typeof e.severity === 'string' &&\n    e.severity.trim().length > 0 &&\n\n    typeof e.explanation === 'string' &&\n    e.explanation.trim().length > 0\n  );\n})() }}\n",
+              "leftValue": "={{ (() => {\n  const b = $('Webhook').first().json.body;\n  const e = b?.event;\n\n  const id = v =>\n    typeof v === 'string' &&\n    v.trim().length > 0 &&\n    v === v.trim();\n\n  const createdAt =\n    e?.created_at ||\n    b?.created_at ||\n    e?.timestamp ||\n    b?.timestamp;\n\n  const needsHumanReview =\n    e?.needs_human_review ??\n    b?.needs_human_review;\n\n  return !!(\n    b &&\n    typeof b === 'object' &&\n    !Array.isArray(b) &&\n    e &&\n    typeof e === 'object' &&\n    !Array.isArray(e) &&\n\n    b.schema_version === '1.0' &&\n    b.event_type === 'HEALTH_REVIEW_REQUIRED' &&\n\n    id(b.event_id) &&\n    id(b.astronaut_id) &&\n    id(b.emission_id) &&\n    id(b.engine_instance_id) &&\n\n    Number.isInteger(b.run) &&\n    b.run >= 1 &&\n\n    Number.isInteger(b.sequence) &&\n    b.sequence >= 1 &&\n\n    typeof createdAt === 'string' &&\n    Number.isFinite(Date.parse(createdAt)) &&\n\n    typeof b.emitted_at === 'string' &&\n    Number.isFinite(Date.parse(b.emitted_at)) &&\n\n    e.event_id === b.event_id &&\n    e.astronaut_id === b.astronaut_id &&\n\n    needsHumanReview === true &&\n\n    typeof e.anomaly_score === 'number' &&\n    Number.isFinite(e.anomaly_score) &&\n    e.anomaly_score >= 0 &&\n    e.anomaly_score <= 1 &&\n\n    typeof e.severity === 'string' &&\n    e.severity.trim().length > 0 &&\n\n    typeof e.explanation === 'string' &&\n    e.explanation.trim().length > 0\n  );\n})() }}",
               "rightValue": "",
               "operator": {
                 "type": "boolean",
@@ -221,10 +221,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -352,
-        -96
+        912,
+        432
       ],
-      "id": "e6cae407-6b9a-442e-87ba-d65d8e85894d",
+      "id": "27bc0fc3-438e-453f-b994-d26d9336e424",
       "name": "Validate Review Event"
     },
     {
@@ -236,10 +236,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        480,
-        -96
+        1744,
+        432
       ],
-      "id": "27b1256f-dc4f-4268-bff2-16353f042312",
+      "id": "6e681d52-b809-4b23-a27d-39c0a5815a9e",
       "name": "Build ACK"
     },
     {
@@ -253,10 +253,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        672,
-        -96
+        1936,
+        432
       ],
-      "id": "745adabd-1d48-47c2-a2c7-cedb522fa430",
+      "id": "de1e895e-4be1-4d9c-9dac-a0ada089b6c8",
       "name": "Return Success ACK"
     },
     {
@@ -270,10 +270,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        -352,
-        272
+        912,
+        800
       ],
-      "id": "1118ca15-f7be-48ed-947c-b2db7b86ce49",
+      "id": "1d277019-60ad-4ec0-abec-59c67c01b036",
       "name": "Rejected - Invalid Event"
     },
     {
@@ -286,10 +286,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -960,
-        -432
+        304,
+        96
       ],
-      "id": "08eb1adf-e3da-4973-a48b-858ea365d5ab",
+      "id": "2e9e9aee-29bf-4968-ad49-7957d424b326",
       "name": "Sticky Note"
     },
     {
@@ -302,10 +302,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -960,
-        -240
+        304,
+        288
       ],
-      "id": "c4652454-7aa3-4160-8723-8718970c0858",
+      "id": "b77cb4b0-cf93-478d-9ca4-802a37e6fd27",
       "name": "Sticky Note1"
     },
     {
@@ -318,10 +318,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -432,
-        -240
+        832,
+        288
       ],
-      "id": "4818b73a-a114-4038-800e-98cb8317a868",
+      "id": "54a77d7f-a924-458c-9089-6d02279823be",
       "name": "Sticky Note2"
     },
     {
@@ -334,10 +334,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -128,
-        -240
+        1136,
+        288
       ],
-      "id": "5ada8081-1be2-4fed-88bd-6436584adb8f",
+      "id": "693db39b-e532-45bd-9a67-bdfa70dd4170",
       "name": "Sticky Note3"
     },
     {
@@ -350,10 +350,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        416,
-        -240
+        1680,
+        288
       ],
-      "id": "f7a00b9d-677a-451d-ac89-0ea77ad94751",
+      "id": "8bd9107b-4698-4c6f-ba11-11e420c30e33",
       "name": "Sticky Note4"
     },
     {
@@ -366,10 +366,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -432,
-        128
+        832,
+        656
       ],
-      "id": "e5dfce26-554f-49b6-b6e1-c450d8c462d9",
+      "id": "30284134-4d16-40a5-9103-1810261c6d22",
       "name": "Sticky Note5"
     },
     {
@@ -382,10 +382,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -960,
-        128
+        304,
+        656
       ],
-      "id": "cf813f68-da4b-4374-a44f-2b849c523c99",
+      "id": "3e9c4b1d-da55-43c0-b1ed-4b0055e1186e",
       "name": "Integration Note"
     },
     {
@@ -411,10 +411,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        -48,
-        -96
+        1216,
+        432
       ],
-      "id": "30c1e4c9-6101-40c4-96e5-f4bcd61c5712",
+      "id": "8f945e03-9a48-4558-a13f-562946b1e301",
       "name": "Backend Incident Upsert",
       "retryOnFail": false,
       "credentials": {
@@ -453,10 +453,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        224,
-        -96
+        1488,
+        432
       ],
-      "id": "f264cda6-f8f7-4da1-929e-7f79a96e8454",
+      "id": "e7f63501-f29a-405e-88eb-63734c7f57fc",
       "name": "Validate Backend Response"
     },
     {
@@ -470,10 +470,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        192,
-        272
+        1456,
+        800
       ],
-      "id": "9cd255f5-7498-4039-94ff-caa0b0de9376",
+      "id": "7d444907-2916-4a45-afaa-103124cf5e0d",
       "name": "Return Backend Error"
     },
     {
@@ -486,10 +486,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -128,
-        128
+        1136,
+        656
       ],
-      "id": "a4e30dd2-3677-4a54-a5f3-d27cfded1472",
+      "id": "e5712c5f-cdd8-45c2-b1d7-789aaef8e5cb",
       "name": "Backend Error Note"
     }
   ],
@@ -588,6 +588,5 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "nodeGroups": [],
   "tags": []
 }

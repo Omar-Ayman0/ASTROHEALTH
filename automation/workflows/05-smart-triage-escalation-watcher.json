@@ -15,10 +15,10 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        4304,
-        1296
+        176,
+        656
       ],
-      "id": "6c485089-a5ac-4f4c-9905-8c9bb5756bd7",
+      "id": "36879858-2671-47f2-8770-89c087893c63",
       "name": "Every 60 Seconds"
     },
     {
@@ -39,10 +39,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        4640,
-        1040
+        512,
+        400
       ],
-      "id": "caa3f8f6-6cd3-4a18-b8b7-9154f48b2e5b",
+      "id": "b3f0ff42-7c17-4211-9c07-489d3da3e475",
       "name": "Get Due Triage Jobs",
       "credentials": {
         "httpHeaderAuth": {
@@ -53,15 +53,15 @@
     },
     {
       "parameters": {
-        "jsCode": "const payload = $json.body ?? $json.data ?? $json;\nconst jobs = Array.isArray(payload.jobs) ? payload.jobs : [];\nreturn jobs.map(job => ({ json: job }));"
+        "jsCode": "\nconst payload = typeof $json.data === 'string'\n  ? JSON.parse($json.data)\n  : ($json.data ?? $json);\n\nconst jobs = Array.isArray(payload.jobs)\n  ? payload.jobs\n  : [];\n\nreturn jobs.map((job) => ({\n  json: job\n}));\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4864,
-        1040
+        736,
+        400
       ],
-      "id": "5a17efca-0789-46e1-8c75-93909ad4bec5",
+      "id": "c5e3a1e4-bd15-4a10-818a-67b71e0fc54a",
       "name": "Expand Triage Jobs"
     },
     {
@@ -82,10 +82,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        5072,
-        1040
+        944,
+        400
       ],
-      "id": "6ba229b7-11c7-433f-93d2-ef9ea870f7c9",
+      "id": "0efee051-8e0c-478a-893d-9971052da26c",
       "name": "Get Triage Context",
       "credentials": {
         "httpHeaderAuth": {
@@ -106,16 +106,16 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        5280,
-        1040
+        1152,
+        400
       ],
-      "id": "d882ec8c-ba21-433c-acfc-868a238e0642",
+      "id": "8e3e4f4f-e2b4-4b9b-96cb-4552219d2fea",
       "name": "Generate AI Triage Brief",
       "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.1-flash-lite",
+        "modelName": "models/gemini-3.5-flash-lite",
         "options": {
           "temperature": 0.2
         }
@@ -123,10 +123,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        5280,
-        1184
+        1152,
+        544
       ],
-      "id": "763ad4d8-a033-4c0c-833a-1df6bde0f9d0",
+      "id": "f300892a-11eb-4fa1-bfc4-3e36adc9dbf7",
       "name": "Google Gemini Chat Model",
       "credentials": {
         "googlePalmApi": {
@@ -142,10 +142,10 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        5488,
-        1184
+        1360,
+        544
       ],
-      "id": "85088593-e418-43c7-b87b-9dc679cf2b69",
+      "id": "b4f1d2cc-ac91-4f0c-b936-dbf88d6cf21e",
       "name": "Triage Brief Output Schema"
     },
     {
@@ -155,10 +155,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5600,
-        1040
+        1472,
+        400
       ],
-      "id": "c998a620-8d8b-430c-ac62-111c4e387eb5",
+      "id": "fc75c3f0-7444-4388-9957-74e9eedf875b",
       "name": "Validate Brief or Build Fallback"
     },
     {
@@ -169,7 +169,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ ({ request_id: $json.request_id, ...$json.brief }) }}",
+        "jsonBody": "={{ JSON.stringify({ request_id: $json.request_id, ...$json.brief }) }}",
         "options": {
           "response": {
             "response": {
@@ -184,10 +184,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        5824,
-        1040
+        1696,
+        400
       ],
-      "id": "42c6ef60-58b2-4dc7-a173-3b1e01bdd457",
+      "id": "c8632a21-17d5-4bfb-b5e9-b37373aa721a",
       "name": "Save Triage Brief",
       "credentials": {
         "httpHeaderAuth": {
@@ -214,10 +214,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        4656,
-        1552
+        528,
+        912
       ],
-      "id": "da1ffb97-b8bb-4506-9281-c34cf8cfea3d",
+      "id": "ca8b1a2c-b965-4e17-9cd6-a45942fd1236",
       "name": "Get Due Escalations",
       "credentials": {
         "httpHeaderAuth": {
@@ -233,10 +233,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4896,
-        1552
+        768,
+        912
       ],
-      "id": "2ff9d455-2a9d-4596-95ce-36117e79f848",
+      "id": "c9817316-182a-4992-8749-1d83c73d74fa",
       "name": "Expand Due Escalations"
     },
     {
@@ -246,10 +246,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5136,
-        1552
+        1008,
+        912
       ],
-      "id": "6ed58bbc-2fbc-4e6a-97cf-e015da37ea5d",
+      "id": "63c0be10-bb73-4c40-bea6-aff736f215cb",
       "name": "Build Escalation Notification"
     },
     {
@@ -275,10 +275,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        5424,
-        1552
+        1296,
+        912
       ],
-      "id": "f08277f4-cf60-42ec-abe0-f6d2b41a7261",
+      "id": "b35e3958-0742-4580-9294-7b64a2cc313a",
       "name": "Record Escalation Advance",
       "credentials": {
         "httpHeaderAuth": {
@@ -289,17 +289,17 @@
     },
     {
       "parameters": {
-        "content": "# ASTROHEALTH\n### 05 | Smart Triage & Escalation Watcher\n**Purpose:** creates evidence-grounded AI briefs and advances durable escalation timers.\n\n**Status:** inactive export; configure credentials and verify end-to-end behavior before activation. Backend owns jobs, due times, idempotency and escalation cancellation.",
+        "content": "# ASTROHEALTH\n### 05 | Smart Triage & Escalation Watcher\n**Purpose:** creates evidence-grounded AI briefs and advances durable escalation timers.\n\n**Reliability:** the backend owns jobs, due times, idempotency and ACK cancellation. n8n is safe to restart.",
         "height": 190,
         "width": 820
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        4128,
-        640
+        0,
+        0
       ],
-      "id": "3cea4beb-4e1a-4512-bae3-3229e91944f9",
+      "id": "d4d6b861-714f-4f75-a911-303f4931ce5c",
       "name": "Workflow Overview"
     },
     {
@@ -312,15 +312,15 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        4560,
-        864
+        432,
+        224
       ],
-      "id": "7e42c3b0-6df7-4657-9d9e-7805c954d44e",
+      "id": "585a9326-3df8-4c26-8913-ca89982553f5",
       "name": "AI Triage Note"
     },
     {
       "parameters": {
-        "content": "## 02. Escalation\nPoll due rows → advance the durable backend escalation once with a deterministic request_id.\n\nThe backend cancels the active escalation when a doctor acknowledges the incident. The notification object built in this workflow is not delivered to a doctor; connect a verified notification channel separately if required.",
+        "content": "## 02. Escalation\nPoll due rows → advance the durable backend escalation once with a deterministic request_id.\n\nThe backend cancels the active escalation when a doctor ACKs the incident. Add a dedicated doctor-notification channel only after its backend or UI contract is confirmed.",
         "height": 306,
         "width": 1050,
         "color": 5
@@ -328,10 +328,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        4592,
-        1408
+        464,
+        768
       ],
-      "id": "64f8417a-7cea-4069-a6cb-fe3298e92212",
+      "id": "6c1109f6-2a4c-402a-ab67-05817092630e",
       "name": "Escalation Note"
     }
   ],
@@ -469,6 +469,5 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "nodeGroups": [],
   "tags": []
 }

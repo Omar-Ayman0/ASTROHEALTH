@@ -11,10 +11,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        3344,
-        512
+        80,
+        352
       ],
-      "id": "f09316df-a9a4-473b-b2d2-6ef7db241e63",
+      "id": "186872e8-0084-4803-a560-8ad2e3195036",
       "name": "Webhook",
       "webhookId": "c40137a9-95fa-439d-ac01-f5f0e6af9ef1"
     },
@@ -71,10 +71,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        3600,
-        512
+        336,
+        352
       ],
-      "id": "d37a7071-93d6-46bf-b247-dc9bb381ba4e",
+      "id": "becd12ef-b055-4c81-995a-d52f86af9c23",
       "name": "Normalize Action"
     },
     {
@@ -164,10 +164,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        3936,
-        512
+        672,
+        352
       ],
-      "id": "3ae48b4c-0df9-493d-ba29-d340af40bc23",
+      "id": "a1219a61-3f5a-403f-9142-22846dea2493",
       "name": "Validate Review Action"
     },
     {
@@ -181,10 +181,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        4304,
-        848
+        1040,
+        688
       ],
-      "id": "8331f608-b22b-4230-ab18-33481eb0ed7d",
+      "id": "8b0a3953-2d39-4a50-94c2-b9f693c79a05",
       "name": "Rejected - Invalid Action"
     },
     {
@@ -194,10 +194,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4640,
-        512
+        1376,
+        352
       ],
-      "id": "43f833fa-976d-4686-98d6-f4ff1d2f7a2b",
+      "id": "371ef00c-e2a4-49c8-a667-908277d7ffef",
       "name": "Validate Backend Response",
       "onError": "continueErrorOutput"
     },
@@ -210,10 +210,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        4784,
-        816
+        1520,
+        656
       ],
-      "id": "f61e4e68-0bec-425f-a9d4-fee9577596a0",
+      "id": "06c7b4c6-ea59-42b0-b883-58f9af9db5eb",
       "name": "Build Connection Error"
     },
     {
@@ -227,10 +227,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        4928,
-        496
+        1664,
+        336
       ],
-      "id": "43d115e9-37ac-4884-8389-f9a8ed922d52",
+      "id": "e7888f78-1d38-4ab2-be5b-c479198dea65",
       "name": "Return Review ACK"
     },
     {
@@ -261,10 +261,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        4288,
-        512
+        1024,
+        352
       ],
-      "id": "7b2d6426-02dd-4974-9908-40079755196a",
+      "id": "d45d33f8-3f3b-4892-b211-07eb7c44b0cd",
       "name": "Update Incident Status",
       "retryOnFail": false,
       "credentials": {
@@ -283,10 +283,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        3264,
-        160
+        0,
+        0
       ],
-      "id": "a069a9e8-86b8-469d-bc08-c5f6d370f9dd",
+      "id": "777bb06f-7b28-4739-83f1-0aa8aa8b2970",
       "name": "Overview Note"
     },
     {
@@ -299,10 +299,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        3264,
-        384
+        0,
+        224
       ],
-      "id": "4321af32-06e9-4eb0-a9d1-7f7d8245db41",
+      "id": "564f6e31-0685-4bf0-ae25-cf1d2a53907d",
       "name": "Ingestion Note"
     },
     {
@@ -315,10 +315,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        3824,
-        384
+        560,
+        224
       ],
-      "id": "d3477e6c-807e-4eea-9231-ea17bf1854cb",
+      "id": "c69fd862-936c-4957-8297-3331e78f921c",
       "name": "Validation Note"
     },
     {
@@ -331,10 +331,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        4192,
-        384
+        928,
+        224
       ],
-      "id": "575f0165-5959-4d80-bb93-9c5db8ee5c0e",
+      "id": "13122508-dc6a-43a0-9137-c266e1bc9ea0",
       "name": "Processing Note"
     },
     {
@@ -347,10 +347,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        4560,
-        384
+        1296,
+        224
       ],
-      "id": "edd3bc55-328b-4527-b7b6-1f66296ccf43",
+      "id": "2e8f604f-66e2-4de0-aebe-698ab548bddf",
       "name": "Response Note"
     },
     {
@@ -363,10 +363,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        4192,
-        704
+        928,
+        544
       ],
-      "id": "fd19c60a-951c-4eb6-8f3e-c7d99fd7f212",
+      "id": "73eb79ac-39fc-4469-8c95-61bf108b2ff7",
       "name": "Rejection Note"
     },
     {
@@ -379,10 +379,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        4560,
-        704
+        1296,
+        544
       ],
-      "id": "49d711ad-ff43-47f9-a031-ce90b9340317",
+      "id": "66fe3847-a645-4bdd-a4dd-7c91be2d5e2c",
       "name": "Connection Error Note"
     },
     {
@@ -395,10 +395,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        3264,
-        704
+        0,
+        544
       ],
-      "id": "40c1bc01-acb8-4274-a632-85b9d7126b32",
+      "id": "8d53f8eb-2bc4-4f31-ae18-9952a33fa2c0",
       "name": "Integration Note"
     }
   ],
@@ -497,6 +497,5 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "nodeGroups": [],
   "tags": []
 }

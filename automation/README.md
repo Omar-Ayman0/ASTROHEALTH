@@ -16,8 +16,8 @@ This directory contains the versioned n8n workflow exports used by ASTROHEALTH. 
 
 1. Import the required JSON files into n8n. Exports are inactive.
 2. Create/select the `ASTROHEALTH Backend Auth` HTTP Header Auth credential and set the header to `x-api-key` with the value of backend `API_KEY`. Assign it to every backend HTTP Request node.
-3. For WF02 and WF05, configure the Google Gemini credential. WF05 uses `models/gemini-3.1-flash-lite`.
-4. Set backend URLs to an address reachable from the n8n runtime. The checked-in exports use `http://host.docker.internal:4000`; for native n8n use `http://127.0.0.1:4000`, or use the deployed backend URL. Linux Docker may require a host-gateway mapping.
+3. For WF02 and WF05, configure the Google Gemini credential. WF05 uses the model set in its Gemini node (`models/gemini-3.5-flash-lite` in this export); change it if your API key does not offer it.
+4. Set backend URLs to an address reachable from the n8n runtime. The checked-in exports use `http://host.docker.internal:4000`. Rewrite them in one step with `node scripts/configure-workflows.js <backend-url>` (writes `automation/workflows.configured/`; add `--in-place` to rewrite this folder). Use `http://127.0.0.1:4000` for native n8n or your public backend URL on a VPS. Linux Docker needs `extra_hosts: ["host.docker.internal:host-gateway"]` for the default.
 5. Configure and verify webhook authentication for WF01–WF03 before exposing their webhook URLs. Configure the matching backend webhook URL environment variables for the alert dispatch integration.
 6. Test with non-production data, then activate only the workflows whose credentials, contracts, and failure paths have been verified. WF04 remains manual; WF05 is scheduled.
 

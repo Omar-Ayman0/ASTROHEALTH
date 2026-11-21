@@ -1,28 +1,47 @@
+# ASTROHEALTH: engine + backend + frontend.  n8n is run separately (see docs/DEPLOYMENT.md).
+# Usage:  cp .env.example .env  &&  edit .env  &&  docker compose up -d --build
 services:
-  ml_service:
-    build: ./ml_service
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./ml_service:/app
+  engine:
+    build: ./astronaut-health-intelligence
+    restart: unless-stopped
     environment:
-      - PYTHONUNBUFFERED=1
+      HEALTH_SIM_AUTOSTART: "1"
+    ports:
+      - "127.0.0.1:8000:8000"   # published for the browser only through your reverse proxy (see deploy/nginx.conf.example)
 
   backend:
     build: ./backend
-    ports:
-      - "4000:4000"
-    environment:
-      - ML_SERVICE_URL=http://ml_service:8000
-      - PORT=4000
+    restart: unless-stopped
     depends_on:
-      - ml_service
+      - engine
+    environment:
+      PORT: "4000"
+      NODE_ENV: production
+      SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env}
+      API_KEY: ${API_KEY:?set API_KEY in .env}
+      SEED_PASSWORD: ${SEED_PASSWORD:-}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
+      HEALTH_ENGINE_URL: http://engine:8000
+      DB_PATH: /app/data/health_monitor.db
+      HEALTH_ALERT_WEBHOOK_URL: ${HEALTH_ALERT_WEBHOOK_URL:-}
+      HEALTH_ASSISTANT_WEBHOOK_URL: ${HEALTH_ASSISTANT_WEBHOOK_URL:-}
+      INCIDENT_REVIEW_WEBHOOK_URL: ${INCIDENT_REVIEW_WEBHOOK_URL:-}
+    ports:
+      - "127.0.0.1:4000:4000"
     volumes:
-      - ./backend:/app
+      - backend-data:/app/data
 
   frontend:
-    build: ./frontend
-    ports:
-      - "5173:80"
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:4000}
+        VITE_ENGINE_URL: ${VITE_ENGINE_URL:-http://localhost:8000}
+    restart: unless-stopped
     depends_on:
       - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  backend-data:
