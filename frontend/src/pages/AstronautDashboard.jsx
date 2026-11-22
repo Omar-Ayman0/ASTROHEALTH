@@ -233,7 +233,7 @@ const AstronautDashboard = () => {
             }
         >
             <div className="col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                <AstronautProfileCard astronaut={astronaut} />
+                <AstronautProfileCard astronaut={astronaut} vitals={vitals} isAlert={Boolean(isCritical)} />
                 <DiagnosticsWidget riskData={riskData} anomalyData={anomalyData} />
             </div>
 

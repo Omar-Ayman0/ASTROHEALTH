@@ -1,8 +1,53 @@
-﻿import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import DoctorProfileCard from '../Widgets/DoctorProfileCard';
 import avatar from '../../assets/doctor.jpeg';
+import './DashboardLayout.css';
+
+const pad = (n) => String(n).padStart(2, '0');
+
+const useNow = () => {
+    const [now, setNow] = useState(() => new Date());
+    useEffect(() => {
+        const timer = setInterval(() => setNow(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+    return now;
+};
+
+const HeaderClock = () => {
+    const now = useNow();
+    return (
+        <div className="dash-clock" title="Local date and time">
+            <span className="dash-clock-date">
+                {now.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
+            </span>
+            <span className="dash-clock-time">
+                {pad(now.getHours())}:{pad(now.getMinutes())}:{pad(now.getSeconds())}
+            </span>
+        </div>
+    );
+};
+
+const FooterClock = () => {
+    const now = useNow();
+    return (
+        <span className="dash-footer-utc">
+            UTC {pad(now.getUTCHours())}:{pad(now.getUTCMinutes())}:{pad(now.getUTCSeconds())}
+        </span>
+    );
+};
+
+const BrandMark = () => (
+    <svg className="dash-brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+        <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <ellipse cx="20" cy="20" rx="15" ry="6" transform="rotate(35 20 20)" />
+            <ellipse cx="20" cy="20" rx="15" ry="6" transform="rotate(-35 20 20)" />
+        </g>
+        <circle cx="20" cy="20" r="3.4" fill="#f0f9ff" />
+    </svg>
+);
 
 const DashboardLayout = ({ title, statusBadge, children, className = '', topNavActions }) => {
     const location = useLocation();
@@ -11,93 +56,101 @@ const DashboardLayout = ({ title, statusBadge, children, className = '', topNavA
     const isDoctor = location.pathname.includes('doctor');
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+    const subtitle = String(title || '').replace(/\s*\|\s*/g, ' // ');
+
     return (
-        <div className={`dashboard-layout ${isDoctor ? 'doctor-shell' : 'astro-shell'}`}>
+        <div className={`dashboard-layout ${isDoctor ? 'doctor-shell' : 'astro-shell astro-space-theme'}`}>
             <nav className="top-nav">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent-blue)' }}>
-                        ASTRO<span style={{ color: 'var(--text-primary)' }}>HEALTH</span>
-                    </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                    <button className="btn" onClick={async () => {
-                        if (user?.role === 'admin') {
-                            navigate('/', { replace: true });
-                            return;
-                        }
-
-                        try {
-                            await logout();
-                        } catch (error) {
-                            console.error('Logout failed:', error);
-                        } finally {
-                            navigate('/login', { replace: true });
-                        }
-                    }}
-                        style={{ padding: '8px 16px', fontSize: '.85rem' }}>
-                        {user?.role === 'admin' ? 'Back to Astronaut Selection' : 'Back to Login'}
-                    </button>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent-green)' }} />
-                        <div style={{ fontSize: '.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                            System Online
-                        </div>
-                    </div>
-
-                    {isDoctor && (
-                        <div style={{ position: 'relative' }}>
-                            <div onClick={() => setIsProfileOpen(!isProfileOpen)}
-                                style={{
-                                    display: 'flex', alignItems: 'center', gap: 8,
-                                    paddingLeft: 16, borderLeft: '1px solid var(--border-color)',
-                                    cursor: 'pointer', userSelect: 'none'
-                                }}>
-                                <img src={avatar} alt="Doctor"
-                                    style={{ width: 32, height: 32, borderRadius: '50%' }} />
-                                <div>
-                                    <div style={{ fontSize: '.875rem', fontWeight: 700 }}>Dr. Dhushyanth C</div>
-                                    <div style={{ fontSize: '.75rem', color: 'var(--text-secondary)' }}>Medical Officer</div>
-                                </div>
+                <div className="top-nav-inner">
+                    <div className="dash-brand">
+                        <BrandMark />
+                        <div className="dash-brand-text">
+                            <div className="dash-brand-name">
+                                ASTRO<span>HEALTH</span>
                             </div>
-
-                            {isProfileOpen && (
-                                <div style={{
-                                    position: 'absolute', top: '120%', right: 0,
-                                    width: 350, maxWidth: '90vw', zIndex: 1000,
-                                    filter: 'drop-shadow(0 10px 15px rgba(0,0,0,.1))'
-                                }}>
-                                    <DoctorProfileCard />
-                                </div>
-                            )}
+                            {subtitle && <div className="dash-brand-sub">{subtitle}</div>}
                         </div>
-                    )}
+                    </div>
+
+                    <div className="dash-nav-right">
+                        <HeaderClock />
+
+                        {statusBadge && <div className="dash-status">{statusBadge}</div>}
+
+                        {topNavActions}
+
+                        <button
+                            className="btn dash-back-btn"
+                            onClick={async () => {
+                                if (user?.role === 'admin') {
+                                    navigate('/', { replace: true });
+                                    return;
+                                }
+
+                                try {
+                                    await logout();
+                                } catch (error) {
+                                    console.error('Logout failed:', error);
+                                } finally {
+                                    navigate('/login', { replace: true });
+                                }
+                            }}
+                        >
+                            {user?.role === 'admin' ? 'Back to Astronaut Selection' : 'Back to Login'}
+                        </button>
+
+                        <div className="dash-online">
+                            <span className="dash-online-dot" />
+                            <span className="dash-online-text">System Online</span>
+                        </div>
+
+                        {isDoctor && (
+                            <div style={{ position: 'relative' }}>
+                                <div
+                                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                    className="dash-profile"
+                                >
+                                    <img src={avatar} alt="Doctor" />
+                                    <div>
+                                        <div className="dash-profile-name">Dr. Dhushyanth C</div>
+                                        <div className="dash-profile-role">Medical Officer</div>
+                                    </div>
+                                </div>
+
+                                {isProfileOpen && (
+                                    <div style={{
+                                        position: 'absolute', top: '120%', right: 0,
+                                        width: 350, maxWidth: '90vw', zIndex: 1000,
+                                        filter: 'drop-shadow(0 10px 15px rgba(0,0,0,.1))'
+                                    }}>
+                                        <DoctorProfileCard />
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </nav>
 
             <main className={`main-content ${className}`}>
-                <header style={{
-                    display: 'flex', justifyContent: 'space-between',
-                    alignItems: 'center', gap: 16, flexWrap: 'wrap',
-                    marginBottom: 32
-                }}>
-                    <div>
-                        <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 800 }}>{title}</h1>
-                        <div style={{ color: 'var(--text-secondary)', marginTop: 4 }}>
-                            {new Date().toLocaleDateString(undefined, {
-                                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-                            })}
-                        </div>
-                    </div>
-                    {statusBadge}
-                </header>
-
                 <div className="dashboard-grid">{children}</div>
             </main>
+
+            <footer className="dash-footer">
+                <div className="dash-footer-inner">
+                    <div className="dash-footer-left">
+                        &copy; {new Date().getFullYear()} <strong>ASTROHEALTH</strong>
+                        <span className="dash-footer-sep">&middot;</span>
+                        <span className="dash-footer-tag">Orbital Crew Health Monitoring</span>
+                    </div>
+                    <div className="dash-footer-mid">NASA // MISSION TELEMETRY</div>
+                    <div className="dash-footer-right">
+                        <FooterClock />
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 };
 
 export default DashboardLayout;
-

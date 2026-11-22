@@ -1,8 +1,21 @@
-﻿import React from 'react';
+import React from 'react';
 import Card from '../Common/Card';
+import AstronautHologram from './AstronautHologram';
 
-const AstronautProfileCard = ({ astronaut }) => {
+/*
+ * With `vitals` (astronaut dashboard): holographic astronaut with live readings.
+ * Without `vitals` (e.g. the doctor dashboard): the original photo layout, unchanged.
+ */
+const AstronautProfileCard = ({ astronaut, vitals, isAlert = false }) => {
     if (!astronaut) return null;
+
+    if (vitals) {
+        return (
+            <Card title="Astronaut Profile">
+                <AstronautHologram astronaut={astronaut} vitals={vitals} isAlert={isAlert} />
+            </Card>
+        );
+    }
 
     return (
         <Card title="Astronaut Profile">
