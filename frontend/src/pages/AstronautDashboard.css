@@ -3,7 +3,7 @@
     --bg-main: #040c18;
     --bg-card: rgba(6, 20, 38, 0.92);
     --text-primary: #f0f9ff;
-    --text-secondary: #94a3b8;
+    --text-secondary: #a9bdd3;
     --accent-blue: #22d3ee;
     --accent-cyan: #22d3ee;
     --border-color: rgba(34, 211, 238, 0.34);
@@ -35,6 +35,10 @@
     margin: 0 auto;
     box-sizing: border-box;
     padding: 30px clamp(16px, 3vw, 44px) 56px;
+}
+
+.astro-space-theme.doctor-shell .main-content {
+    max-width: none;
 }
 
 .astro-space-theme .main-content header h1 {
@@ -89,7 +93,7 @@
 
 .astro-space-theme input::placeholder,
 .astro-space-theme textarea::placeholder {
-    color: #64748b !important;
+    color: #8da2b8 !important;
 }
 
 .astro-space-theme .status-badge {
@@ -125,6 +129,11 @@
 
 .astro-space-theme .critical-alert {
     border-color: rgba(248, 113, 113, 0.55);
+}
+
+/* floating panels (chat) stay fully opaque so nothing shows through */
+.astro-space-theme .card.solid-panel {
+    background: #071a30 !important;
 }
 
 @media (max-width: 600px) {

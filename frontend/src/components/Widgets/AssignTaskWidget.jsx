@@ -86,8 +86,8 @@ const AssignTaskWidget = () => {
                             gap: '12px',
                             padding: '10px',
                             borderRadius: '8px',
-                            background: '#fff7ed',
-                            border: '1px solid #fed7aa',
+                            background: 'rgba(249, 115, 22, 0.12)',
+                            border: '1px solid rgba(251, 146, 60, 0.5)',
                             position: 'relative'
                         }}
                     >
@@ -107,14 +107,14 @@ const AssignTaskWidget = () => {
                         </div>
                         <span style={{
                             textDecoration: task.completed ? 'line-through' : 'none',
-                            color: task.completed ? 'var(--text-secondary)' : '#9a3412',
+                            color: task.completed ? 'var(--text-secondary)' : '#fed7aa',
                             fontSize: '0.9rem',
                             fontWeight: 500,
                             flex: 1
                         }}>
                             {task.text}
                         </span>
-                        <div style={{ fontSize: '0.75rem', color: '#9a3412', background: '#ffedd5', padding: '2px 6px', borderRadius: '4px' }}>
+                        <div style={{ fontSize: '0.75rem', color: '#fdba74', background: 'rgba(249, 115, 22, 0.2)', padding: '2px 6px', borderRadius: '4px' }}>
                             {task.completed ? 'COMPLETED' : 'PENDING'}
                         </div>
                         <button

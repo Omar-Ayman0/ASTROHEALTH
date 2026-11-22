@@ -44,6 +44,95 @@ const TELEMETRY_META = {
     }
 };
 
+// Normal resting heart-rate range shown on the heart-rate gauge (BPM).
+const HR_NORMAL = { min: 60, max: 100 };
+// Visible span of the gauge (BPM).
+const HR_SCALE = { min: 40, max: 140 };
+
+const hrPosition = (v) => {
+    const pct = ((v - HR_SCALE.min) / (HR_SCALE.max - HR_SCALE.min)) * 100;
+    return Math.max(0, Math.min(100, pct));
+};
+
+const getHeartStatus = (val) => {
+    const n = Number(val);
+    if (val === null || val === undefined || !Number.isFinite(n)) {
+        return { label: 'NO SIGNAL', color: '#94a3b8' };
+    }
+    if (n < HR_NORMAL.min) return { label: 'BELOW RANGE', color: '#fbbf24' };
+    if (n > HR_NORMAL.max) return { label: 'ABOVE RANGE', color: '#f87171' };
+    return { label: 'NORMAL', color: '#4ade80' };
+};
+
+const HeartRangeGauge = ({ value }) => {
+    const n = Number(value);
+    const hasValue = value !== null && value !== undefined && Number.isFinite(n);
+    const status = getHeartStatus(value);
+    const lowEnd = hrPosition(HR_NORMAL.min);
+    const highStart = hrPosition(HR_NORMAL.max);
+
+    return (
+        <div style={{ marginTop: 11 }}>
+            <div style={{ position: 'relative', height: 8, borderRadius: 999, overflow: 'hidden', display: 'flex' }}>
+                <div style={{ width: `${lowEnd}%`, background: 'rgba(251, 191, 36, 0.75)' }} />
+                <div style={{ width: `${highStart - lowEnd}%`, background: 'rgba(34, 197, 94, 0.85)' }} />
+                <div style={{ width: `${100 - highStart}%`, background: 'rgba(239, 68, 68, 0.8)' }} />
+            </div>
+            {hasValue && (
+                <div
+                    style={{
+                        position: 'relative',
+                        height: 0
+                    }}
+                >
+                    <span
+                        style={{
+                            position: 'absolute',
+                            left: `${hrPosition(n)}%`,
+                            top: -10,
+                            width: 12,
+                            height: 12,
+                            marginLeft: -6,
+                            borderRadius: '50%',
+                            background: '#f0f9ff',
+                            border: `2px solid ${status.color}`,
+                            boxShadow: `0 0 8px ${status.color}`,
+                            boxSizing: 'border-box',
+                            transition: 'left 0.35s ease'
+                        }}
+                    />
+                </div>
+            )}
+            <div
+                style={{
+                    position: 'relative',
+                    height: 12,
+                    marginTop: 7,
+                    fontFamily: 'monospace',
+                    fontSize: '0.58rem',
+                    color: '#a9bdd3'
+                }}
+            >
+                <span style={{ position: 'absolute', left: `${lowEnd}%`, transform: 'translateX(-50%)' }}>{HR_NORMAL.min}</span>
+                <span style={{ position: 'absolute', left: `${highStart}%`, transform: 'translateX(-50%)' }}>{HR_NORMAL.max}</span>
+            </div>
+            <div
+                style={{
+                    marginTop: 4,
+                    fontFamily: 'monospace',
+                    fontSize: '0.62rem',
+                    letterSpacing: '0.06em',
+                    fontWeight: 700,
+                    color: status.color,
+                    whiteSpace: 'nowrap'
+                }}
+            >
+                {status.label}{status.label === 'NORMAL' ? ` ${HR_NORMAL.min}\u2013${HR_NORMAL.max}` : ''}
+            </div>
+        </div>
+    );
+};
+
 const getProgress = (val, min, max) => {
     if (val === null || val === undefined || Number.isNaN(Number(val))) return 0;
     const ratio = ((Number(val) - min) / (max - min)) * 100;
@@ -267,27 +356,31 @@ const VitalsWidget = ({ vitals, onClick }) => {
                                 </span>
                             </div>
 
-                            <div
-                                style={{
-                                    marginTop: 11,
-                                    height: 4,
-                                    borderRadius: 999,
-                                    background: 'rgba(34, 211, 238, 0.14)',
-                                    overflow: 'hidden'
-                                }}
-                            >
+                            {meta.isHeart ? (
+                                <HeartRangeGauge value={value} />
+                            ) : (
                                 <div
                                     style={{
-                                        height: '100%',
-                                        width: `${progress}%`,
+                                        marginTop: 11,
+                                        height: 4,
                                         borderRadius: 999,
-                                        background: meta.isHeart
-                                            ? 'linear-gradient(90deg, #dc2626, #f87171)'
-                                            : 'linear-gradient(90deg, #06b6d4, #22d3ee)',
-                                        transition: 'width 0.35s ease'
+                                        background: 'rgba(34, 211, 238, 0.14)',
+                                        overflow: 'hidden'
                                     }}
-                                />
-                            </div>
+                                >
+                                    <div
+                                        style={{
+                                            height: '100%',
+                                            width: `${progress}%`,
+                                            borderRadius: 999,
+                                            background: meta.isHeart
+                                                ? 'linear-gradient(90deg, #dc2626, #f87171)'
+                                                : 'linear-gradient(90deg, #06b6d4, #22d3ee)',
+                                            transition: 'width 0.35s ease'
+                                        }}
+                                    />
+                                </div>
+                            )}
                         </div>
                     );
                 })}

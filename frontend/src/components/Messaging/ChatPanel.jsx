@@ -22,15 +22,15 @@ const ChatPanel = ({ role, messages, onSendMessage, onClearMessages }) => {
         alignSelf: isOwnMessage ? 'flex-end' : 'flex-start',
         background: isOwnMessage
             ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
-            : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-        color: isOwnMessage ? '#ffffff' : '#1e293b',
+            : 'linear-gradient(135deg, #0f3256 0%, #0b2a4a 100%)',
+        color: isOwnMessage ? '#ffffff' : '#e0f2fe',
         padding: '12px 16px',
         borderRadius: isOwnMessage ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
         maxWidth: '75%',
         fontSize: '0.9rem',
         lineHeight: '1.5',
         boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        border: isOwnMessage ? 'none' : '1px solid #cbd5e1'
+        border: isOwnMessage ? 'none' : '1px solid rgba(34, 211, 238, 0.3)'
     });
 
     const getHeaderStyle = (isOwnMessage) => ({
@@ -43,13 +43,13 @@ const ChatPanel = ({ role, messages, onSendMessage, onClearMessages }) => {
     });
 
     return (
-        <div className="card" style={{
+        <div className="card solid-panel" style={{
             height: '450px',
             display: 'flex',
             flexDirection: 'column',
-            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)'
+            background: '#071a30'
         }}>
-            <div className="card-header" style={{ borderBottom: '2px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+            <div className="card-header" style={{ borderBottom: '2px solid rgba(34, 211, 238, 0.22)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
                 <span className="card-title" style={{
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px',
@@ -60,16 +60,16 @@ const ChatPanel = ({ role, messages, onSendMessage, onClearMessages }) => {
                 </span>
                 <div style={{
                     fontSize: '0.75rem',
-                    color: '#64748b',
+                    color: '#a9bdd3',
                     marginTop: '4px'
                 }}>
                     {role === 'Astronaut' ? 'Contact Medical Officer' : 'Crew Communication'}
                 </div>
                 {role === 'Doctor' && onClearMessages && (
                     <button type="button" onClick={onClearMessages}
-                        style={{ padding: '8px 13px', border: '1px solid #fecaca',
-                        borderRadius: '8px', background: '#fff1f2',
-                        color: '#be123c', fontWeight: '700', cursor: 'pointer' }}>
+                        style={{ padding: '8px 13px', border: '1px solid rgba(248, 113, 113, 0.55)',
+                        borderRadius: '8px', background: 'rgba(239, 68, 68, 0.16)',
+                        color: '#fca5a5', fontWeight: '700', cursor: 'pointer' }}>
                         Clear Chat
                     </button>
                 )}
@@ -82,7 +82,7 @@ const ChatPanel = ({ role, messages, onSendMessage, onClearMessages }) => {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
-                background: '#f8fafc'
+                background: '#050f1e'
             }}>
                 {messages.length === 0 ? (
                     <div style={{
@@ -90,7 +90,7 @@ const ChatPanel = ({ role, messages, onSendMessage, onClearMessages }) => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         height: '100%',
-                        color: '#94a3b8',
+                        color: '#a9bdd3',
                         fontSize: '0.9rem',
                         textAlign: 'center',
                         lineHeight: '1.6'
@@ -120,8 +120,8 @@ const ChatPanel = ({ role, messages, onSendMessage, onClearMessages }) => {
 
             <div style={{
                 padding: '16px',
-                background: '#ffffff',
-                borderTop: '2px solid #e2e8f0'
+                background: '#071a30',
+                borderTop: '2px solid rgba(34, 211, 238, 0.22)'
             }}>
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <input
@@ -134,13 +134,13 @@ const ChatPanel = ({ role, messages, onSendMessage, onClearMessages }) => {
                             flex: 1,
                             padding: '12px 16px',
                             borderRadius: '8px',
-                            border: '2px solid #e2e8f0',
+                            border: '2px solid rgba(34, 211, 238, 0.3)',
                             fontSize: '0.9rem',
                             outline: 'none',
                             transition: 'border-color 0.2s',
                         }}
-                        onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-                        onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                        onFocus={(e) => e.target.style.borderColor = '#22d3ee'}
+                        onBlur={(e) => e.target.style.borderColor = 'rgba(34, 211, 238, 0.3)'}
                     />
                     <button
                         className="btn"

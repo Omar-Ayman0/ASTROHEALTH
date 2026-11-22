@@ -9,10 +9,10 @@ const AISuggestionsWidget = ({ vitals, riskData, anomalyData }) => {
     const { suggestions, precautions } = generateSuggestions(vitals, riskData, anomalyData);
 
     const getRiskColor = () => {
-        if (riskData.risk_label === 'Critical') return '#dc2626';
-        if (anomalyData?.is_anomaly) return '#ea580c';
-        if (riskData.risk_label === 'High') return '#ea580c';
-        return '#16a34a';
+        if (riskData.risk_label === 'Critical') return '#f87171';
+        if (anomalyData?.is_anomaly) return '#fb923c';
+        if (riskData.risk_label === 'High') return '#fb923c';
+        return '#4ade80';
     };
 
     return (
@@ -26,7 +26,7 @@ const AISuggestionsWidget = ({ vitals, riskData, anomalyData }) => {
                     border: `2px solid ${getRiskColor()}`,
                     textAlign: 'center'
                 }}>
-                    <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#a9bdd3', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                         Current Health Status
                     </div>
                     <div style={{ fontSize: '1.3rem', fontWeight: '700', color: getRiskColor() }}>
@@ -45,7 +45,7 @@ const AISuggestionsWidget = ({ vitals, riskData, anomalyData }) => {
                         fontSize: '0.875rem',
                         fontWeight: '700',
                         marginBottom: '10px',
-                        color: '#1e293b',
+                        color: '#67e8f9',
                         textTransform: 'uppercase',
                         letterSpacing: '0.5px'
                     }}>
@@ -56,10 +56,10 @@ const AISuggestionsWidget = ({ vitals, riskData, anomalyData }) => {
                             <div key={idx} style={{
                                 fontSize: '0.85rem',
                                 padding: '10px 12px',
-                                background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                                background: 'linear-gradient(135deg, #0b2a4a 0%, #0a2440 100%)',
                                 borderRadius: '8px',
-                                border: '1px solid #bae6fd',
-                                color: '#0c4a6e',
+                                border: '1px solid rgba(34, 211, 238, 0.32)',
+                                color: '#e0f2fe',
                                 lineHeight: '1.5'
                             }}>
                                 {suggestion}
@@ -75,7 +75,7 @@ const AISuggestionsWidget = ({ vitals, riskData, anomalyData }) => {
                             fontSize: '0.875rem',
                             fontWeight: '700',
                             marginBottom: '10px',
-                            color: '#1e293b',
+                            color: '#67e8f9',
                             textTransform: 'uppercase',
                             letterSpacing: '0.5px'
                         }}>
@@ -87,15 +87,15 @@ const AISuggestionsWidget = ({ vitals, riskData, anomalyData }) => {
                                     fontSize: '0.825rem',
                                     padding: '8px 12px',
                                     background: precaution.includes('CRITICAL') || precaution.includes('IMPORTANT') || precaution.includes('MANDATORY')
-                                        ? 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)'
-                                        : 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                                        ? 'linear-gradient(135deg, rgba(251, 191, 36, 0.18) 0%, rgba(251, 191, 36, 0.08) 100%)'
+                                        : '#0a2440',
                                     borderRadius: '6px',
                                     border: precaution.includes('CRITICAL') || precaution.includes('IMPORTANT') || precaution.includes('MANDATORY')
-                                        ? '1px solid #fbbf24'
-                                        : '1px solid #e2e8f0',
+                                        ? '1px solid rgba(251, 191, 36, 0.6)'
+                                        : '1px solid rgba(34, 211, 238, 0.22)',
                                     color: precaution.includes('CRITICAL') || precaution.includes('IMPORTANT') || precaution.includes('MANDATORY')
-                                        ? '#92400e'
-                                        : '#475569',
+                                        ? '#fde68a'
+                                        : '#cbd5e1',
                                     lineHeight: '1.4',
                                     fontWeight: precaution.includes('CRITICAL') || precaution.includes('IMPORTANT') || precaution.includes('MANDATORY') ? '600' : '400'
                                 }}>
@@ -109,11 +109,11 @@ const AISuggestionsWidget = ({ vitals, riskData, anomalyData }) => {
                 {/* Quick Actions */}
                 <div style={{
                     padding: '12px',
-                    background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                    background: '#0a2440',
                     borderRadius: '8px',
-                    border: '1px solid #e2e8f0',
+                    border: '1px solid rgba(34, 211, 238, 0.22)',
                     fontSize: '0.8rem',
-                    color: '#64748b',
+                    color: '#a9bdd3',
                     textAlign: 'center',
                     lineHeight: '1.5'
                 }}>

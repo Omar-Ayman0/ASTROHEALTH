@@ -21,8 +21,8 @@ const AlertsWidget = ({ incidents = [], onAction, style }) => {
 
                     return (
                         <div key={incident.incident_id || incident.event_id || index} style={{
-                            background: 'var(--bg-secondary, #fee2e2)',
-                            border: '1px solid var(--border-color, #ef4444)',
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(248, 113, 113, 0.5)',
                             padding: '16px',
                             borderRadius: '12px',
                             marginBottom: '12px'
@@ -46,8 +46,8 @@ const AlertsWidget = ({ incidents = [], onAction, style }) => {
                             <div style={{
                                 marginTop: '12px', padding: '12px',
                                 borderRadius: '8px',
-                                background: 'var(--bg-primary, #f8fafc)',
-                                border: '1px solid var(--border-color, #cbd5e1)'
+                                background: '#0a2440',
+                                border: '1px solid rgba(34, 211, 238, 0.28)'
                             }}>
                                 <strong>AI Triage · {incident.triage?.status || 'NOT_CREATED'}</strong>
 

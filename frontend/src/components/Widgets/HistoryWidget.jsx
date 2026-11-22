@@ -149,7 +149,7 @@ const HistoryWidget = ({ astronautId = 'ASTRO_01' }) => {
             title="Historical Engine Analysis (Simulation Data)"
             style={{ gridColumn: 'span 2', height: '400px', overflow: 'hidden' }}
         >
-            <div style={{ marginBottom: '8px', fontSize: '0.78rem', color: '#64748b' }}>
+            <div style={{ marginBottom: '8px', fontSize: '0.78rem', color: '#a9bdd3' }}>
                 Source: ASTRO_01 | Engine: {latest?.model_version || 'Waiting'}
                 {' | '}Historical telemetry and engine findings — not medical advice.
             </div>
@@ -169,9 +169,9 @@ const HistoryWidget = ({ astronautId = 'ASTRO_01' }) => {
                             style={{
                                 padding: '6px 12px',
                                 borderRadius: '6px',
-                                border: '1px solid #e2e8f0',
-                                background: filter === value ? '#0f172a' : 'white',
-                                color: filter === value ? 'white' : '#64748b',
+                                border: filter === value ? '1px solid #22d3ee' : '1px solid rgba(34, 211, 238, 0.3)',
+                                background: filter === value ? 'rgba(34, 211, 238, 0.2)' : '#0a2440',
+                                color: filter === value ? '#f0f9ff' : '#a9bdd3',
                                 cursor: 'pointer'
                             }}
                         >
@@ -189,7 +189,7 @@ const HistoryWidget = ({ astronautId = 'ASTRO_01' }) => {
                 {loading ? (
                     <p>Loading engine history...</p>
                 ) : error ? (
-                    <p style={{ color: '#dc2626' }}>{error}</p>
+                    <p style={{ color: '#fca5a5' }}>{error}</p>
                 ) : filteredHistory.length === 0 ? (
                     <p>No engine records available for this filter.</p>
                 ) : (
@@ -201,12 +201,12 @@ const HistoryWidget = ({ astronautId = 'ASTRO_01' }) => {
                         <thead style={{
                             position: 'sticky',
                             top: 0,
-                            background: 'white',
+                            background: '#0c2a4a',
                             zIndex: 1
                         }}>
                             <tr style={{
-                                borderBottom: '2px solid #f1f5f9',
-                                color: '#64748b',
+                                borderBottom: '2px solid rgba(34, 211, 238, 0.3)',
+                                color: '#67e8f9',
                                 textAlign: 'left'
                             }}>
                                 <th style={{ padding: '9px' }}>Time</th>
@@ -218,7 +218,8 @@ const HistoryWidget = ({ astronautId = 'ASTRO_01' }) => {
                         <tbody>
                             {filteredHistory.map(record => (
                                 <tr key={record.id} style={{
-                                    borderBottom: '1px solid #f1f5f9'
+                                    borderBottom: '1px solid rgba(34, 211, 238, 0.14)',
+                                    color: '#e6f4ff'
                                 }}>
                                     <td style={{ padding: '9px', whiteSpace: 'nowrap' }}>
                                         {new Date(record.timestamp).toLocaleString('en-GB', { timeZone: 'Africa/Cairo', hour12: false })}
@@ -232,7 +233,7 @@ const HistoryWidget = ({ astronautId = 'ASTRO_01' }) => {
                                     </td>
                                     <td style={{
                                         padding: '9px',
-                                        color: record.flagged ? '#dc2626' : '#16a34a',
+                                        color: record.flagged ? '#f87171' : '#4ade80',
                                         fontWeight: 600
                                     }}>
                                         {record.flagged ? 'FLAGGED' : 'NOMINAL'}
@@ -240,7 +241,7 @@ const HistoryWidget = ({ astronautId = 'ASTRO_01' }) => {
                                     <td style={{ padding: '9px', minWidth: '180px' }}>
                                         {record.explanation}
                                         <br />
-                                        <small style={{ color: '#94a3b8' }}>
+                                        <small style={{ color: '#a9bdd3' }}>
                                             Data quality: {record.data_quality}
                                         </small>
                                     </td>

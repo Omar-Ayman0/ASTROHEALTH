@@ -98,12 +98,12 @@ const TaskWidget = () => {
                             borderRadius: '8px',
                             cursor: 'pointer',
                             transition: 'all 0.2s',
-                            background: task.completed ? '#f0fdf4' : 'transparent',
-                            border: task.completed ? '1px solid #bbf7d0' : '1px solid transparent',
+                            background: task.completed ? 'rgba(34, 197, 94, 0.14)' : 'transparent',
+                            border: task.completed ? '1px solid rgba(74, 222, 128, 0.4)' : '1px solid transparent',
                             position: 'relative'
                         }}
                         onMouseEnter={(e) => {
-                            if (!task.completed) e.currentTarget.style.background = '#f8fafc';
+                            if (!task.completed) e.currentTarget.style.background = 'rgba(34, 211, 238, 0.08)';
                             const deleteBtn = e.currentTarget.querySelector('.delete-btn');
                             if (deleteBtn) deleteBtn.style.opacity = '1';
                         }}
@@ -117,8 +117,8 @@ const TaskWidget = () => {
                             width: '20px',
                             height: '20px',
                             borderRadius: '6px',
-                            border: task.completed ? 'none' : '2px solid #cbd5e1',
-                            background: task.completed ? 'var(--accent-green)' : 'white',
+                            border: task.completed ? 'none' : '2px solid rgba(103, 232, 249, 0.6)',
+                            background: task.completed ? 'var(--accent-green)' : 'transparent',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -181,7 +181,7 @@ const TaskWidget = () => {
             </div>
             <div style={{
                 height: '4px',
-                background: '#e2e8f0',
+                background: 'rgba(34, 211, 238, 0.16)',
                 borderRadius: '2px',
                 marginTop: '8px',
                 overflow: 'hidden'

@@ -44,8 +44,8 @@ const VitalsChart = ({ data, label, color, min, max }) => {
             y: {
                 min: min,
                 max: max,
-                grid: { color: '#334155' },
-                ticks: { color: '#94a3b8' }
+                grid: { color: 'rgba(148, 163, 184, 0.22)' },
+                ticks: { color: '#a9bdd3' }
             },
             x: {
                 display: false // Hide x labels for cleanliness

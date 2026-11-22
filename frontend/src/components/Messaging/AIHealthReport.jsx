@@ -6,13 +6,13 @@ const AIHealthReport = ({ report }) => {
         String(report.severity || '').toUpperCase()
     );
 
-    const statusColor = needsReview ? '#dc2626' : '#059669';
+    const statusColor = needsReview ? '#f87171' : '#4ade80';
     const formatLabel = (value) =>
         String(value || 'NOT AVAILABLE').replace(/_/g, ' ');
 
     const sectionStyle = {
-        background: '#f8fafc',
-        border: '1px solid #e2e8f0',
+        background: '#0a2440',
+        border: '1px solid rgba(34, 211, 238, 0.26)',
         borderRadius: '10px',
         padding: '12px',
         marginTop: '12px'
@@ -21,7 +21,7 @@ const AIHealthReport = ({ report }) => {
     const headingStyle = {
         fontSize: '12px',
         fontWeight: '800',
-        color: '#334155',
+        color: '#67e8f9',
         textTransform: 'uppercase',
         letterSpacing: '0.6px',
         marginBottom: '9px'
@@ -42,7 +42,7 @@ const AIHealthReport = ({ report }) => {
     return (
         <div style={{
             width: '100%',
-            color: '#1e293b',
+            color: '#e0f2fe',
             fontSize: '13px',
             lineHeight: 1.6
         }}>
@@ -57,14 +57,14 @@ const AIHealthReport = ({ report }) => {
                 <span style={{
                     fontWeight: '800',
                     fontSize: '15px',
-                    color: '#0f172a'
+                    color: '#f0f9ff'
                 }}>
                     AI HEALTH ASSESSMENT
                 </span>
 
                 <span style={{
-                    background: '#ecfdf5',
-                    color: '#047857',
+                    background: 'rgba(34, 197, 94, 0.16)',
+                    color: '#86efac',
                     padding: '4px 9px',
                     borderRadius: '20px',
                     fontSize: '10px',
@@ -76,8 +76,8 @@ const AIHealthReport = ({ report }) => {
 
             <div style={{
                 ...sectionStyle,
-                background: needsReview ? '#fef2f2' : '#ecfdf5',
-                border: `1px solid ${needsReview ? '#fecaca' : '#a7f3d0'}`
+                background: needsReview ? 'rgba(239, 68, 68, 0.12)' : 'rgba(34, 197, 94, 0.12)',
+                border: `1px solid ${needsReview ? 'rgba(248, 113, 113, 0.55)' : 'rgba(74, 222, 128, 0.5)'}`
             }}>
                 <div style={{
                     color: statusColor,
@@ -90,7 +90,7 @@ const AIHealthReport = ({ report }) => {
                 <div style={{
                     marginTop: '5px',
                     fontWeight: '700',
-                    color: isHighRisk ? '#b91c1c' : '#475569'
+                    color: isHighRisk ? '#fca5a5' : '#cbd5e1'
                 }}>
                     Priority: {formatLabel(report.severity)}
                 </div>
@@ -99,9 +99,9 @@ const AIHealthReport = ({ report }) => {
                     <div style={{
                         marginTop: '10px',
                         padding: '9px',
-                        background: '#fee2e2',
+                        background: 'rgba(239, 68, 68, 0.22)',
                         borderRadius: '7px',
-                        color: '#991b1b',
+                        color: '#fecaca',
                         fontWeight: '800'
                     }}>
                         HUMAN MEDICAL REVIEW REQUIRED
@@ -125,9 +125,9 @@ const AIHealthReport = ({ report }) => {
                         gap: '8px',
                         padding: '6px 0',
                         borderBottom: index === findings.length - 1
-                            ? 'none' : '1px solid #e2e8f0'
+                            ? 'none' : '1px solid rgba(34, 211, 238, 0.18)'
                     }}>
-                        <span style={{ color: '#0d9488', fontWeight: '900' }}>
+                        <span style={{ color: '#2dd4bf', fontWeight: '900' }}>
                             •
                         </span>
                         <span>{item}</span>
@@ -154,17 +154,17 @@ const AIHealthReport = ({ report }) => {
                         <div key={index} style={{
                             padding: '8px',
                             marginBottom: '7px',
-                            background: '#ffffff',
+                            background: '#071a30',
                             borderRadius: '7px',
-                            border: '1px solid #e2e8f0'
+                            border: '1px solid rgba(34, 211, 238, 0.22)'
                         }}>
                             <div style={{ fontWeight: '800' }}>
                                 {formatLabel(item.source)}
                             </div>
-                            <div style={{ fontSize: '11px', color: '#64748b' }}>
+                            <div style={{ fontSize: '11px', color: '#a9bdd3' }}>
                                 Event: {item.event_id || 'N/A'}
                             </div>
-                            <div style={{ fontSize: '11px', color: '#64748b' }}>
+                            <div style={{ fontSize: '11px', color: '#a9bdd3' }}>
                                 Time: {item.timestamp || 'N/A'}
                             </div>
                         </div>
@@ -175,17 +175,17 @@ const AIHealthReport = ({ report }) => {
             {limitations.length > 0 && (
                 <div style={{
                     ...sectionStyle,
-                    background: '#fffbeb',
-                    borderColor: '#fde68a'
+                    background: 'rgba(251, 191, 36, 0.1)',
+                    borderColor: 'rgba(251, 191, 36, 0.5)'
                 }}>
-                    <div style={{ ...headingStyle, color: '#92400e' }}>
+                    <div style={{ ...headingStyle, color: '#fcd34d' }}>
                         Limitations & Data Warnings
                     </div>
 
                     {limitations.map((item, index) => (
                         <div key={index} style={{
                             padding: '4px 0',
-                            color: '#78350f'
+                            color: '#fde68a'
                         }}>
                             • {item}
                         </div>
@@ -196,9 +196,9 @@ const AIHealthReport = ({ report }) => {
             <div style={{
                 marginTop: '12px',
                 paddingTop: '9px',
-                borderTop: '1px solid #e2e8f0',
+                borderTop: '1px solid rgba(34, 211, 238, 0.2)',
                 fontSize: '10px',
-                color: '#94a3b8'
+                color: '#a9bdd3'
             }}>
                 Astronaut: {report.astronaut_id || 'N/A'}
                 {' | '}

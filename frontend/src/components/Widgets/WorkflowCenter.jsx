@@ -410,7 +410,7 @@ export default function WorkflowCenter({ astronautId, onRefresh }) {
 
                     <div style={{
                         fontSize: 10,
-                        color: '#64748b',
+                        color: '#94a3b8',
                         marginTop: 15,
                         paddingTop: 12,
                         borderTop: '1px solid #1e293b'

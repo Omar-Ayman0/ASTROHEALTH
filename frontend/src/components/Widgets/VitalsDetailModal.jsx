@@ -9,11 +9,11 @@ const VitalsDetailModal = ({ isOpen, onClose, history }) => {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-            legend: { display: true, position: 'top' }
+            legend: { display: true, position: 'top', labels: { color: '#cbd5e1' } }
         },
         scales: {
-            x: { display: true, grid: { color: 'rgba(0,0,0,0.05)' } },
-            y: { grid: { color: 'rgba(0,0,0,0.05)' } }
+            x: { display: true, grid: { color: 'rgba(148, 163, 184, 0.14)' }, ticks: { color: '#a9bdd3' } },
+            y: { grid: { color: 'rgba(148, 163, 184, 0.14)' }, ticks: { color: '#a9bdd3' } }
         }
     };
 
@@ -73,11 +73,12 @@ const VitalsDetailModal = ({ isOpen, onClose, history }) => {
     const StatCard = ({ title, stats, unit, contextLabel }) => (
         <div style={{
             padding: '15px',
-            background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+            background: '#0a2440',
             borderRadius: '8px',
-            border: '1px solid rgba(0,0,0,0.1)'
+            border: '1px solid rgba(34, 211, 238, 0.28)',
+            color: '#e0f2fe'
         }}>
-            <div style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '10px', color: '#334155' }}>{title}</div>
+            <div style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '10px', color: '#67e8f9' }}>{title}</div>
             {stats && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.85rem' }}>
                     <div><strong>Current:</strong> {stats.latest}{unit}</div>
@@ -86,7 +87,7 @@ const VitalsDetailModal = ({ isOpen, onClose, history }) => {
                     <div><strong>Max:</strong> {stats.max}{unit}</div>
                     <div style={{ gridColumn: 'span 2' }}><strong>Samples:</strong> {stats.count}</div>
                     {contextLabel && (
-                        <div style={{ gridColumn: 'span 2', color: '#64748b', fontSize: '0.8rem' }}>
+                        <div style={{ gridColumn: 'span 2', color: '#a9bdd3', fontSize: '0.8rem' }}>
                             <em>{contextLabel}</em>
                         </div>
                     )}
@@ -151,8 +152,9 @@ const VitalsDetailModal = ({ isOpen, onClose, history }) => {
         }} onClick={onClose}>
             <div style={{
                 width: '95%', maxWidth: '1200px', maxHeight: '90vh', overflowY: 'auto',
-                backgroundColor: 'var(--bg-main)', borderRadius: '16px', padding: '30px',
-                boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+                backgroundColor: '#040c18', borderRadius: '16px', padding: '30px',
+                border: '1px solid rgba(34, 211, 238, 0.34)',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
             }} onClick={e => e.stopPropagation()}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
                     <div>
@@ -186,7 +188,7 @@ const VitalsDetailModal = ({ isOpen, onClose, history }) => {
 
                 {/* Heart Rate Section */}
                 <div style={{ marginBottom: '30px' }}>
-                    <h3 style={{ marginBottom: '15px', color: '#ef4444', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '1rem' }}>
+                    <h3 style={{ marginBottom: '15px', color: '#f87171', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '1rem' }}>
                         Heart Rate
                     </h3>
                     <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '15px' }}>
@@ -201,7 +203,7 @@ const VitalsDetailModal = ({ isOpen, onClose, history }) => {
 
                 {/* SpO2 Section */}
                 <div style={{ marginBottom: '30px' }}>
-                    <h3 style={{ marginBottom: '15px', color: '#3b82f6', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '1rem' }}>
+                    <h3 style={{ marginBottom: '15px', color: '#60a5fa', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '1rem' }}>
                         Oxygen Saturation (SpO2)
                     </h3>
                     <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '15px' }}>
@@ -241,7 +243,7 @@ const VitalsDetailModal = ({ isOpen, onClose, history }) => {
                 {/* Temperature Section */}
                 {tempStats && (
                     <div style={{ marginBottom: '30px' }}>
-                        <h3 style={{ marginBottom: '15px', color: '#22c55e', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '1rem' }}>
+                        <h3 style={{ marginBottom: '15px', color: '#4ade80', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '1rem' }}>
                             Skin Temperature
                         </h3>
                         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '15px' }}>
@@ -256,7 +258,7 @@ const VitalsDetailModal = ({ isOpen, onClose, history }) => {
                 )}
                 {hrvStats && (
                     <div style={{ marginBottom: '30px' }}>
-                        <h3 style={{ marginBottom: '15px', color: '#8b5cf6', fontWeight: '700' }}>Heart Rate Variability (HRV)</h3>
+                        <h3 style={{ marginBottom: '15px', color: '#a78bfa', fontWeight: '700' }}>Heart Rate Variability (HRV)</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
                             <Card title="HRV Trend">
                                 <div style={{ height: '200px' }}>
@@ -270,7 +272,7 @@ const VitalsDetailModal = ({ isOpen, onClose, history }) => {
 
                 {respiratoryStats && (
                     <div style={{ marginBottom: '30px' }}>
-                        <h3 style={{ marginBottom: '15px', color: '#0d9488', fontWeight: '700' }}>Respiratory Rate</h3>
+                        <h3 style={{ marginBottom: '15px', color: '#2dd4bf', fontWeight: '700' }}>Respiratory Rate</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
                             <Card title="Respiratory Rate Trend">
                                 <div style={{ height: '200px' }}>

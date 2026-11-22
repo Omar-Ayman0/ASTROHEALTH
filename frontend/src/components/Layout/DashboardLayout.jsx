@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import DoctorProfileCard from '../Widgets/DoctorProfileCard';
 import avatar from '../../assets/doctor.jpeg';
+import '../../pages/AstronautDashboard.css';
 import './DashboardLayout.css';
 
 const pad = (n) => String(n).padStart(2, '0');
@@ -59,7 +60,7 @@ const DashboardLayout = ({ title, statusBadge, children, className = '', topNavA
     const subtitle = String(title || '').replace(/\s*\|\s*/g, ' // ');
 
     return (
-        <div className={`dashboard-layout ${isDoctor ? 'doctor-shell' : 'astro-shell astro-space-theme'}`}>
+        <div className={`dashboard-layout astro-shell astro-space-theme${isDoctor ? ' doctor-shell' : ''}`}>
             <nav className="top-nav">
                 <div className="top-nav-inner">
                     <div className="dash-brand">
@@ -121,7 +122,7 @@ const DashboardLayout = ({ title, statusBadge, children, className = '', topNavA
                                     <div style={{
                                         position: 'absolute', top: '120%', right: 0,
                                         width: 350, maxWidth: '90vw', zIndex: 1000,
-                                        filter: 'drop-shadow(0 10px 15px rgba(0,0,0,.1))'
+                                        filter: 'drop-shadow(0 10px 15px rgba(0,0,0,.45))'
                                     }}>
                                         <DoctorProfileCard />
                                     </div>

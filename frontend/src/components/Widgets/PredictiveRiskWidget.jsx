@@ -29,19 +29,19 @@ const PredictiveRiskWidget = ({ riskData = {}, anomalyData = {}, history = {} })
     const anomaly = Boolean(anomalyData.is_anomaly);
 
     let assessment = 'INSUFFICIENT DATA';
-    let color = '#64748b';
+    let color = '#94a3b8';
     let factors = [];
 
     if (enoughData) {
         if (label === 'HIGH RISK' || anomaly || average > 100) {
             assessment = 'NEEDS ATTENTION';
-            color = '#dc2626';
+            color = '#f87171';
         } else if (label === 'MONITOR CLOSELY' || average > 85 || trend > 5) {
             assessment = 'MONITOR';
-            color = '#ea580c';
+            color = '#fb923c';
         } else if (label === 'NOMINAL') {
             assessment = 'NOMINAL';
-            color = '#16a34a';
+            color = '#4ade80';
         } else {
             assessment = 'UNCLASSIFIED';
         }
@@ -65,26 +65,27 @@ const PredictiveRiskWidget = ({ riskData = {}, anomalyData = {}, history = {} })
                     background: `${color}12`,
                     textAlign: 'center'
                 }}>
-                    <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>
+                    <div style={{ fontSize: 12, color: '#a9bdd3', marginBottom: 8 }}>
                         CURRENT ASSESSMENT — NOT A 24-HOUR PREDICTION
                     </div>
                     <div style={{ fontSize: 25, fontWeight: 700, color }}>
                         {assessment}
                     </div>
-                    <div style={{ fontSize: 12, color: '#64748b', marginTop: 8 }}>
+                    <div style={{ fontSize: 12, color: '#a9bdd3', marginTop: 8 }}>
                         Based on {values.length} recent heart-rate readings
                     </div>
                 </div>
 
                 <div>
-                    <strong style={{ fontSize: 13 }}>Contributing Factors</strong>
+                    <strong style={{ fontSize: 13, color: '#67e8f9' }}>Contributing Factors</strong>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 10 }}>
                         {factors.map((factor, index) => (
                             <div key={index} style={{
                                 padding: 10,
                                 borderRadius: 8,
-                                background: '#f1f5f9',
-                                color: '#334155',
+                                background: '#0a2440',
+                                border: '1px solid rgba(34, 211, 238, 0.22)',
+                                color: '#e0f2fe',
                                 fontSize: 13
                             }}>
                                 • {factor}
@@ -98,12 +99,12 @@ const PredictiveRiskWidget = ({ riskData = {}, anomalyData = {}, history = {} })
                     gridTemplateColumns: '1fr 1fr',
                     gap: 12
                 }}>
-                    <div style={{ padding: 12, background: '#f1f5f9', borderRadius: 8, textAlign: 'center' }}>
-                        <div style={{ fontSize: 12, color: '#64748b' }}>HEART RATE TREND</div>
+                    <div style={{ padding: 12, background: '#0a2440', border: '1px solid rgba(34, 211, 238, 0.22)', borderRadius: 8, textAlign: 'center' }}>
+                        <div style={{ fontSize: 12, color: '#a9bdd3' }}>HEART RATE TREND</div>
                         <strong>{trend === null ? '—' : `${trend > 0 ? '+' : ''}${trend.toFixed(1)} BPM`}</strong>
                     </div>
-                    <div style={{ padding: 12, background: '#f1f5f9', borderRadius: 8, textAlign: 'center' }}>
-                        <div style={{ fontSize: 12, color: '#64748b' }}>AVERAGE HEART RATE</div>
+                    <div style={{ padding: 12, background: '#0a2440', border: '1px solid rgba(34, 211, 238, 0.22)', borderRadius: 8, textAlign: 'center' }}>
+                        <div style={{ fontSize: 12, color: '#a9bdd3' }}>AVERAGE HEART RATE</div>
                         <strong>{average === null ? '—' : `${average.toFixed(1)} BPM`}</strong>
                     </div>
                 </div>

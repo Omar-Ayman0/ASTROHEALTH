@@ -653,11 +653,11 @@ const sendMessage = async (content) => {
                     }}>
                         <AstronautProfileCard astronaut={selectedAstronaut} />
                         <VitalsWidget vitals={vitals} onClick={() => setIsModalOpen(true)} />
-                        <div style={{ background: '#ffffff', border: '1px solid var(--border-color, #334155)', borderRadius: '12px', padding: '18px' }}>
-                            <h3>Live Heart Rate Trend</h3>
-                            <VitalsChart data={history.heart_rate} label="Heart Rate" color="#1e293b" min={40} max={180} />
-                            <h3 style={{ marginTop: '20px' }}>Live SpO2 Trend</h3>
-                            <VitalsChart data={history.spo2} label="SpO2" color="#1e293b" min={80} max={100} />
+                        <div style={{ background: 'linear-gradient(165deg, rgba(7, 24, 46, 0.94), rgba(4, 13, 27, 0.96))', border: '1px solid rgba(34, 211, 238, 0.36)', borderRadius: '14px', padding: '18px', boxShadow: '0 10px 28px rgba(0, 0, 0, 0.38), 0 0 18px rgba(34, 211, 238, 0.07)' }}>
+                            <h3 style={{ color: '#67e8f9', letterSpacing: '0.06em', textTransform: 'uppercase', fontSize: '0.85rem' }}>Live Heart Rate Trend</h3>
+                            <VitalsChart data={history.heart_rate} label="Heart Rate" color="#ef4444" min={40} max={180} />
+                            <h3 style={{ marginTop: '20px', color: '#67e8f9', letterSpacing: '0.06em', textTransform: 'uppercase', fontSize: '0.85rem' }}>Live SpO2 Trend</h3>
+                            <VitalsChart data={history.spo2} label="SpO2" color="#06b6d4" min={80} max={100} />
                         </div>
                         <AlertsWidget incidents={incidents} onAction={handleIncidentAction} />
                     </div>
@@ -740,9 +740,9 @@ const sendMessage = async (content) => {
                                     }}
                                     disabled={assistantLoading}
                                     style={{
-                                        background: '#ffffff',
-                                        color: '#991b1b',
-                                        border: 'none',
+                                        background: 'rgba(239, 68, 68, 0.2)',
+                                        color: '#fecaca',
+                                        border: '1px solid rgba(248, 113, 113, 0.6)',
                                         borderRadius: '6px',
                                         padding: '6px 9px',
                                         fontSize: '11px',
@@ -758,7 +758,7 @@ const sendMessage = async (content) => {
                             height: '450px',
                             display: 'flex',
                             flexDirection: 'column',
-                            background: '#f8fafc'
+                            background: '#050f1e'
                         }}>
                             <div style={{
                                 flex: 1,
@@ -772,7 +772,7 @@ const sendMessage = async (content) => {
                                     <div style={{
                                         margin: 'auto',
                                         textAlign: 'center',
-                                        color: '#94a3b8'
+                                        color: '#a9bdd3'
                                     }}>
                                         <div style={{ fontSize: '30px' }}>+</div>
                                         <div style={{ fontWeight: '700' }}>
@@ -795,12 +795,12 @@ const sendMessage = async (content) => {
                                         <div key={index} style={{
                                             alignSelf: isDoctor ? 'flex-end' : 'stretch',
                                             maxWidth: isDoctor ? '85%' : '100%',
-                                            background: isDoctor ? '#2563eb' : '#ffffff',
-                                            color: isDoctor ? '#ffffff' : '#1e293b',
+                                            background: isDoctor ? '#2563eb' : '#0a2440',
+                                            color: isDoctor ? '#ffffff' : '#e0f2fe',
                                             padding: '12px',
                                             borderRadius: '12px',
-                                            border: isDoctor ? 'none' : '1px solid #e2e8f0',
-                                            boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
+                                            border: isDoctor ? 'none' : '1px solid rgba(34, 211, 238, 0.3)',
+                                            boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
                                             overflowWrap: 'anywhere'
                                         }}>
                                             <div style={{
@@ -840,8 +840,8 @@ const sendMessage = async (content) => {
                                     <div style={{
                                         alignSelf: 'flex-start',
                                         padding: '10px 14px',
-                                        background: '#ecfdf5',
-                                        color: '#047857',
+                                        background: 'rgba(34, 197, 94, 0.16)',
+                                        color: '#86efac',
                                         borderRadius: '10px',
                                         fontSize: '12px',
                                         fontWeight: '700'
@@ -853,8 +853,8 @@ const sendMessage = async (content) => {
 
                             <div style={{
                                 padding: '12px',
-                                background: '#ffffff',
-                                borderTop: '1px solid #e2e8f0'
+                                background: '#071a30',
+                                borderTop: '1px solid rgba(34, 211, 238, 0.22)'
                             }}>
                                 <form
                                     onSubmit={(e) => {
@@ -876,7 +876,7 @@ const sendMessage = async (content) => {
                                             flex: 1,
                                             minWidth: 0,
                                             padding: '11px',
-                                            border: '1px solid #cbd5e1',
+                                            border: '1px solid rgba(34, 211, 238, 0.35)',
                                             borderRadius: '8px',
                                             outline: 'none'
                                         }}
