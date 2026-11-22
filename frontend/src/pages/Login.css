@@ -1062,3 +1062,29 @@
 .hero-description {
     text-shadow: 0 2px 14px rgba(3, 10, 25, .55);
 }
+
+@media (min-width: 1025px) {
+
+    .login-header { min-height: 84px; }
+    .astro-brand-symbol { width: 46px; height: 46px; }
+    .brand-name { font-size: 23px; }
+    .brand-tagline { font-size: 10px; }
+    .header-links { font-size: 14.5px; }
+
+    .hero-content h1 { font-size: clamp(38px, 3.4vw, 52px); }
+    .hero-description { font-size: 16px; max-width: 460px; }
+
+    .earth-visual.holo-3d-stage {
+        width: min(500px, 38vw, 62vh);
+        margin-top: calc(min(500px, 38vw, 62vh) * -0.5);
+        right: -14%;
+    }
+
+    .login-card.holo-3d-card {
+        width: min(440px, 100%);
+        padding: 30px 34px;
+    }
+}
+
+.earth-orbit { z-index: 1; }
+.earth-planet.holo-3d-core { z-index: 3; }
