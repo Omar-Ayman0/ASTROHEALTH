@@ -1037,3 +1037,28 @@
     .login-header { min-height: 56px; }
     .hero-content h1 { font-size: clamp(30px, 3vw, 42px); }
 }
+
+@media (min-width: 1025px) {
+    .earth-visual.holo-3d-stage { right: -14%; }
+    .hero-description { max-width: 440px; }
+}
+
+.astro-login-page .forgot-link {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+    padding: 0 0 7px;
+}
+
+.astro-login-page .input-shell input {
+    font-size: 15px;
+    letter-spacing: .2px;
+}
+.astro-login-page .input-shell input[type="password"] {
+    letter-spacing: 2px;
+}
+
+.hero-content h1,
+.hero-description {
+    text-shadow: 0 2px 14px rgba(3, 10, 25, .55);
+}
