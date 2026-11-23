@@ -1,1 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320"><rect width="1200" height="320" rx="24" fill="#081624"/><g fill="none" stroke="#2dd4bf" opacity=".65"><circle cx="1000" cy="160" r="110"/><circle cx="1000" cy="160" r="80"/><ellipse cx="1000" cy="160" rx="170" ry="43" transform="rotate(-30 1000 160)"/><path d="M850 160h72l20-35 26 77 30-106 30 64h120" stroke-width="3"/></g><g fill="#f0f8ff" font-family="Arial,sans-serif"><text x="65" y="75" font-size="18" letter-spacing="4" fill="#2dd4bf">MISSION HEALTH INTELLIGENCE</text><text x="65" y="155" font-size="66" font-weight="bold">ASTROHEALTH</text><text x="68" y="205" font-size="26">Offline-first astronaut health &amp; decision support</text><text x="68" y="259" font-size="18" fill="#9fb8ca">Personalized baselines • Event-driven review • Research prototype</text></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" role="img" aria-label="ASTROHEALTH banner">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a1f36"/><stop offset="1" stop-color="#050d18"/></linearGradient>
+<radialGradient id="glow" cx="0.82" cy="0.5" r="0.5"><stop offset="0" stop-color="#2dd4bf" stop-opacity=".28"/><stop offset="1" stop-color="#2dd4bf" stop-opacity="0"/></radialGradient>
+<linearGradient id="ttl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f0f8ff"/><stop offset="1" stop-color="#7dd3fc"/></linearGradient>
+</defs>
+<rect width="1200" height="320" rx="24" fill="url(#bg)"/>
+<rect width="1200" height="320" rx="24" fill="url(#glow)"/>
+<g fill="#f0f8ff"><circle cx="90" cy="40" r="1.4" opacity=".7"/><circle cx="310" cy="285" r="1.2" opacity=".5"/><circle cx="520" cy="35" r="1.6" opacity=".6"/><circle cx="700" cy="270" r="1.1" opacity=".5"/><circle cx="640" cy="90" r="1.2" opacity=".4"/><circle cx="1150" cy="60" r="1.5" opacity=".6"/><circle cx="40" cy="180" r="1.1" opacity=".4"/></g>
+<g fill="none" stroke="#2dd4bf" opacity=".7"><circle cx="1000" cy="160" r="110"/><circle cx="1000" cy="160" r="80" opacity=".6"/><ellipse cx="1000" cy="160" rx="170" ry="43" transform="rotate(-30 1000 160)"/><path d="M850 160h72l20-35 26 77 30-106 30 64h120" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g font-family="Arial,Helvetica,sans-serif">
+<text x="65" y="75" font-size="18" letter-spacing="4" fill="#2dd4bf">MISSION HEALTH INTELLIGENCE</text>
+<text x="65" y="155" font-size="66" font-weight="bold" fill="url(#ttl)">ASTROHEALTH</text>
+<text x="68" y="205" font-size="26" fill="#f0f8ff">Offline-first astronaut health &amp; decision support</text>
+<text x="68" y="259" font-size="18" fill="#9fb8ca">Personalized baselines • Event-driven review • Research prototype</text>
+</g></svg>
