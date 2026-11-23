@@ -25,7 +25,8 @@ function initDb() {
             receiver_role TEXT,
             content TEXT,
             timestamp TEXT,
-            status TEXT
+            status TEXT,
+            astronaut_id TEXT
         )`);
 
         db.run(`CREATE TABLE IF NOT EXISTS profiles (
@@ -145,6 +146,16 @@ function initDb() {
             (err) => {
                 if (err && !err.message.includes('duplicate column name')) {
                     console.error('Incidents migration:', err.message);
+                }
+            }
+        );
+
+        // Existing databases created before messages.astronaut_id existed
+        db.run(
+            `ALTER TABLE messages ADD COLUMN astronaut_id TEXT`,
+            (err) => {
+                if (err && !err.message.includes('duplicate column name')) {
+                    console.error('Messages migration:', err.message);
                 }
             }
         );
