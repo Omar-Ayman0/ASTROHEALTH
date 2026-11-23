@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../Common/Card';
-import { vitalSeverity, getVitalSeverity, levelFromVitals, SEVERITY_COLORS } from '../../utils/vitalSeverity';
+import { vitalSeverity, getVitalSeverity, SEVERITY_COLORS } from '../../utils/vitalSeverity';
 
 // Telemetry older than this (seconds) is flagged as stale.
 const STALE_AFTER_SEC = 30;
@@ -69,9 +69,9 @@ const TELEMETRY_META = {
 };
 
 // Normal resting heart-rate range shown on the heart-rate gauge (BPM).
-const HR_NORMAL = { min: 60, max: 100 };
+const HR_NORMAL = { min: 50, max: 100 };
 // Visible span of the gauge (BPM).
-const HR_SCALE = { min: 40, max: 140 };
+const HR_SCALE = { min: 30, max: 140 };
 
 const hrPosition = (v) => {
     const pct = ((v - HR_SCALE.min) / (HR_SCALE.max - HR_SCALE.min)) * 100;
@@ -266,7 +266,7 @@ const VitalsWidget = ({ vitals, onClick, alertLevel = null, flaggedKeys = [] }) 
                 }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <HologramCore isHeartActive={levelFromVitals(vitals) === 'high'} />
+                    <HologramCore isHeartActive={alertLevel === 'high'} />
                     <div>
                         <div
                             style={{

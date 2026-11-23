@@ -1,5 +1,5 @@
 import React from 'react';
-import { vitalSeverity, levelFromVitals, SEVERITY_COLORS } from '../../utils/vitalSeverity';
+import { vitalSeverity, SEVERITY_COLORS } from '../../utils/vitalSeverity';
 import './AstronautHologram.css';
 
 const fmt = (value, digits = 1) => {
@@ -28,9 +28,10 @@ const Ring = ({ x, y, w }) => (
  * so no API / payload / schema change is involved.
  */
 const AstronautHologram = ({ astronaut, vitals = {}, isAlert = false, alertLevel = null, flaggedKeys = [] }) => {
-    // The hologram turns red only when at least one displayed vital is really outside its normal range.
-    // (alertLevel / isAlert / flaggedKeys props are kept for compatibility but no longer drive the colour.)
-    const level = levelFromVitals(vitals);
+    // The hologram colour follows the Engine Assessment so the two can never disagree:
+    // NOMINAL -> cyan, MONITOR CLOSELY (alertLevel 'medium') -> amber, HIGH RISK / anomaly ('high') -> red.
+    // Individual readings still get their own red box when their value is out of range.
+    const level = alertLevel || (isAlert ? 'high' : null);
     const hr = Number(vitals.heart_rate);
     const beat = Number.isFinite(hr) && hr > 0
         ? Math.min(1.6, Math.max(0.4, 60 / hr))

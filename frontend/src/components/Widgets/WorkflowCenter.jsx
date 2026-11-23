@@ -99,19 +99,16 @@ export default function WorkflowCenter({ astronautId, onRefresh }) {
     };
 
     return (
-        <div style={{
-            position: 'fixed',
-            left: 22,
-            bottom: 22,
-            zIndex: 1100,
-            fontFamily: 'inherit'
-        }}>
+        <div style={{ display: 'flex', fontFamily: 'inherit' }}>
             {open && (
                 <div style={{
+                    position: 'fixed',
+                    left: 22,
+                    bottom: 22,
+                    zIndex: 1100,
                     width: 'min(720px, calc(100vw - 32px))',
                     maxHeight: 'min(75vh, 620px)',
                     overflowY: 'auto',
-                    marginBottom: 13,
                     padding: 20,
                     boxSizing: 'border-box',
                     background: '#0b1628',
@@ -426,15 +423,17 @@ export default function WorkflowCenter({ astronautId, onRefresh }) {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 10,
-                    padding: '12px 19px',
-                    borderRadius: 13,
+                    padding: '8px 16px',
+                    borderRadius: 10,
                     background: 'linear-gradient(135deg, #0f2744, #12365b)',
                     color: '#fff',
                     border: '1px solid rgba(56,189,248,.65)',
                     boxShadow: '0 7px 25px rgba(15,39,68,.4)',
                     fontWeight: 800,
                     fontSize: 12,
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    width: '100%',
+                    justifyContent: 'center'
                 }}
             >
                 <span style={{ fontSize: 16 }}>⚙</span>

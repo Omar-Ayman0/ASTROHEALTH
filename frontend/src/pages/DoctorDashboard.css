@@ -163,3 +163,26 @@
     .doc-chip, .doc-select { flex: 1 1 140px; }
     .doc-section-line { display: none; }
 }
+
+/* ---------- launchers (AI assistant / workflow demo) live in the overview strip, not floating over content ---------- */
+.doc-action-wf { display: flex; min-width: 170px; }
+.doc-action-wf > div { width: 100%; }
+
+.doc-action {
+    min-width: 140px;
+    padding: 8px 18px;
+    border-radius: 10px;
+    border: 1px solid rgba(52, 211, 153, 0.6);
+    background: linear-gradient(135deg, #047857, #059669);
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.82rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.doc-action:hover { filter: brightness(1.1); }
+
+@media (max-width: 760px) {
+    .doc-action, .doc-action-wf { flex: 1 1 140px; }
+}

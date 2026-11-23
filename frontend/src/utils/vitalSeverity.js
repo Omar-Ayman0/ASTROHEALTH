@@ -5,7 +5,7 @@
 export const SEVERITY_RANK = { ok: 0, medium: 1, high: 2 };
 
 export const VITAL_RANGES = {
-    heart_rate: { normal: [60, 100], warn: [50, 120] },
+    heart_rate: { normal: [50, 100], warn: [40, 120] },
     spo2: { normal: [95, 101], warn: [90, 101] },
     temperature: { normal: [35.5, 37.5], warn: [34.5, 38.5] },
     hrv: { normal: [20, 120], warn: [10, 150] },

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import axios from 'axios';
-import ChatPanel from '../components/Messaging/ChatPanel';
 import AIHealthReport from '../components/Messaging/AIHealthReport';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 import VitalsWidget from '../components/Widgets/VitalsWidget';
@@ -10,7 +9,6 @@ import AlertsWidget from '../components/Widgets/AlertsWidget';
 import VitalsDetailModal from '../components/Widgets/VitalsDetailModal';
 import PredictiveRiskWidget from '../components/Widgets/PredictiveRiskWidget';
 import HistoryWidget from '../components/Widgets/HistoryWidget';
-import AssignTaskWidget from '../components/Widgets/AssignTaskWidget';
 import AstronautProfileCard from '../components/Widgets/AstronautProfileCard';
 import Card from '../components/Common/Card';
 import { astronauts } from '../utils/astronauts';
@@ -44,11 +42,9 @@ const DoctorDashboard = () => {
     const [riskData, setRiskData] = useState({});
     const [anomalyData, setAnomalyData] = useState({});
     const [history, setHistory] = useState({ heart_rate: [], spo2: [], bp: [], temperature: [], hrv: [], respiratory_rate: [] });
-    const [messages, setMessages] = useState([]);
     const [alerts, setAlerts] = useState([]);
     const [incidents, setIncidents] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isChatOpen, setIsChatOpen] = useState(false);
     const [isAssistantOpen, setIsAssistantOpen] = useState(false);
     const [assistantMessages, setAssistantMessages] = useState([]);
     const [assistantLoading, setAssistantLoading] = useState(false);
@@ -76,11 +72,6 @@ const DoctorDashboard = () => {
     const [highlightedIncident, setHighlightedIncident] = useState(null);
     const highlightTimer = useRef(null);
 
-    useEffect(() => {
-        axios.get(`${BACKEND_URL}/api/messages/history`)
-            .then(res => setMessages(Array.isArray(res.data) ? res.data.reverse() : []))
-            .catch(err => console.error('Messages unavailable:', err));
-    }, []);
     useEffect(() => {
         let cancelled = false;
 
@@ -320,31 +311,6 @@ const DoctorDashboard = () => {
 
     useEffect(() => () => clearTimeout(highlightTimer.current), []);
 
-    const clearChat = async () => {
-    if (!window.confirm('Clear the conversation for both doctor and astronaut?')) return;
-    try {
-        await axios.delete(`${BACKEND_URL}/api/messages/clear`, {
-            data: { role: 'Doctor' }
-        });
-        setMessages([]);
-    } catch (err) {
-        alert(err.response?.data?.error || 'Could not clear chat.');
-    }
-};
-const sendMessage = async (content) => {
-        try {
-            await axios.post(`${BACKEND_URL}/api/precaution/send`, { content });
-            setMessages(prev => [...prev, {
-                sender_role: 'Doctor',
-                content,
-                timestamp: new Date().toISOString()
-            }]);
-        } catch (err) {
-            console.error('Failed to send message:', err);
-        }
-    };
-
-
     const sendAssistantMessage = async (content) => {
         if (!content.trim() || assistantLoading) return;
 
@@ -552,6 +518,23 @@ const sendMessage = async (content) => {
                             ))}
                         </select>
                     </label>
+                    <button
+                        type="button"
+                        className="doc-action doc-action-ai"
+                        onClick={() => setIsAssistantOpen(!isAssistantOpen)}
+                        aria-label="Toggle AI Health Assistant"
+                        aria-expanded={isAssistantOpen}
+                    >
+                        {isAssistantOpen ? 'Close AI' : 'AI Assistant'}
+                    </button>
+                    <div className="doc-action-wf">
+                    <WorkflowCenter astronautId={selectedAstronaut.id} onRefresh={() => {
+                        refreshNotifications();
+                        axios.get(BACKEND_URL + '/api/doctor/incidents', { params: { astronaut_id: selectedAstronaut.id } })
+                            .then(res => setIncidents(Array.isArray(res.data?.incidents) ? res.data.incidents : []))
+                            .catch(() => {});
+                    }} />
+                    </div>
                 </div>
             </section>
 
@@ -609,11 +592,8 @@ const sendMessage = async (content) => {
 
             {/* 7-8. Medical incidents, review actions and medical orders */}
             <SectionHeader index="04" title="Medical Incidents & Review Actions" subtitle="WF05 escalations are shown on every incident that has one" />
-            <div className="doc-col-8 doc-stack">
+            <div className="doc-col-full doc-stack">
                 <AlertsWidget incidents={enrichedIncidents} onAction={handleIncidentAction} highlightedId={highlightedIncident} />
-            </div>
-            <div className="doc-col-4 doc-stack">
-                <AssignTaskWidget />
             </div>
 
             {telemetryReady && (
@@ -624,13 +604,7 @@ const sendMessage = async (content) => {
                 />
             )}
 
-            <WorkflowCenter astronautId={selectedAstronaut.id} onRefresh={() => {
-                refreshNotifications();
-                axios.get(BACKEND_URL + '/api/doctor/incidents', { params: { astronaut_id: selectedAstronaut.id } })
-                    .then(res => setIncidents(Array.isArray(res.data?.incidents) ? res.data.incidents : []))
-                    .catch(() => {});
-            }} />
-
+            {/* AI assistant window: only exists while open, so nothing floats over the dashboard otherwise */}
             <div style={{
                 position: 'fixed',
                 bottom: '24px',
@@ -840,58 +814,6 @@ const sendMessage = async (content) => {
                         </div>
                     </div>
                 )}
-
-                {isChatOpen && (
-                    <div style={{
-                        width: 'min(450px, calc(100vw - 32px))',
-                        boxShadow: '0 0 20px rgba(37, 99, 235, 0.3)',
-                        borderRadius: '16px',
-                        overflow: 'hidden',
-                        border: '1px solid var(--accent-blue)'
-                    }}>
-                        <ChatPanel
-                            role="Doctor"
-                            messages={messages}
-                            onSendMessage={sendMessage}
-                            onClearMessages={clearChat}
-                        />
-                    </div>
-                )}
-
-                <button
-                    onClick={() => setIsAssistantOpen(!isAssistantOpen)}
-                    aria-label="Toggle AI Health Assistant"
-                    style={{
-                        padding: '12px 18px',
-                        borderRadius: '24px',
-                        background: '#059669',
-                        color: 'white',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontWeight: '700',
-                        boxShadow: '0 4px 12px rgba(5, 150, 105, 0.3)'
-                    }}
-                >
-                    {isAssistantOpen ? 'Close AI' : 'AI Assistant'}
-                </button>
-
-                <button
-                    onClick={() => setIsChatOpen(!isChatOpen)}
-                    aria-label={isChatOpen ? '\u00D7' : '\u{1F4AC}'}
-                    style={{
-                        width: '58px',
-                        height: '58px',
-                        borderRadius: '50%',
-                        background: 'var(--accent-blue)',
-                        color: 'white',
-                        border: 'none',
-                        boxShadow: '0 4px 12px rgba(37, 99, 235, 0.4)',
-                        cursor: 'pointer',
-                        fontSize: '1.5rem'
-                    }}
-                >
-                    {isChatOpen ? '\u00D7' : '\u{1F4AC}'}
-                </button>
             </div>
         </DashboardLayout>
     );

@@ -1,0 +1,4 @@
+امسح الملفات دي من frontend/src:
+components/Messaging/ChatPanel.jsx
+components/Widgets/AssignTaskWidget.jsx
+components/Widgets/TaskWidget.jsx

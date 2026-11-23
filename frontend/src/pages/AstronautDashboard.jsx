@@ -4,21 +4,17 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import VitalsChart from '../components/Charts/VitalsChart';
-import ChatPanel from '../components/Messaging/ChatPanel';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 import Card from '../components/Common/Card';
 import VitalsWidget from '../components/Widgets/VitalsWidget';
 import DiagnosticsWidget from '../components/Widgets/DiagnosticsWidget';
 import AISuggestionsWidget from '../components/Widgets/AISuggestionsWidget';
 import AstronautProfileCard from '../components/Widgets/AstronautProfileCard';
-import TaskWidget from '../components/Widgets/TaskWidget';
 import HistoryWidget from '../components/Widgets/HistoryWidget';
 import { astronauts } from '../utils/astronauts';
 import { latestValidVitals } from '../utils/latestVitals';
 import { alertLevelFrom, flaggedKeysFromFeatures } from '../utils/vitalSeverity';
-import { API_URL, ENGINE_URL } from '../config';
-
-const BACKEND_URL = API_URL;
+import { ENGINE_URL } from '../config';
 
 const AstronautDashboard = () => {
     const { astronautId } = useParams();
@@ -28,8 +24,6 @@ const AstronautDashboard = () => {
     const [riskData, setRiskData] = useState({});
     const [anomalyData, setAnomalyData] = useState({});
     const [history, setHistory] = useState({ heart_rate: [], spo2: [] });
-    const [messages, setMessages] = useState([]);
-    const [isChatOpen, setIsChatOpen] = useState(false);
     const [error, setError] = useState('');
 
     useEffect(() => {
@@ -145,49 +139,13 @@ const AstronautDashboard = () => {
             }
         };
 
-        const loadMessages = async () => {
-            try {
-                const response = await axios.get(
-                    `${BACKEND_URL}/api/messages/history`
-                );
-
-                if (!cancelled) {
-                    setMessages(
-                        Array.isArray(response.data)
-                            ? [...response.data].reverse()
-                            : []
-                    );
-                }
-            } catch (err) {
-                console.error('Messages loading failed:', err);
-            }
-        };
-
         loadData();
-        loadMessages();
 
         return () => {
             cancelled = true;
             clearTimeout(timer);
         };
     }, [astronautId, astronaut]);
-
-    const sendMessage = async (content) => {
-        try {
-            await axios.post(`${BACKEND_URL}/api/emergency/send`, {
-                content,
-                astronaut_id: astronautId
-            });
-
-            setMessages(prev => [...prev, {
-                sender_role: 'Astronaut',
-                content,
-                timestamp: new Date().toISOString()
-            }]);
-        } catch (err) {
-            console.error('Failed to send message:', err);
-        }
-    };
 
     if (!astronaut) {
         return (
@@ -262,60 +220,16 @@ const AstronautDashboard = () => {
                             />
                         </div>
                     </Card>
-                    <TaskWidget />
                 </div>
             </div>
 
-            <div className="col-span-12">
+            <div className="col-span-12" style={{ display: 'flex', flexDirection: 'column', gap: 24, minWidth: 0 }}>
                 <AISuggestionsWidget
                     vitals={vitals}
                     riskData={riskData}
                     anomalyData={anomalyData}
                 />
                 <HistoryWidget astronautId={astronautId} />
-            </div>
-
-            <div style={{
-                position: 'fixed',
-                bottom: 24,
-                right: 24,
-                zIndex: 1000,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-end',
-                gap: 16
-            }}>
-                {isChatOpen && (
-                    <div style={{
-                        width: 'min(450px, calc(100vw - 32px))',
-                        boxShadow: '0 0 20px rgba(37, 99, 235, 0.3)',
-                        borderRadius: 16,
-                        overflow: 'hidden',
-                        border: '1px solid var(--accent-blue)'
-                    }}>
-                        <ChatPanel
-                            role="Astronaut"
-                            messages={messages}
-                            onSendMessage={sendMessage}
-                        />
-                    </div>
-                )}
-
-                <button
-                    onClick={() => setIsChatOpen(!isChatOpen)}
-                    style={{
-                        width: 58,
-                        height: 58,
-                        borderRadius: '50%',
-                        background: 'var(--accent-blue)',
-                        color: 'white',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: 25
-                    }}
-                >
-                    {isChatOpen ? '\u00D7' : '\u{1F4AC}'}
-                </button>
             </div>
         </DashboardLayout>
     );
