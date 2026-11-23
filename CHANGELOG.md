@@ -8,6 +8,7 @@ No runtime change: engine, backend, n8n workflows, API, JSON contract and every 
 - `backend/.env.example` completed and `frontend/.env.example` added (templates only, not loaded by the apps).
 - `frontend/README.md` replaced the Vite template text; removed the stale notes `README_FIX.txt` and `DELETE_THESE_FILES.txt`.
 - `frontend/src/index.css`: focus-visible outline and `prefers-reduced-motion` support (additive). `frontend/index.html`: Open Graph meta tags.
+- README screenshots replaced with six new captures (login, medical officer dashboard, engine analysis, incidents, astronaut dashboard, AI assistant; browser chrome cropped out).
 - `docs/assets/banner.svg` redesigned; `.gitignore` lists `automation/workflows.configured/`; new `docs/README.md` index.
 
 ## 2026-11-21: deployment-ready revision
