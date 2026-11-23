@@ -1,0 +1,165 @@
+/* Doctor Dashboard layout.
+   Uses its own span classes (doc-col-*) on top of the shared 12-column .dashboard-grid so the
+   shared index.css grid rules are untouched. `1 / -1` always spans the whole explicit grid, which
+   avoids the implicit-column overflow that `span 12` causes on the 6-column tablet grid. */
+
+.doc-col-full { grid-column: 1 / -1; min-width: 0; }
+.doc-col-4 { grid-column: span 4; min-width: 0; }
+.doc-col-8 { grid-column: span 8; min-width: 0; }
+
+.doc-stack { display: flex; flex-direction: column; gap: 24px; }
+
+@media (max-width: 1200px) {
+    .doc-col-4,
+    .doc-col-8 { grid-column: 1 / -1; }
+}
+
+/* ---------- overview strip ---------- */
+.doc-overview {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px 24px;
+    padding: 20px 24px;
+    border-radius: 14px;
+    border: 1px solid rgba(34, 211, 238, 0.36);
+    background: linear-gradient(165deg, rgba(7, 24, 46, 0.94), rgba(4, 13, 27, 0.96));
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38), 0 0 18px rgba(34, 211, 238, 0.07);
+}
+
+.doc-eyebrow {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #22d3ee;
+}
+
+.doc-overview h2 { margin: 0; color: #f0f9ff; font-size: clamp(1.25rem, 2.4vw, 1.7rem); letter-spacing: -0.01em; }
+.doc-overview p { margin: 6px 0 0; color: #a9bdd3; font-size: 0.9rem; }
+
+.doc-overview-controls { display: flex; flex-wrap: wrap; align-items: stretch; gap: 12px; }
+
+.doc-chip,
+.doc-select {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    min-width: 150px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(34, 211, 238, 0.3);
+    background: rgba(4, 15, 30, 0.7);
+}
+
+.doc-chip em,
+.doc-select em {
+    font-style: normal;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #7f95ad;
+}
+
+.doc-chip strong { font-size: 0.95rem; color: #e0f2fe; font-variant-numeric: tabular-nums; }
+.doc-chip.is-ok strong { color: #4ade80; }
+.doc-chip.is-medium { border-color: rgba(251, 191, 36, 0.6); }
+.doc-chip.is-medium strong { color: #fcd34d; }
+.doc-chip.is-high { border-color: rgba(248, 113, 113, 0.7); background: rgba(239, 68, 68, 0.12); }
+.doc-chip.is-high strong { color: #fca5a5; }
+
+.doc-select { min-width: 190px; border-color: rgba(34, 211, 238, 0.55); }
+
+.doc-select select {
+    appearance: auto;
+    padding: 2px 0;
+    border: 0 !important;
+    background: transparent !important;
+    color: #f0f9ff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    outline: none;
+}
+
+.doc-select select option { background: #0f172a; color: #fff; }
+.doc-select:focus-within { box-shadow: 0 0 0 2px rgba(103, 232, 249, 0.45); }
+
+/* ---------- section headers ---------- */
+.doc-section-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 10px;
+}
+
+.doc-section-index {
+    flex: 0 0 auto;
+    padding: 4px 9px;
+    border-radius: 7px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    color: #67e8f9;
+    background: rgba(34, 211, 238, 0.1);
+    border: 1px solid rgba(34, 211, 238, 0.4);
+    font-variant-numeric: tabular-nums;
+}
+
+.doc-section-text h3 {
+    margin: 0;
+    font-size: 0.86rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #e0f2fe;
+}
+
+.doc-section-text p { margin: 3px 0 0; font-size: 0.74rem; color: #8da2b8; }
+
+.doc-section-line {
+    flex: 1 1 auto;
+    height: 1px;
+    min-width: 24px;
+    background: linear-gradient(90deg, rgba(34, 211, 238, 0.55), transparent);
+}
+
+/* ---------- states / charts ---------- */
+.doc-state {
+    padding: 44px 24px;
+    text-align: center;
+    color: #a9bdd3;
+    border-radius: 14px;
+    border: 1px dashed rgba(34, 211, 238, 0.35);
+    background: rgba(4, 15, 30, 0.5);
+}
+
+.doc-state.is-error {
+    text-align: left;
+    padding: 24px;
+    color: #fca5a5;
+    border-style: solid;
+    border-color: rgba(220, 38, 38, 0.4);
+    background: rgba(220, 38, 38, 0.1);
+}
+
+.doc-chart-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.doc-chart { height: 250px; position: relative; }
+
+@media (max-width: 760px) {
+    .doc-chart-pair { grid-template-columns: minmax(0, 1fr); }
+    .doc-overview { padding: 16px; }
+    .doc-overview-controls { width: 100%; }
+    .doc-chip, .doc-select { flex: 1 1 140px; }
+    .doc-section-line { display: none; }
+}
