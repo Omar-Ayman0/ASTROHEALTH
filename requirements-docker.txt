@@ -1,0 +1,10 @@
+# Runtime pins for the container image: the versions tested on Python 3.13 (requirements-tested-py313.txt)
+# plus FastAPI from requirements.txt, which that test environment did not have.
+numpy==2.5.3
+pandas==3.0.5
+scikit-learn==1.9.1
+scipy==1.18.1
+matplotlib==3.11.2
+fastapi==0.162.4
+uvicorn==0.54.0
+pydantic==2.13.5
