@@ -33,6 +33,24 @@ function requireApiKey(req, res, next) {
     next();
 }
 
+
+// ---------------------------------------------------------------------------
+// Doctor routes are already protected by the session cookie + requireRole('doctor','admin').
+// The old "local access only" IP check made every doctor endpoint answer 403 as soon as the
+// dashboard was served from another host (Vercel -> Railway/VPS), because the request then
+// comes from the public internet, not from 127.0.0.1. It is now OPT-IN:
+//   DOCTOR_LOCAL_ONLY=true   -> only accept the TCP peer 127.0.0.1 / ::1 (single-machine demo behind nginx)
+// ---------------------------------------------------------------------------
+const DOCTOR_LOCAL_ONLY = String(process.env.DOCTOR_LOCAL_ONLY || '').toLowerCase() === 'true';
+const LOCAL_ADDRESSES = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
+
+function doctorLocalGuard(req, res, next) {
+    if (!DOCTOR_LOCAL_ONLY) return next();
+    const peer = req.socket?.remoteAddress || '';
+    if (LOCAL_ADDRESSES.includes(peer)) return next();
+    return res.status(403).json({ success: false, accepted: false, error: 'Local access only' });
+}
+
 // Deliver queued health alerts to n8n every 30 seconds.
 let healthAlertDispatchRunning = false;
 
@@ -286,11 +304,7 @@ router.get('/v1/events', requireApiKey, async (req, res) => {
 
 
 // WF01 local demo trigger - API key stays on backend
-router.post('/doctor/workflows/wf01/test', requireRole('doctor', 'admin'), async (req, res) => {
-    const remote = req.socket.remoteAddress || '';
-    if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(remote)) {
-        return res.status(403).json({ success: false, error: 'Local access only' });
-    }
+router.post('/doctor/workflows/wf01/test', requireRole('doctor', 'admin'), doctorLocalGuard, async (req, res) => {
 
     const astronautId = String(req.body?.astronaut_id || '').trim();
     if (!astronautId) {
@@ -878,16 +892,7 @@ router.get('/v1/mission/connection', requireApiKey, (req, res) => {
 
  
 // Local Doctor AI Assistant - Workflow 02
-router.post('/doctor/health-assistant', requireRole('doctor', 'admin'), async (req, res) => {
-    const remoteAddress = req.ip || req.socket.remoteAddress;
-    const allowedAddresses = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
-
-    if (!allowedAddresses.includes(remoteAddress)) {
-        return res.status(403).json({
-            accepted: false,
-            error: 'Local access only'
-        });
-    }
+router.post('/doctor/health-assistant', requireRole('doctor', 'admin'), doctorLocalGuard, async (req, res) => {
 
     const webhookUrl = process.env.HEALTH_ASSISTANT_WEBHOOK_URL;
     const { astronaut_id, question } = req.body || {};
@@ -945,11 +950,7 @@ router.post('/doctor/health-assistant', requireRole('doctor', 'admin'), async (r
 
 
 // Doctor Dashboard: local incidents feed
-router.get('/doctor/incidents', requireRole('doctor', 'admin'), (req, res) => {
-    const ip = req.ip || '';
-    if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(ip)) {
-        return res.status(403).json({ error: 'Local access only' });
-    }
+router.get('/doctor/incidents', requireRole('doctor', 'admin'), doctorLocalGuard, (req, res) => {
 
     const astronautId = req.query.astronaut_id;
     const sql = astronautId
@@ -964,11 +965,7 @@ router.get('/doctor/incidents', requireRole('doctor', 'admin'), (req, res) => {
 
 
 // WF05: Manually queue triage for a doctor-selected incident
-router.post('/doctor/incidents/:incident_id/wf05-trigger', requireRole('doctor', 'admin'), (req, res) => {
-    const ip = req.ip || '';
-    if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(ip)) {
-        return res.status(403).json({ success: false, error: 'Local access only' });
-    }
+router.post('/doctor/incidents/:incident_id/wf05-trigger', requireRole('doctor', 'admin'), doctorLocalGuard, (req, res) => {
 
     if (req.body?.schema_version !== '1.0') {
         return res.status(400).json({ success: false, error: 'schema_version 1.0 is required' });
@@ -1076,11 +1073,7 @@ router.post('/doctor/incidents/:incident_id/wf05-trigger', requireRole('doctor',
     );
 });
 // WF05: Doctor Dashboard notification status
-router.get('/doctor/incidents/:incident_id/wf05-status', requireRole('doctor', 'admin'), (req, res) => {
-    const ip = req.ip || '';
-    if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(ip)) {
-        return res.status(403).json({ error: 'Local access only' });
-    }
+router.get('/doctor/incidents/:incident_id/wf05-status', requireRole('doctor', 'admin'), doctorLocalGuard, (req, res) => {
 
     const incidentId = req.params.incident_id;
 
@@ -1119,11 +1112,7 @@ router.get('/doctor/incidents/:incident_id/wf05-status', requireRole('doctor', '
     );
 });
 // WF03 Incident Review Proxy
-router.post('/doctor/incidents/:incident_id/actions', requireRole('doctor', 'admin'), async (req, res) => {
-    const ip = req.ip || '';
-    if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(ip)) {
-        return res.status(403).json({ error: 'Local access only' });
-    }
+router.post('/doctor/incidents/:incident_id/actions', requireRole('doctor', 'admin'), doctorLocalGuard, async (req, res) => {
 
     const webhookUrl = process.env.INCIDENT_REVIEW_WEBHOOK_URL;
     const apiKey = process.env.API_KEY;
@@ -1197,19 +1186,29 @@ router.post('/doctor/incidents/:incident_id/actions', requireRole('doctor', 'adm
                     }
                 });
 
-                return res.status(response.status).json(response.data);
+                // WF03 answers { accepted: true, new_status, persisted } - the dashboard checks `success`.
+                const body = (response.data && typeof response.data === 'object' && !Array.isArray(response.data))
+                    ? response.data
+                    : {};
+                return res.status(response.status).json({
+                    ...body,
+                    success: body.success === true || (body.accepted === true && body.persisted === true)
+                });
             } catch (error) {
                 console.error(
                     '[WF03] Webhook request failed:',
                     error.response?.data || error.message
                 );
 
+                const upstream = error.response?.data;
                 return res.status(error.response?.status || 502).json(
-                    error.response?.data || {
-                        success: false,
-                        error: 'Incident Review workflow failed',
-                        details: error.message
-                    }
+                    upstream && typeof upstream === 'object'
+                        ? { success: false, ...upstream, error: upstream.message || upstream.error || 'Incident Review workflow failed' }
+                        : {
+                            success: false,
+                            error: 'Incident Review workflow failed',
+                            details: error.message
+                        }
                 );
             }
         }

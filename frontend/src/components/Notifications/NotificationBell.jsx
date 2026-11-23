@@ -269,7 +269,10 @@ const NotificationBell = ({
                     {error && (
                         <div className="nb-banner" role="status">
                             <TriangleAlertIcon size={14} />
-                            Refresh failed — showing the last successful update.
+                            <span>
+                                Refresh failed — showing the last successful update.
+                                {typeof error === 'string' && error ? <small style={{ display: 'block', opacity: 0.8 }}>{error}</small> : null}
+                            </span>
                         </div>
                     )}
                     {!error && partialFailures > 0 && (

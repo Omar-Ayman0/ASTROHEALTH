@@ -390,7 +390,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://astrohealth-api.autoflow.cfd/api/v1/incidents/upsert",
+        "url": "https://astrohealth-production-1ebf5e79.up.railway.app/api/v1/incidents/upsert",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,

@@ -460,25 +460,35 @@ const sendMessage = async (content) => {
                 { timeout: 35000 }
             );
 
-            if (response.data?.success) {
+            // WF03 (n8n) confirms with { accepted: true, persisted: true, new_status }; the backend proxy also adds `success`.
+            const data = response.data || {};
+            const confirmed = data.success === true
+                || (data.accepted === true && data.persisted !== false)
+                || Boolean(data.new_status);
+
+            if (confirmed) {
                 refreshNotifications();
+                // re-read the incident list from the backend so the card shows the persisted status
+                axios.get(`${BACKEND_URL}/api/doctor/incidents`, { params: { astronaut_id: selectedAstronaut.id }, timeout: 10000 })
+                    .then(res => setIncidents(Array.isArray(res.data?.incidents) ? res.data.incidents : []))
+                    .catch(() => {});
                 setIncidents(prev => prev.map(item =>
                     item.incident_id === incident.incident_id
                         ? {
                             ...item,
-                            status: response.data.new_status || item.status,
-                            updated_at: response.data.created_at || new Date().toISOString()
+                            status: data.new_status || item.status,
+                            updated_at: data.updated_at || data.created_at || new Date().toISOString()
                         }
                         : item
                 ));
                 alert(`Incident ${incident.incident_id}: ${action} successful.`);
             } else {
-                alert(response.data?.error || 'Incident action was not confirmed by the server.');
+                alert(data.message || data.error || 'Incident action was not confirmed by the server.');
             }
         } catch (err) {
             alert(
-                err.response?.data?.error ||
                 err.response?.data?.message ||
+                err.response?.data?.error ||
                 err.message ||
                 'Incident action failed'
             );

@@ -130,7 +130,8 @@ export function useDoctorNotifications() {
             setData((d) => ({
                 ...d,
                 loading: false,
-                error: err?.response?.data?.error || err?.message || 'Notifications could not be refreshed.'
+                error: (err?.response?.status ? `HTTP ${err.response.status}: ` : '') +
+                    (err?.response?.data?.error || err?.message || 'Notifications could not be refreshed.')
             }));
         } finally {
             inFlight.current = false;

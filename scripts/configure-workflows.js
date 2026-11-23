@@ -15,6 +15,10 @@ const fs = require('fs');
 const path = require('path');
 
 const DEFAULT_BASE = 'http://host.docker.internal:4000';
+// Older exports (and the loose copies in the repo root) were saved with this host. Rewrite it too,
+// otherwise the workflow talks to a different backend than the dashboard does.
+const LEGACY_BASES = ['https://astrohealth-api.autoflow.cfd'];
+const KNOWN_BASES = [DEFAULT_BASE, ...LEGACY_BASES];
 const args = process.argv.slice(2);
 const inPlace = args.includes('--in-place');
 const target = args.find((a) => !a.startsWith('--'));
@@ -43,8 +47,12 @@ let total = 0;
 for (const file of fs.readdirSync(srcDir).filter((f) => f.endsWith('.json')).sort()) {
   const text = fs.readFileSync(path.join(srcDir, file), 'utf8');
   JSON.parse(text); // fail early on a broken export
-  const count = text.split(DEFAULT_BASE).length - 1;
-  const out = text.split(DEFAULT_BASE).join(base);
+  let count = 0;
+  let out = text;
+  for (const known of KNOWN_BASES) {
+    count += out.split(known).length - 1;
+    out = out.split(known).join(base);
+  }
   JSON.parse(out);
   fs.writeFileSync(path.join(outDir, file), out);
   total += count;

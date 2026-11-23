@@ -1,0 +1,168 @@
+{
+  "name": "ASTROHEALTH | 04 — Sync Monitoring (Optional)",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        192,
+        400
+      ],
+      "id": "2e6f9cff-fb7f-4c3d-87a4-9d8d1ed5ff78",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://astrohealth-production-1ebf5e79.up.railway.app/api/v1/mission/connection",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        400
+      ],
+      "id": "b0332d81-c88c-46ce-9b95-9ceceb67de28",
+      "name": "Check Earth Connection",
+      "retryOnFail": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "ASTROHEALTH Backend Auth"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ JSON.stringify((() => {\nconst code = $json.statusCode;\nconst b = $json.body;\nconst checked_at = new Date().toISOString();\nconst unknown = (sync_status, error) => ({sync_status, earth_connection:\"UNKNOWN\", local_monitoring:\"UNKNOWN\", pending_sync:null, last_sync_at:null, checked_at, error, message:\"Mission connection status could not be confirmed.\"});\nif (!Number.isInteger(code) || code < 200 || code >= 300) return unknown(\"CHECK_FAILED\", \"STATUS_CHECK_FAILED\");\nconst valid = b && typeof b === \"object\" && !Array.isArray(b) && typeof b.local_monitoring === \"string\" && b.local_monitoring.trim().length > 0 && [\"CONNECTED\",\"DISCONNECTED\"].includes(b.earth_connection) && Number.isSafeInteger(b.pending_sync) && b.pending_sync >= 0 && (b.last_sync_at === null || (typeof b.last_sync_at === \"string\" && Number.isFinite(Date.parse(b.last_sync_at))));\nif (!valid) return unknown(\"INVALID_STATUS_RESPONSE\", \"INVALID_STATUS_RESPONSE\");\nreturn {sync_status:b.earth_connection === \"DISCONNECTED\" ? \"PAUSED\" : b.pending_sync === 0 ? \"IDLE\" : \"PENDING\", earth_connection:b.earth_connection, local_monitoring:b.local_monitoring, pending_sync:b.pending_sync, last_sync_at:b.last_sync_at, checked_at, message:\"Read-only snapshot; backend owns dispatch and ACK.\"};\n})()) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1120,
+        336
+      ],
+      "id": "c29b2080-cbf4-48a9-ae58-f9d5f660805b",
+      "name": "Build Sync Summary"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ JSON.stringify({\n  sync_status: \"CHECK_FAILED\",\n  earth_connection: \"UNKNOWN\",\n  local_monitoring: \"UNKNOWN\",\n  pending_sync: null,\n  last_sync_at: null,\n  error: \"STATUS_CHECK_FAILED\",\n  message: \"Mission connection status could not be retrieved.\",\n  checked_at: new Date().toISOString()\n}) }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1120,
+        576
+      ],
+      "id": "ad8c9724-d8ad-4a64-92ca-a8a30c2e0939",
+      "name": "Backend Unreachable"
+    },
+    {
+      "parameters": {
+        "content": "# ASTROHEALTH\n### 04 | Mission Connection Monitor\nManual, read-only status snapshot. Backend owns Earth dispatch, retry and ACK.\n**Status:** API tested locally; n8n integration pending.",
+        "height": 200,
+        "width": 900
+      },
+      "id": "32b9f02a-577c-482e-8bb4-3015b5c5fb0d",
+      "name": "Overview Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 01. Read mission status\nAuthenticated GET to current backend.\nManual execution; no webhook or scheduling.",
+        "height": 316,
+        "width": 500,
+        "color": 5
+      },
+      "id": "e3786cf7-0297-484e-b671-372825e2cd76",
+      "name": "Status Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        160,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 02. Interpret snapshot\nCONNECTED / DISCONNECTED; local monitoring string.\nIDLE / PENDING / PAUSED / CHECK_FAILED / INVALID_STATUS_RESPONSE.\nNo claim of delivery; last_sync_at may be null.\nBackend owns ingestion, dispatch and ACK.\nVerify disconnect and pending cases with backend.",
+        "height": 680,
+        "width": 480,
+        "color": 6
+      },
+      "id": "b15d0815-5cd7-4447-aa73-29836d5981a3",
+      "name": "Summary Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        928,
+        80
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check Earth Connection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Earth Connection": {
+      "main": [
+        [
+          {
+            "node": "Build Sync Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Backend Unreachable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}

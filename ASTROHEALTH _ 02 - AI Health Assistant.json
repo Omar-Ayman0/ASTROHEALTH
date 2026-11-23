@@ -212,7 +212,7 @@
     {
       "parameters": {
         "toolDescription": "Retrieve the latest available analyzed health report for the astronaut selected in the current request. Use this tool for health briefings, current health status, personal baselines, monitored indicators, trends and anomaly findings. Returns source data from the Health Intelligence Engine. Read-only. Use only the fixed astronaut_id from Normalize Request. Data may be cached; do not assume live Earth connectivity. Authenticated backend snapshot endpoint. A failed request or error payload is not evidence. Inspect backend freshness metadata if supplied; absence means unknown. Endpoint implementation and exact response schema are pending verification.",
-        "url": "https://astrohealth-api.autoflow.cfd/api/v1/report",
+        "url": "https://astrohealth-production-1ebf5e79.up.railway.app/api/v1/report",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendQuery": true,
@@ -253,7 +253,7 @@
     {
       "parameters": {
         "toolDescription": "Retrieve recorded health review events for the astronaut selected in the current request, including event identifiers, timestamps, severity, anomaly scores, explanations and human-review requirements. Use this tool for health briefings and questions about alerts or detected deviations. Read-only. Use only the fixed astronaut_id from Normalize Request. Data may be cached; do not assume live Earth connectivity. Authenticated backend snapshot endpoint. A failed request or error payload is not evidence. Inspect backend freshness metadata if supplied; absence means unknown. Endpoint implementation and exact response schema are pending verification.",
-        "url": "https://astrohealth-api.autoflow.cfd/api/v1/events",
+        "url": "https://astrohealth-production-1ebf5e79.up.railway.app/api/v1/events",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendQuery": true,

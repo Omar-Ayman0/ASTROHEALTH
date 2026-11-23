@@ -1,0 +1,473 @@
+{
+  "name": "ASTROHEALTH | 05 - Smart Triage & Escalation Watcher",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        176,
+        656
+      ],
+      "id": "36879858-2671-47f2-8770-89c087893c63",
+      "name": "Every 60 Seconds"
+    },
+    {
+      "parameters": {
+        "url": "https://astrohealth-production-1ebf5e79.up.railway.app/api/v1/triage/due",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        512,
+        400
+      ],
+      "id": "b3f0ff42-7c17-4211-9c07-489d3da3e475",
+      "name": "Get Due Triage Jobs",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "ASTROHEALTH Backend Auth"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst payload = typeof $json.data === 'string'\n  ? JSON.parse($json.data)\n  : ($json.data ?? $json);\n\nconst jobs = Array.isArray(payload.jobs)\n  ? payload.jobs\n  : [];\n\nreturn jobs.map((job) => ({\n  json: job\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        400
+      ],
+      "id": "c5e3a1e4-bd15-4a10-818a-67b71e0fc54a",
+      "name": "Expand Triage Jobs"
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://astrohealth-production-1ebf5e79.up.railway.app/api/v1/incidents/' + $json.incident_id + '/triage-context' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        944,
+        400
+      ],
+      "id": "0efee051-8e0c-478a-893d-9971052da26c",
+      "name": "Get Triage Context",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "ASTROHEALTH Backend Auth"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify($json) }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You create a concise ASTROHEALTH triage brief for a human medical officer. Use only evidence in the supplied incident context. Do not diagnose, prescribe treatment, assign clinical risk, or invent facts. Preserve engine severity and findings. Every evidence_refs value MUST be copied exactly from the supplied available evidence_refs list; never create a new reference. Return only the configured JSON. confidence must be a number from 0 to 1. Include the limitation: 'AI-generated summary for human medical review; not a diagnosis.'"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1152,
+        400
+      ],
+      "id": "8e3e4f4f-e2b4-4b9b-96cb-4552219d2fea",
+      "name": "Generate AI Triage Brief",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1152,
+        544
+      ],
+      "id": "f300892a-11eb-4fa1-bfc4-3e36adc9dbf7",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"summary\": { \"type\": \"string\" },\n    \"findings\": { \"type\": \"array\", \"maxItems\": 4, \"items\": { \"type\": \"string\" } },\n    \"evidence_refs\": { \"type\": \"array\", \"maxItems\": 6, \"items\": { \"type\": \"string\" } },\n    \"suggested_checks\": { \"type\": \"array\", \"maxItems\": 3, \"items\": { \"type\": \"string\" } },\n    \"confidence\": { \"type\": \"number\", \"minimum\": 0, \"maximum\": 1 },\n    \"limitations\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } }\n  },\n  \"required\": [\"summary\", \"findings\", \"evidence_refs\", \"suggested_checks\", \"confidence\", \"limitations\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1360,
+        544
+      ],
+      "id": "b4f1d2cc-ac91-4f0c-b936-dbf88d6cf21e",
+      "name": "Triage Brief Output Schema"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $('Get Triage Context').item.json;\nconst context = response.context ?? {};\nconst incident = context.incident ?? {};\nconst incidentId = incident.incident_id;\nconst raw = $json.output ?? $json;\nconst valid = raw && typeof raw.summary === 'string' && Array.isArray(raw.findings) && Array.isArray(raw.evidence_refs) && Array.isArray(raw.suggested_checks) && typeof raw.confidence === 'number' && raw.confidence >= 0 && raw.confidence <= 1 && Array.isArray(raw.limitations);\nconst availableRefs = Array.isArray(context.evidence_refs) ? context.evidence_refs : [];\nconst fallback = {\n  summary: `Incident ${incidentId} requires human medical review.`,\n  findings: [\n    `Engine severity: ${incident.severity ?? 'UNKNOWN'}.`,\n    `Astronaut: ${incident.astronaut_id ?? 'UNKNOWN'}.`\n  ],\n  evidence_refs: availableRefs.slice(0, 2),\n  suggested_checks: ['Review the available engine report and event evidence.'],\n  confidence: 0,\n  limitations: ['AI briefing was unavailable; this fallback is derived from stored incident metadata.', 'Human medical review required.'],\n  status: 'FALLBACK'\n};\nconst brief = valid ? raw : fallback;\nreturn [{ json: { incident_id: incidentId, request_id: `triage-${incidentId}-${Date.now()}`, brief } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        400
+      ],
+      "id": "fc75c3f0-7444-4388-9957-74e9eedf875b",
+      "name": "Validate Brief or Build Fallback"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://astrohealth-production-1ebf5e79.up.railway.app/api/v1/incidents/' + $json.incident_id + '/triage-brief' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ request_id: $json.request_id, ...$json.brief }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1696,
+        400
+      ],
+      "id": "c8632a21-17d5-4bfb-b5e9-b37373aa721a",
+      "name": "Save Triage Brief",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "ASTROHEALTH Backend Auth"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://astrohealth-production-1ebf5e79.up.railway.app/api/v1/escalations/due",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        528,
+        912
+      ],
+      "id": "ca8b1a2c-b965-4e17-9cd6-a45942fd1236",
+      "name": "Get Due Escalations",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "ASTROHEALTH Backend Auth"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const escalations = Array.isArray($json.escalations) ? $json.escalations : [];\nreturn escalations.map((escalation) => ({ json: escalation }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        912
+      ],
+      "id": "c9817316-182a-4992-8749-1d83c73d74fa",
+      "name": "Expand Due Escalations"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stage = $json.stage ?? 'REMINDER_1';\nconst incidentId = $json.incident_id;\nconst escalationId = $json.escalation_id;\nconst notification = { title: stage === 'ESCALATED' ? 'Incident escalated' : 'Medical review reminder', message: `Incident ${incidentId} requires medical acknowledgement.`, severity: stage === 'ESCALATED' ? 'HIGH' : 'MEDIUM' };\nreturn [{ json: { ...$json, notification, request_id: `escalation-${escalationId}-${stage}` } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        912
+      ],
+      "id": "63c0be10-bb73-4c40-bea6-aff736f215cb",
+      "name": "Build Escalation Notification"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://astrohealth-production-1ebf5e79.up.railway.app/api/v1/escalations/' + $json.escalation_id + '/advance' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ request_id: $json.request_id }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1296,
+        912
+      ],
+      "id": "b35e3958-0742-4580-9294-7b64a2cc313a",
+      "name": "Record Escalation Advance",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "ASTROHEALTH Backend Auth"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "# ASTROHEALTH\n### 05 | Smart Triage & Escalation Watcher\n**Purpose:** creates evidence-grounded AI briefs and advances durable escalation timers.\n\n**Reliability:** the backend owns jobs, due times, idempotency and ACK cancellation. n8n is safe to restart.",
+        "height": 190,
+        "width": 820
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d4d6b861-714f-4f75-a911-303f4931ce5c",
+      "name": "Workflow Overview"
+    },
+    {
+      "parameters": {
+        "content": "## 01. AI Triage\nPoll pending jobs → retrieve only the incident context → Gemini structured JSON → backend validates evidence references before saving.\n\nIf Gemini returns an invalid response or fails, this workflow saves a deterministic fallback brief.",
+        "height": 450,
+        "width": 1192,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        432,
+        224
+      ],
+      "id": "585a9326-3df8-4c26-8913-ca89982553f5",
+      "name": "AI Triage Note"
+    },
+    {
+      "parameters": {
+        "content": "## 02. Escalation\nPoll due rows → advance the durable backend escalation once with a deterministic request_id.\n\nThe backend cancels the active escalation when a doctor ACKs the incident. Add a dedicated doctor-notification channel only after its backend or UI contract is confirmed.",
+        "height": 306,
+        "width": 1050,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        464,
+        768
+      ],
+      "id": "6c1109f6-2a4c-402a-ab67-05817092630e",
+      "name": "Escalation Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Every 60 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Get Due Triage Jobs",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Due Escalations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Due Triage Jobs": {
+      "main": [
+        [
+          {
+            "node": "Expand Triage Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expand Triage Jobs": {
+      "main": [
+        [
+          {
+            "node": "Get Triage Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Triage Context": {
+      "main": [
+        [
+          {
+            "node": "Generate AI Triage Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate AI Triage Brief": {
+      "main": [
+        [
+          {
+            "node": "Validate Brief or Build Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate AI Triage Brief",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Triage Brief Output Schema": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Generate AI Triage Brief",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Brief or Build Fallback": {
+      "main": [
+        [
+          {
+            "node": "Save Triage Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Due Escalations": {
+      "main": [
+        [
+          {
+            "node": "Expand Due Escalations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expand Due Escalations": {
+      "main": [
+        [
+          {
+            "node": "Build Escalation Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Escalation Notification": {
+      "main": [
+        [
+          {
+            "node": "Record Escalation Advance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}
