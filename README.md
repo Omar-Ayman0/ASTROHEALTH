@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/assets/banner.svg" alt="ASTROHEALTH — Orbital Crew Health Monitoring" width="100%">
+
 # ASTROHEALTH
 ### Orbital Crew Health Monitoring & Medical Operations Platform
 
@@ -16,68 +18,68 @@
 
 ## Overview
 
-ASTROHEALTH is an astronaut health-monitoring and medical-operations project built around a connected mission workflow. It brings astronaut-facing telemetry, medical-officer dashboards, AI-assisted summaries, and incident follow-up into one interface.
+ASTROHEALTH is an astronaut health-monitoring and medical-operations prototype that connects crew telemetry, health-intelligence analysis, AI-assisted explanations, and medical incident workflows in one mission-control experience.
 
-The platform is designed to demonstrate how health signals and operational events can move from monitoring to review and escalation. The screenshots below show the current dark, mission-control interface.
+The platform demonstrates how incoming health data can be processed, presented to astronauts and medical officers, and routed into review and escalation workflows. The interface gallery below uses the **current blue/dark UI screenshots** included in this repository.
 
 ## Interface Gallery
 
-### 01 — Medical Officer Console
+### 01 — Mission Login
 
-The main console brings crew selection, system status, live vital-sign cards, and the medical officer's monitoring workspace together.
+The mission entry screen introduces the ASTROHEALTH experience and provides the astronaut account access point.
 
-![Medical Officer Console](screenshots/01-doctor-console-overview.png)
+![ASTROHEALTH Mission Login](screenshots/01-login.png)
 
-### 02 — Crew Profile & Live Telemetry
+### 02 — Workspace Selection
 
-A crew-member profile is paired with the latest available biometric readings, including heart rate, blood oxygen, skin temperature, HRV, and respiratory rate. Telemetry freshness is explicitly surfaced in the interface.
+The workspace screen separates the available mission workspaces and helps users enter the appropriate operational environment.
 
-![Doctor Live Telemetry](screenshots/02-doctor-live-telemetry.png)
+![ASTROHEALTH Workspace Selection](screenshots/02-workspace-selection.png)
 
-### 03 — AI Health Analysis
+### 03 — Medical Officer Dashboard
 
-The analysis view presents the current risk assessment, anomaly status, contributing factors, and recent heart-rate trend context. It is an operational decision-support view, not a medical diagnosis.
+The medical officer console brings crew selection, system status, astronaut monitoring, and medical operations into one dashboard.
 
-![AI Health Analysis](screenshots/03-ai-health-analysis.png)
+![Medical Officer Dashboard](screenshots/03-medical-officer-dashboard.png)
 
 ### 04 — Astronaut Dashboard
 
-The astronaut-facing view provides a focused health snapshot with vital-sign indicators and trend charts.
+The astronaut-facing dashboard presents the selected crew member's health snapshot, vital-sign indicators, and available trend visualizations.
 
 ![Astronaut Dashboard](screenshots/04-astronaut-dashboard.png)
 
-### 05 — AI Health Assistant
+### 05 — Medical Engine Analysis
 
-The assistant interface supports health-related questions within the available astronaut context and displays structured responses with scope/status information.
+The analysis view surfaces the engine's current assessment, anomaly information, contributing factors, and health-trend context for human review.
 
-![AI Health Assistant](screenshots/05-ai-health-assistant.png)
+![Medical Engine Analysis](screenshots/05-medical-engine-analysis.png)
 
-### 06 — Medical Incidents Overview
+### 06 — AI Health Assistant
 
-Medical officers can review incident counts, review priorities, engine-event status, and the current medical-review state.
+The AI assistant answers questions within the authorized astronaut context and presents structured, evidence-oriented explanations. It is an optional explanation layer, not a diagnostic system.
 
-![Medical Incidents Overview](screenshots/06-medical-incidents-overview.png)
+![AI Health Assistant](screenshots/06-ai-health-assistant.png)
 
-### 07 — Incident Review & Escalation
+### 07 — Medical Incident Review
 
-The incident review panel surfaces escalation state, reminder information, AI-triage availability, and acknowledgement actions.
+The incident interface displays review priority, engine-event state, medical-review status, escalation information, and acknowledgement actions.
 
-![Incident Review and Escalation](screenshots/07-incident-review-and-escalation.png)
+![Medical Incident Review](screenshots/07-incident-review.png)
 
 ---
 
 ## Core Capabilities
 
-- **Crew health monitoring:** astronaut profiles and vital-sign telemetry views.
-- **Medical operations dashboard:** consolidated monitoring, historical context, and incident review.
-- **AI-assisted assessment:** risk and anomaly summaries designed to support human review.
-- **AI health assistant:** conversational access to the available astronaut health context.
+- **Crew health monitoring:** astronaut profiles and available vital-sign telemetry.
+- **Medical operations dashboard:** consolidated crew monitoring, historical context, and incident review.
+- **Health-intelligence analysis:** engine-generated status, anomaly findings, and trend context.
+- **AI-assisted health explanations:** question answering grounded in retrieved health reports and review events.
 - **Incident workflow:** review status, acknowledgement, and escalation visibility.
-- **Telemetry freshness indicators:** clear distinction between current system status and the timestamp of the last received data.
+- **Telemetry freshness indicators:** visibility into stale or delayed telemetry so users do not mistake old readings for live data.
 
 ## Automation & Workflow Layer
 
-The project includes n8n workflow automation for health-alert orchestration, AI-assisted health support, incident review/acknowledgement, and escalation follow-up. Workflow exports and supporting project assets are maintained in the repository.
+ASTROHEALTH includes n8n workflow automation for health-alert orchestration, AI-assisted health support, incident review and acknowledgement, and escalation follow-up. The workflow exports and supporting assets are maintained in the repository.
 
 ## Architecture
 
@@ -88,20 +90,29 @@ flowchart TD
     A[Astro / Crew Telemetry] --> B[Application Backend]
     B --> C[Medical Officer Dashboard]
     B --> D[Astronaut Dashboard]
-    B --> E[Health Intelligence / AI Service]
+    B --> E[Health Intelligence Engine]
     E --> F[Risk & Anomaly Assessment]
     B --> G[n8n Automation Workflows]
     G --> H[Alerts, Review & Escalation]
     H --> C
+    C --> I[AI Health Assistant]
+    I --> E
 ```
 
-## Important Demo Note
+## Important Demo & Safety Notes
 
-ASTROHEALTH is a software demonstration and decision-support project. Displayed readings may be simulated, delayed, or stale; always check the last-updated timestamp and telemetry status. AI-generated content is not a diagnosis and must not replace qualified medical judgement.
+ASTROHEALTH is a **research and software demonstration prototype**, not a medical device. Data shown in the project may be synthetic, simulated, delayed, or stale. Always inspect the relevant timestamps and data-quality indicators. AI-generated explanations are not diagnoses and must not replace qualified medical judgement or authorized medical review.
 
 ## Repository Contents
 
-Explore the repository for the application source, health-intelligence components, workflow exports, and supporting documentation. Refer to the relevant folder-level README files for setup and implementation details.
+- `frontend/` — web application and dashboard interface.
+- `astronaut-health-intelligence/` — health-intelligence engine, API, evaluation assets, and documentation.
+- `docs/` — architecture and project documentation.
+- `docs/assets/` — project banner, architecture visual, and workflow assets.
+- `screenshots/` — the seven current interface screenshots used in this README.
+- `*.json` — exported n8n workflow definitions.
+
+Refer to the README files inside individual folders for setup and implementation details.
 
 ## License
 
