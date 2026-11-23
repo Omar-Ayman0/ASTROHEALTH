@@ -11,9 +11,28 @@
   <img alt="Automation" src="https://img.shields.io/badge/automation-n8n-EA4B71">
 </p>
 
+<p align="center">
+  <a href="#what-it-does">Overview</a> ·
+  <a href="#architecture">Architecture</a> ·
+  <a href="#automation">Automation</a> ·
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#configuration">Configuration</a> ·
+  <a href="#testing">Testing</a> ·
+  <a href="#ملخص-بالعربية">عربي</a>
+</p>
+
 > **Research prototype on synthetic telemetry.** ASTROHEALTH flags deviations from each astronaut's own baseline for human review. It does not diagnose, prescribe or replace a medical officer, and it must not be used with real patient data. See [Limitations](docs/LIMITATIONS.md) and [Security](docs/SECURITY.md).
 
 <p align="center"><a href="docs/assets/demo.mp4"><b>▶ Watch the demo recording</b></a></p>
+
+## At a glance
+
+| | |
+|---|---|
+| **Problem** | Crew health data is noisy and every person is different; fixed thresholds either miss drift or flood reviewers. |
+| **Approach** | Per-astronaut circadian and sleep-aware baselines, sensor-quality checks and a hybrid statistical + Isolation-Forest score that must persist before it raises an incident. |
+| **Human in the loop** | Every incident goes to a medical officer; the AI writes a review brief, never a diagnosis. |
+| **Stack** | Python 3.13 / FastAPI · Node.js 22 / Express / SQLite · n8n · React 19 / Vite |
 
 ## What it does
 
@@ -59,7 +78,12 @@ node scripts/configure-workflows.js https://api.example.com   # writes automatio
 
 Details and contracts: [automation/README.md](automation/README.md), [docs/AUTOMATION.md](docs/AUTOMATION.md).
 
-## Quick start (local, Windows launcher)
+## Quick start
+
+Open <http://localhost:5173> after all three services are running. Demo accounts (`admin`, `doctor`, `astro01`..`astro04`) are created on first start; their password is `SEED_PASSWORD`, or `123456` if unset (demo only).
+
+<details open>
+<summary><b>Windows (launcher)</b></summary>
 
 ```bat
 :: 1. engine environment (once)
@@ -69,10 +93,10 @@ cd ..\backend && npm install && copy .env.example .env   :: set SESSION_SECRET a
 cd ..\frontend && npm install
 cd .. && START_ASTROHEALTH.bat
 ```
+</details>
 
-Open <http://localhost:5173>. Demo accounts (`admin`, `doctor`, `astro01`..`astro04`) are created on first start; their password is `SEED_PASSWORD` or `123456` if unset.
-
-## Quick start (Linux / macOS)
+<details>
+<summary><b>Linux / macOS</b></summary>
 
 ```bash
 # engine
@@ -87,6 +111,19 @@ HEALTH_ENGINE_URL=http://127.0.0.1:8000 node server.js
 # frontend (new terminal)
 cd frontend && npm install && cp .env.example .env && npm run dev
 ```
+</details>
+
+## Configuration
+
+| Where | Variable | Purpose |
+|---|---|---|
+| backend | `SESSION_SECRET` **(required)** | Session signing; the server exits without it |
+| backend | `API_KEY` **(required)** | `x-api-key` for `/api/v1/*`; must match the n8n credential |
+| backend | `FRONTEND_ORIGIN`, `HEALTH_ENGINE_URL`, `DB_PATH`, `SEED_PASSWORD` | Origins, engine URL, SQLite path, demo password |
+| backend | `HEALTH_ALERT_WEBHOOK_URL`, `HEALTH_ASSISTANT_WEBHOOK_URL`, `INCIDENT_REVIEW_WEBHOOK_URL` | n8n production webhooks |
+| frontend | `VITE_API_URL`, `VITE_ENGINE_URL` | Backend / engine URLs, compiled into the build |
+
+Full templates: [`backend/.env.example`](backend/.env.example), [`frontend/.env.example`](frontend/.env.example).
 
 ## Deploy on a VPS
 
@@ -118,6 +155,15 @@ docs/                           architecture, automation, security, limitations,
 ## Engine versions
 
 The active engine is `hybrid-v2.0` (API advertises 2.1.0). The `reference/engine-v4.1.1` handoff (`hybrid-v2.1`) is **not** wired in; promoting it requires compatibility tests and a coordinated JSON-contract review ([docs/VERSIONS.md](docs/VERSIONS.md)).
+
+## ملخص بالعربية
+
+**ASTROHEALTH** نظام تجريبي لمراقبة صحة رواد الفضاء على بيانات تخليقية. المحرك (Python) يبني خط أساس شخصي لكل رائد ويرصد الانحرافات المستمرة، والباك (Node) يخزّن الحوادث ويدير حالات المراجعة الطبية، وسير عمل n8n يجهّز الملخصات ويتابع مؤقتات التصعيد، ولوحات React تعرض الحالة للرائد وللطبيب. الذكاء الاصطناعي يكتب ملخص مراجعة فقط ولا يشخّص، والقرار دائمًا للطبيب المختص. **لا تستخدمه مع بيانات مرضى حقيقية.**
+
+## Team & credits
+
+Team names and profile links: _add here_ (see [docs/PUBLICATION_CHECKLIST.md](docs/PUBLICATION_CHECKLIST.md)).
+Documentation index: [docs/README.md](docs/README.md).
 
 ## License
 

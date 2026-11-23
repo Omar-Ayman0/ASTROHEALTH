@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-11-23: documentation and presentation polish
+
+No runtime change: engine, backend, n8n workflows, API, JSON contract and every URL are untouched.
+
+- README: navigation bar, "At a glance", merged quick start, configuration table, Arabic summary, credits placeholder.
+- `backend/.env.example` completed and `frontend/.env.example` added (templates only, not loaded by the apps).
+- `frontend/README.md` replaced the Vite template text; removed the stale notes `README_FIX.txt` and `DELETE_THESE_FILES.txt`.
+- `frontend/src/index.css`: focus-visible outline and `prefers-reduced-motion` support (additive). `frontend/index.html`: Open Graph meta tags.
+- `docs/assets/banner.svg` redesigned; `.gitignore` lists `automation/workflows.configured/`; new `docs/README.md` index.
+
 ## 2026-11-21: deployment-ready revision
 
 **Automation**
