@@ -358,6 +358,14 @@ const VitalsWidget = ({ vitals, onClick, alertLevel = null, flaggedKeys = [] }) 
                                 }}
                             >
                                 {meta.label}
+                                {(vitals.held_keys || []).includes(key) && (
+                                    <span
+                                        title="This sensor sent no value in the latest reading; showing its last valid value."
+                                        style={{ marginLeft: 8, fontFamily: 'monospace', fontSize: '0.56rem', letterSpacing: '0.06em', color: '#fde68a', whiteSpace: 'nowrap' }}
+                                    >
+                                        HELD
+                                    </span>
+                                )}
                             </div>
 
                             <div

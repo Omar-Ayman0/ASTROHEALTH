@@ -13,6 +13,7 @@ import HistoryWidget from '../components/Widgets/HistoryWidget';
 import AssignTaskWidget from '../components/Widgets/AssignTaskWidget';
 import AstronautProfileCard from '../components/Widgets/AstronautProfileCard';
 import { astronauts } from '../utils/astronauts';
+import { latestValidVitals } from '../utils/latestVitals';
 import { alertLevelFrom, flaggedKeysFromFeatures } from '../utils/vitalSeverity';
 import WorkflowCenter from '../components/Widgets/WorkflowCenter';
 import { API_URL, ENGINE_URL } from '../config';
@@ -243,15 +244,10 @@ const DoctorDashboard = () => {
 
                 const recentTicks = cachedTicks;
                 const latest = recentTicks[recentTicks.length - 1];
-                const values = latest.vitals || {};
                 const intelligence = latest.intelligence || {};
 
                 const mappedVitals = {
-                    heart_rate: values.heart_rate_bpm ?? null,
-                    spo2: values.spo2_pct ?? null,
-                    temperature: values.skin_temp_c ?? null,
-                    hrv: values.hrv_ms ?? null,
-                    respiratory_rate: values.resp_rate_bpm ?? null,
+                    ...latestValidVitals(recentTicks),
                     timestamp: latest.timestamp,
                     astronaut_id: selectedAstronaut.id
                 };

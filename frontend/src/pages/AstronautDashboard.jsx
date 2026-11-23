@@ -14,6 +14,7 @@ import AstronautProfileCard from '../components/Widgets/AstronautProfileCard';
 import TaskWidget from '../components/Widgets/TaskWidget';
 import HistoryWidget from '../components/Widgets/HistoryWidget';
 import { astronauts } from '../utils/astronauts';
+import { latestValidVitals } from '../utils/latestVitals';
 import { alertLevelFrom, flaggedKeysFromFeatures } from '../utils/vitalSeverity';
 import { API_URL, ENGINE_URL } from '../config';
 
@@ -86,7 +87,6 @@ const AstronautDashboard = () => {
 
                 const recent = cachedTicks;
                 const latest = recent[recent.length - 1];
-                const reading = latest.vitals || {};
                 const intelligence = latest.intelligence || {};
                 const zscores = latest.zscores || {};
 
@@ -102,11 +102,7 @@ const AstronautDashboard = () => {
                 });
 
                 setVitals({
-                    heart_rate: reading.heart_rate_bpm,
-                    spo2: reading.spo2_pct,
-                    temperature: reading.skin_temp_c,
-                    hrv: reading.hrv_ms,
-                    respiratory_rate: reading.resp_rate_bpm,
+                    ...latestValidVitals(recent),
                     timestamp: latest.timestamp
                 });
 

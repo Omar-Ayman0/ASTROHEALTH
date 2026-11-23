@@ -3,6 +3,7 @@ import { vitalSeverity, SEVERITY_COLORS } from '../../utils/vitalSeverity';
 import './AstronautHologram.css';
 
 const fmt = (value, digits = 1) => {
+    if (value === null || value === undefined || value === '') return '\u2014';
     const n = Number(value);
     return Number.isFinite(n) ? n.toFixed(digits) : '\u2014';
 };
