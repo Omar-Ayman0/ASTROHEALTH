@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../Common/Card';
-import { vitalSeverity, getVitalSeverity, SEVERITY_COLORS } from '../../utils/vitalSeverity';
+import { vitalSeverity, getVitalSeverity, levelFromVitals, SEVERITY_COLORS } from '../../utils/vitalSeverity';
 
 // Telemetry older than this (seconds) is flagged as stale.
 const STALE_AFTER_SEC = 30;
@@ -266,7 +266,7 @@ const VitalsWidget = ({ vitals, onClick, alertLevel = null, flaggedKeys = [] }) 
                 }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <HologramCore isHeartActive={alertLevel === 'high'} />
+                    <HologramCore isHeartActive={levelFromVitals(vitals) === 'high'} />
                     <div>
                         <div
                             style={{
@@ -297,7 +297,7 @@ const VitalsWidget = ({ vitals, onClick, alertLevel = null, flaggedKeys = [] }) 
                     const meta = TELEMETRY_META[key];
                     const isHovered = activeKey === key;
                     const progress = getProgress(value, meta.min, meta.max);
-                    const severity = vitalSeverity(key, value, alertLevel, flaggedKeys);
+                    const severity = vitalSeverity(key, value);
                     const tone = TONES[severity];
                     const dotColor = SEVERITY_COLORS[severity];
 

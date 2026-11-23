@@ -1,5 +1,5 @@
 import React from 'react';
-import { vitalSeverity, SEVERITY_COLORS } from '../../utils/vitalSeverity';
+import { vitalSeverity, levelFromVitals, SEVERITY_COLORS } from '../../utils/vitalSeverity';
 import './AstronautHologram.css';
 
 const fmt = (value, digits = 1) => {
@@ -28,8 +28,9 @@ const Ring = ({ x, y, w }) => (
  * so no API / payload / schema change is involved.
  */
 const AstronautHologram = ({ astronaut, vitals = {}, isAlert = false, alertLevel = null, flaggedKeys = [] }) => {
-    // 'high' -> red hologram, 'medium' -> yellow hologram (isAlert kept for backwards compatibility)
-    const level = alertLevel || (isAlert ? 'high' : null);
+    // The hologram turns red only when at least one displayed vital is really outside its normal range.
+    // (alertLevel / isAlert / flaggedKeys props are kept for compatibility but no longer drive the colour.)
+    const level = levelFromVitals(vitals);
     const hr = Number(vitals.heart_rate);
     const beat = Number.isFinite(hr) && hr > 0
         ? Math.min(1.6, Math.max(0.4, 60 / hr))
@@ -177,7 +178,7 @@ const AstronautHologram = ({ astronaut, vitals = {}, isAlert = false, alertLevel
 
                 {/* callouts: one leader line + one row per reading */}
                 {readings.map((r) => {
-                    const sev = vitalSeverity(r.vkey, r.raw, level, flaggedKeys);
+                    const sev = vitalSeverity(r.vkey, r.raw);
                     const sevColor = SEVERITY_COLORS[sev];
                     const path = `M${r.px} ${r.py} H${LEAD_X} L${LEAD_X + 14} ${r.ry} H${ROW_X - 4}`;
                     return (
