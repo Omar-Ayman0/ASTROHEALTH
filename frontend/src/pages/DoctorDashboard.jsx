@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import axios from 'axios';
 import ChatPanel from '../components/Messaging/ChatPanel';
 import AIHealthReport from '../components/Messaging/AIHealthReport';
@@ -12,13 +12,31 @@ import PredictiveRiskWidget from '../components/Widgets/PredictiveRiskWidget';
 import HistoryWidget from '../components/Widgets/HistoryWidget';
 import AssignTaskWidget from '../components/Widgets/AssignTaskWidget';
 import AstronautProfileCard from '../components/Widgets/AstronautProfileCard';
+import Card from '../components/Common/Card';
 import { astronauts } from '../utils/astronauts';
-import { latestValidVitals } from '../utils/latestVitals';
 import { alertLevelFrom, flaggedKeysFromFeatures } from '../utils/vitalSeverity';
 import WorkflowCenter from '../components/Widgets/WorkflowCenter';
+import NotificationBell from '../components/Notifications/NotificationBell';
+import { useDoctorNotifications } from '../hooks/useDoctorNotifications';
+import './DoctorDashboard.css';
 import { API_URL, ENGINE_URL } from '../config';
 
 const BACKEND_URL = API_URL;
+
+const SectionHeader = ({ index, title, subtitle }) => (
+    <div className="doc-col-full doc-section-head">
+        <span className="doc-section-index">{index}</span>
+        <div className="doc-section-text">
+            <h3>{title}</h3>
+            {subtitle && <p>{subtitle}</p>}
+        </div>
+        <span className="doc-section-line" aria-hidden="true" />
+    </div>
+);
+
+const riskTone = (label) => (
+    label === 'HIGH RISK' ? 'is-high' : label === 'MONITOR CLOSELY' ? 'is-medium' : 'is-ok'
+);
 
 const DoctorDashboard = () => {
     const [selectedAstronaut, setSelectedAstronaut] = useState(astronauts[0]);
@@ -37,96 +55,26 @@ const DoctorDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    const [wf05Notifications, setWf05Notifications] = useState([]);
-    const [wf05Open, setWf05Open] = useState(false);
-    const [wf05Read, setWf05Read] = useState(() => {
-        try { return JSON.parse(localStorage.getItem('astrohealth_wf05_read') || '[]'); }
-        catch { return []; }
-    });
+    // Notification centre: polls the existing doctor endpoints (see hooks/useDoctorNotifications.js).
+    const {
+        notifications,
+        unreadCount,
+        unreadCritical,
+        statusById,
+        loading: notificationsLoading,
+        error: notificationsError,
+        partialFailures,
+        lastUpdated: notificationsUpdated,
+        alertTick,
+        markRead,
+        markAllRead,
+        refresh: refreshNotifications
+    } = useDoctorNotifications();
 
-    useEffect(() => {
-        let cancelled = false;
-
-        const loadWF05 = async () => {
-            try {
-                const response = await axios.get(`${BACKEND_URL}/api/doctor/incidents`, { timeout: 12000 });
-                const rows = (response.data?.incidents || []).slice(0, 10);
-
-                const results = await Promise.all(rows.map(async row => {
-                    try {
-                        const res = await axios.get(
-                            `${BACKEND_URL}/api/doctor/incidents/${encodeURIComponent(row.incident_id)}/wf05-status`,
-                            { timeout: 10000 }
-                        );
-                        return { row, data: res.data };
-                    } catch { return null; }
-                }));
-
-                if (cancelled) return;
-
-                const notices = [];
-                results.filter(Boolean).forEach(({ row, data }) => {
-                    const triage = data.triage || {};
-                    const escalation = data.escalation || {};
-                    const incident = data.incident || {};
-                    const id = row.incident_id;
-                    const astronaut = row.astronaut_id || incident.astronaut_id || 'Unknown';
-                    const severity = row.severity || incident.severity || 'UNKNOWN';
-
-                    const add = (type, version, title, message, priority = 'normal') => {
-                        notices.push({
-                            key: `${id}:${type}:${version}`,
-                            title, message, priority,
-                            timestamp: row.updated_at || row.created_at
-                        });
-                    };
-
-                    const ts = String(triage.status || 'NOT_CREATED').toUpperCase();
-
-                    if (ts === 'PENDING' || ts === 'FAILED') {
-                        add('triage', ts,
-                            ts === 'FAILED' ? 'AI Triage Failed' : 'AI Triage Pending',
-                            `${astronaut} | ${id} | ${severity}`,
-                            ts === 'FAILED' ? 'high' : 'normal');
-                    } else if (ts === 'COMPLETED' || ts === 'FALLBACK') {
-                        add('triage', triage.generated_at || ts,
-                            ts === 'COMPLETED' ? 'AI Triage Completed' : 'AI Triage Fallback',
-                            `${astronaut} | ${id} | ${ts}`);
-                    }
-
-                    if (String(escalation.status).toUpperCase() === 'ACTIVE') {
-                        add('escalation', `${escalation.stage}:${escalation.reminder_count}`,
-                            'Active Medical Escalation',
-                            `${astronaut} | ${id} | ${escalation.stage || 'ACTIVE'} | Reminders: ${escalation.reminder_count || 0}`,
-                            'high');
-                    }
-
-                    const status = String(row.status || incident.status || '').toUpperCase();
-                    if (status === 'PENDING_MEDICAL_REVIEW' || status === 'IN_REVIEW') {
-                        add('review', status, 'Medical Review Required',
-                            `${astronaut} | ${id} | ${severity}`, 'high');
-                    }
-                });
-
-                notices.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
-                setWf05Notifications(notices);
-            } catch (err) {
-                console.error('WF05 notifications unavailable:', err);
-            }
-        };
-
-        loadWF05();
-        const timer = setInterval(loadWF05, 60000);
-        return () => { cancelled = true; clearInterval(timer); };
-    }, []);
-
-    const unreadWF05 = wf05Notifications.filter(n => !wf05Read.includes(n.key)).length;
-
-    const markWF05Read = () => {
-        const keys = wf05Notifications.map(n => n.key);
-        setWf05Read(keys);
-        localStorage.setItem('astrohealth_wf05_read', JSON.stringify(keys));
-    };
+    // Incident that was opened from a notification (scrolled to + highlighted).
+    const [focusRequest, setFocusRequest] = useState(null);
+    const [highlightedIncident, setHighlightedIncident] = useState(null);
+    const highlightTimer = useRef(null);
 
     useEffect(() => {
         axios.get(`${BACKEND_URL}/api/messages/history`)
@@ -144,24 +92,7 @@ const DoctorDashboard = () => {
                 });
 
                 if (!cancelled) {
-                    const rows = (res.data?.incidents || []).slice(0, 10);
-                const enrichedRows = await Promise.all(rows.map(async incident => {
-                    try {
-                        const statusRes = await axios.get(
-                            `${BACKEND_URL}/api/doctor/incidents/${encodeURIComponent(incident.incident_id)}/wf05-status`,
-                            { timeout: 10000 }
-                        );
-                        return {
-                            ...incident,
-                            triage: statusRes.data?.triage || {},
-                            escalation: statusRes.data?.escalation || {}
-                        };
-                    } catch {
-                        return incident;
-                    }
-                }));
-
-                if (!cancelled) setIncidents(enrichedRows);
+                    setIncidents(Array.isArray(res.data?.incidents) ? res.data.incidents : []);
                 }
             } catch (err) {
                 console.error('Incidents unavailable:', err);
@@ -244,10 +175,15 @@ const DoctorDashboard = () => {
 
                 const recentTicks = cachedTicks;
                 const latest = recentTicks[recentTicks.length - 1];
+                const values = latest.vitals || {};
                 const intelligence = latest.intelligence || {};
 
                 const mappedVitals = {
-                    ...latestValidVitals(recentTicks),
+                    heart_rate: values.heart_rate_bpm ?? null,
+                    spo2: values.spo2_pct ?? null,
+                    temperature: values.skin_temp_c ?? null,
+                    hrv: values.hrv_ms ?? null,
+                    respiratory_rate: values.resp_rate_bpm ?? null,
                     timestamp: latest.timestamp,
                     astronaut_id: selectedAstronaut.id
                 };
@@ -342,6 +278,47 @@ const DoctorDashboard = () => {
         riskData.risk_label === 'MONITOR CLOSELY'
     );
     const doctorFlaggedKeys = flaggedKeysFromFeatures(riskData.top_features);
+
+    // Incident rows + the triage/escalation state that the notification poller already fetched.
+    const enrichedIncidents = useMemo(() => incidents.map(item => {
+        const wf = statusById[item.incident_id];
+        return wf ? { ...item, triage: wf.triage, escalation: wf.escalation } : item;
+    }), [incidents, statusById]);
+
+    // Never show a missing reading as 0: the hologram formats undefined as an em dash.
+    const hologramVitals = useMemo(() => (vitals
+        ? Object.fromEntries(Object.entries(vitals).map(([key, value]) => [key, value ?? undefined]))
+        : undefined), [vitals]);
+
+    // Notification click -> select the astronaut, then scroll to + highlight the incident card.
+    const handleNotificationSelect = useCallback((notification) => {
+        markRead(notification.key);
+        const target = astronauts.find(a => a.id === notification.astronautId);
+        if (target) setSelectedAstronaut(prev => (prev.id === target.id ? prev : target));
+        setFocusRequest({ incidentId: notification.incidentId, nonce: Date.now() });
+    }, [markRead]);
+
+    useEffect(() => {
+        if (!focusRequest) return undefined;
+        let tries = 0;
+        // The card may not exist yet (astronaut switch -> incidents reload), so retry for ~8 s.
+        const finder = setInterval(() => {
+            tries += 1;
+            const el = document.getElementById(`incident-${focusRequest.incidentId}`);
+            if (el) {
+                clearInterval(finder);
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setHighlightedIncident(focusRequest.incidentId);
+                clearTimeout(highlightTimer.current);
+                highlightTimer.current = setTimeout(() => setHighlightedIncident(null), 7000);
+            } else if (tries >= 40) {
+                clearInterval(finder);
+            }
+        }, 200);
+        return () => clearInterval(finder);
+    }, [focusRequest]);
+
+    useEffect(() => () => clearTimeout(highlightTimer.current), []);
 
     const clearChat = async () => {
     if (!window.confirm('Clear the conversation for both doctor and astronaut?')) return;
@@ -484,6 +461,7 @@ const sendMessage = async (content) => {
             );
 
             if (response.data?.success) {
+                refreshNotifications();
                 setIncidents(prev => prev.map(item =>
                     item.incident_id === incident.incident_id
                         ? {
@@ -508,194 +486,140 @@ const sendMessage = async (content) => {
         }
     };
 
+    const telemetryReady = !loading && !error;
+    const profileAlert = doctorAlertLevel === 'high';
+
     return (
         <DashboardLayout
             title="Medical Operations Dashboard"
             className={doctorAlertLevel === 'high' ? 'critical-alert' : doctorAlertLevel === 'medium' ? 'high-risk-alert' : ''}
             topNavActions={(
-                <>
-                    
-                </>
+                <NotificationBell
+                    notifications={notifications}
+                    unreadCount={unreadCount}
+                    unreadCritical={unreadCritical}
+                    alertTick={alertTick}
+                    loading={notificationsLoading}
+                    error={notificationsError}
+                    partialFailures={partialFailures}
+                    lastUpdated={notificationsUpdated}
+                    onSelect={handleNotificationSelect}
+                    onMarkAllRead={markAllRead}
+                    onRefresh={refreshNotifications}
+                />
             )}
         >
-            <div style={{
-                padding: '20px 24px',
-                marginBottom: '20px',
-                background: 'var(--card-bg, #111c30)',
-                border: '1px solid rgba(56, 189, 248, 0.2)',
-                borderRadius: '14px'
-            }}>
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: '16px'
-                }}>
-                    <div>
-                        <h2 style={{ margin: 0, color: 'var(--text-primary, #fff)' }}>
-                            Crew Health Monitoring
-                        </h2>
-                        <p style={{ margin: '6px 0 0', color: 'var(--text-secondary, #94a3b8)' }}>
-                            Select an astronaut to view their live health telemetry.
-                        </p>
-                    </div>
+            {/* 1. Crew overview + astronaut selector */}
+            <section className="doc-col-full doc-overview">
+                <div>
+                    <span className="doc-eyebrow">Medical Officer Console</span>
+                    <h2>Crew Health Monitoring</h2>
+                    <p>Select an astronaut to view their live health telemetry.</p>
+                </div>
 
-                    <select
-                        value={selectedAstronaut.id}
-                        onChange={(e) => {
-                            const astronaut = astronauts.find(a => a.id === e.target.value);
-                            if (astronaut) setSelectedAstronaut(astronaut);
-                        }}
-                        style={{
-                            minWidth: '220px',
-                        order: 2,
-                            padding: '12px 16px',
-                            borderRadius: '9px',
-                            border: '1px solid #38bdf8',
-                            background: '#0f172a',
-                            color: '#fff',
-                            fontSize: '15px',
-                            fontWeight: '600',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        {astronauts.map(astronaut => (
-                            <option key={astronaut.id} value={astronaut.id}>
-                                {astronaut.id}
-                            </option>
-                        ))}
-                    </select>
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginLeft: 0, zIndex: 50, order: 1 }}>
-                        <button
-                            type="button"
-                            aria-label="Medical notifications"
-                            onClick={() => {
-                                const opening = !wf05Open;
-                                setWf05Open(opening);
-                                if (opening) markWF05Read();
-                            }}
-                            style={{
-                                position: 'relative', width: 36, height: 36,
-                                borderRadius: 10, border: '1px solid rgba(56,189,248,.45)',
-                                background: 'rgba(15,23,42,.75)', color: '#7dd3fc',
-                                fontSize: 18, cursor: 'pointer',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                transition: 'all .2s ease'
+                <div className="doc-overview-controls">
+                    <div className={`doc-chip ${telemetryReady ? riskTone(riskData.risk_label) : ''}`}>
+                        <em>Engine assessment</em>
+                        <strong>{telemetryReady ? (riskData.risk_label || 'ANALYZING') : '—'}</strong>
+                    </div>
+                    <div className="doc-chip">
+                        <em>Last telemetry</em>
+                        <strong>{vitals?.timestamp ? new Date(vitals.timestamp).toLocaleTimeString() : '—'}</strong>
+                    </div>
+                    <label className="doc-select">
+                        <em>Astronaut</em>
+                        <select
+                            value={selectedAstronaut.id}
+                            onChange={(e) => {
+                                const astronaut = astronauts.find(a => a.id === e.target.value);
+                                if (astronaut) setSelectedAstronaut(astronaut);
                             }}
                         >
-                            &#128276;
-                            {unreadWF05 > 0 && (
-                                <span style={{
-                                    position: 'absolute', top: -7, right: -7,
-                                    background: '#ef4444', color: 'white',
-                                    borderRadius: 20, minWidth: 20, padding: '2px 5px',
-                                    fontSize: 11, fontWeight: 800
-                                }}>{unreadWF05 > 99 ? '99+' : unreadWF05}</span>
-                            )}
-                        </button>
-
-                        {wf05Open && (
-                            <div style={{
-                                position: 'absolute', right: 0, top: 44,
-                                width: 'min(380px, calc(100vw - 35px))',
-                                maxHeight: 420, overflowY: 'auto', zIndex: 2000,
-                                background: '#0f172a', color: 'white',
-                                border: '1px solid #334155', borderRadius: 12,
-                                boxShadow: '0 12px 35px rgba(0,0,0,.4)'
-                            }}>
-                                <div style={{
-                                    padding: 14, display: 'flex',
-                                    justifyContent: 'space-between',
-                                    borderBottom: '1px solid #334155'
-                                }}>
-                                    <strong>WF05 Medical Notifications</strong>
-                                    <button type="button" onClick={() => setWf05Open(false)}
-                                        style={{ background: 'none', border: 0, color: 'white', cursor: 'pointer' }}>&#10005;</button>
-                                </div>
-                                {wf05Notifications.length === 0 ? (
-                                    <p style={{ padding: 18, color: '#94a3b8' }}>No WF05 notifications.</p>
-                                ) : wf05Notifications.map(n => (
-                                    <div key={n.key} style={{
-                                        padding: 13, borderBottom: '1px solid #334155',
-                                        borderLeft: n.priority === 'high' ? '3px solid #f59e0b' : '3px solid #38bdf8'
-                                    }}>
-                                        <strong style={{ fontSize: 13 }}>{n.title}</strong>
-                                        <div style={{ color: '#cbd5e1', fontSize: 12, marginTop: 5 }}>{n.message}</div>
-                                        <div style={{ color: '#64748b', fontSize: 10, marginTop: 5 }}>
-                                            {n.timestamp ? new Date(n.timestamp).toLocaleString() : 'Live status'}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                            {astronauts.map(astronaut => (
+                                <option key={astronaut.id} value={astronaut.id}>
+                                    {astronaut.id}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
                 </div>
+            </section>
+
+            {/* 2-3. Astronaut profile / hologram + live vital signs */}
+            <SectionHeader index="01" title="Astronaut Overview & Live Vital Signs" subtitle={`${selectedAstronaut.id} · real-time engine telemetry`} />
+
+            <div className="doc-col-4 doc-stack">
+                <AstronautProfileCard
+                    astronaut={selectedAstronaut}
+                    vitals={telemetryReady ? hologramVitals : undefined}
+                    isAlert={profileAlert}
+                    alertLevel={doctorAlertLevel}
+                    flaggedKeys={doctorFlaggedKeys}
+                />
             </div>
 
-            {loading ? (
-                <div style={{ padding: '50px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                    Loading {selectedAstronaut.id} telemetry...
-                </div>
-            ) : error ? (
-                <div style={{
-                    padding: '24px',
-                    margin: '20px 0',
-                    borderRadius: '12px',
-                    background: 'rgba(220, 38, 38, 0.1)',
-                    border: '1px solid rgba(220, 38, 38, 0.4)',
-                    color: '#fca5a5'
-                }}>
-                    {error}
-                </div>
-            ) : (
-                <>
-                    <div className="col-span-5" style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '24px'
-                    }}>
-                        <AstronautProfileCard astronaut={selectedAstronaut} />
+            <div className="doc-col-8 doc-stack">
+                {loading ? (
+                    <div className="doc-state">Loading {selectedAstronaut.id} telemetry...</div>
+                ) : error ? (
+                    <div className="doc-state is-error" role="alert">{error}</div>
+                ) : (
+                    <>
                         <VitalsWidget vitals={vitals} onClick={() => setIsModalOpen(true)} alertLevel={doctorAlertLevel} flaggedKeys={doctorFlaggedKeys} />
-                        <div style={{ background: 'linear-gradient(165deg, rgba(7, 24, 46, 0.94), rgba(4, 13, 27, 0.96))', border: '1px solid rgba(34, 211, 238, 0.36)', borderRadius: '14px', padding: '18px', boxShadow: '0 10px 28px rgba(0, 0, 0, 0.38), 0 0 18px rgba(34, 211, 238, 0.07)' }}>
-                            <h3 style={{ color: '#67e8f9', letterSpacing: '0.06em', textTransform: 'uppercase', fontSize: '0.85rem' }}>Live Heart Rate Trend</h3>
-                            <VitalsChart data={history.heart_rate} label="Heart Rate" color="#ef4444" min={40} max={180} />
-                            <h3 style={{ marginTop: '20px', color: '#67e8f9', letterSpacing: '0.06em', textTransform: 'uppercase', fontSize: '0.85rem' }}>Live SpO2 Trend</h3>
-                            <VitalsChart data={history.spo2} label="SpO2" color="#06b6d4" min={80} max={100} />
+                        <div className="doc-chart-pair">
+                            <Card title="Live Heart Rate Trend">
+                                <div className="doc-chart"><VitalsChart data={history.heart_rate} label="Heart Rate (BPM)" color="#ef4444" min={40} max={180} /></div>
+                            </Card>
+                            <Card title="Live SpO2 Trend">
+                                <div className="doc-chart"><VitalsChart data={history.spo2} label="SpO2 (%)" color="#06b6d4" min={80} max={100} /></div>
+                            </Card>
                         </div>
-                        <AlertsWidget incidents={incidents} onAction={handleIncidentAction} />
-                    </div>
+                    </>
+                )}
+            </div>
 
-                    <div className="col-span-7" style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '24px'
-                    }}>
-                        <PredictiveRiskWidget
-                            riskData={riskData}
-                            anomalyData={anomalyData}
-                            history={history}
-                        />
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-                            gap: '24px'
-                        }}>
-                            <DiagnosticsWidget riskData={riskData} anomalyData={anomalyData} />
-                            <AssignTaskWidget />
-                        </div>
-                        <HistoryWidget />
+            {/* 4-5. Medical engine analysis + current health trend assessment */}
+            {telemetryReady && (
+                <>
+                    <SectionHeader index="02" title="Medical Engine Analysis" subtitle="Risk assessment, anomaly detection and short-term trend" />
+                    <div className="doc-col-4 doc-stack">
+                        <DiagnosticsWidget riskData={riskData} anomalyData={anomalyData} />
                     </div>
-
-                    <VitalsDetailModal
-                        isOpen={isModalOpen}
-                        onClose={() => setIsModalOpen(false)}
-                        history={history}
-                    />
+                    <div className="doc-col-8 doc-stack">
+                        <PredictiveRiskWidget riskData={riskData} anomalyData={anomalyData} history={history} />
+                    </div>
                 </>
             )}
 
-            <WorkflowCenter astronautId={selectedAstronaut.id} onRefresh={() => axios.get(BACKEND_URL + '/api/doctor/incidents', { params: { astronaut_id: selectedAstronaut.id } }).then(res => setIncidents(res.data?.incidents || [])).catch(() => {})} />
+            {/* 6. Historical engine analysis (follows the selected astronaut) */}
+            <SectionHeader index="03" title="Historical Engine Analysis" subtitle="Recorded engine ticks for the selected astronaut" />
+            <div className="doc-col-full doc-stack">
+                <HistoryWidget astronautId={selectedAstronaut.id} />
+            </div>
+
+            {/* 7-8. Medical incidents, review actions and medical orders */}
+            <SectionHeader index="04" title="Medical Incidents & Review Actions" subtitle="WF05 escalations are shown on every incident that has one" />
+            <div className="doc-col-8 doc-stack">
+                <AlertsWidget incidents={enrichedIncidents} onAction={handleIncidentAction} highlightedId={highlightedIncident} />
+            </div>
+            <div className="doc-col-4 doc-stack">
+                <AssignTaskWidget />
+            </div>
+
+            {telemetryReady && (
+                <VitalsDetailModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    history={history}
+                />
+            )}
+
+            <WorkflowCenter astronautId={selectedAstronaut.id} onRefresh={() => {
+                refreshNotifications();
+                axios.get(BACKEND_URL + '/api/doctor/incidents', { params: { astronaut_id: selectedAstronaut.id } })
+                    .then(res => setIncidents(Array.isArray(res.data?.incidents) ? res.data.incidents : []))
+                    .catch(() => {});
+            }} />
 
             <div style={{
                 position: 'fixed',
@@ -964,21 +888,3 @@ const sendMessage = async (content) => {
 };
 
 export default DoctorDashboard;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

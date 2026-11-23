@@ -150,7 +150,7 @@ const HistoryWidget = ({ astronautId = 'ASTRO_01' }) => {
             style={{ gridColumn: 'span 2', height: '400px', overflow: 'hidden' }}
         >
             <div style={{ marginBottom: '8px', fontSize: '0.78rem', color: '#a9bdd3' }}>
-                Source: ASTRO_01 | Engine: {latest?.model_version || 'Waiting'}
+                Source: {astronautId} | Engine: {latest?.model_version || 'Waiting'}
                 {' | '}Historical telemetry and engine findings — not medical advice.
             </div>
 

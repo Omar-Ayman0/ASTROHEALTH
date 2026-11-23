@@ -1,0 +1,139 @@
+/* Medical Incidents list (Doctor Dashboard) */
+
+.aw-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.aw-summary-item {
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    color: #a9bdd3;
+    background: rgba(34, 211, 238, 0.08);
+    border: 1px solid rgba(34, 211, 238, 0.28);
+}
+
+.aw-summary-item b { color: #e0f2fe; margin-right: 3px; }
+.aw-summary-item.is-high { color: #fed7aa; background: rgba(249, 115, 22, 0.12); border-color: rgba(251, 146, 60, 0.45); }
+.aw-summary-item.is-critical { color: #fecaca; background: rgba(239, 68, 68, 0.15); border-color: rgba(248, 113, 113, 0.55); }
+
+.aw-scroll {
+    max-height: 560px;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(34, 211, 238, 0.4) transparent;
+}
+
+.aw-empty { padding: 28px 20px; text-align: center; color: #a9bdd3; }
+
+.aw-incident {
+    --tone: #22d3ee;
+    --tone-bg: rgba(34, 211, 238, 0.05);
+    position: relative;
+    margin-bottom: 14px;
+    padding: 16px 16px 16px 18px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--tone) 45%, transparent);
+    border-left: 4px solid var(--tone);
+    background: linear-gradient(160deg, var(--tone-bg), rgba(4, 13, 27, 0.55));
+    scroll-margin: 90px 0;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.aw-incident.is-critical { --tone: #ef4444; --tone-bg: rgba(239, 68, 68, 0.12); }
+.aw-incident.is-high { --tone: #fb923c; --tone-bg: rgba(249, 115, 22, 0.09); }
+
+.aw-incident.is-focused {
+    border-color: #67e8f9;
+    animation: aw-focus 1.4s ease-in-out 4;
+}
+
+@keyframes aw-focus {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(103, 232, 249, 0.55), 0 0 0 rgba(103, 232, 249, 0); }
+    50% { box-shadow: 0 0 0 4px rgba(103, 232, 249, 0.35), 0 0 26px rgba(103, 232, 249, 0.45); }
+}
+
+.aw-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.aw-id { font-size: 0.95rem; letter-spacing: 0.02em; overflow-wrap: anywhere; }
+
+.aw-sev {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #a5f3fc;
+    background: rgba(34, 211, 238, 0.12);
+    border: 1px solid rgba(34, 211, 238, 0.4);
+}
+
+.aw-sev-critical, .aw-sev-high { color: #fecaca; background: rgba(239, 68, 68, 0.16); border-color: rgba(248, 113, 113, 0.5); }
+.aw-sev-medium { color: #fed7aa; background: rgba(249, 115, 22, 0.15); border-color: rgba(251, 146, 60, 0.5); }
+
+.aw-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px 16px;
+    margin-bottom: 12px;
+}
+
+.aw-meta em,
+.aw-escalation-facts em {
+    display: block;
+    font-style: normal;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #7f95ad;
+    margin-bottom: 2px;
+}
+
+.aw-meta span, .aw-meta strong { font-size: 0.86rem; overflow-wrap: anywhere; }
+
+.aw-escalation {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border-radius: 9px;
+    color: #cbd5e1;
+    background: rgba(100, 116, 139, 0.12);
+    border: 1px dashed rgba(148, 163, 184, 0.4);
+}
+
+.aw-escalation.is-live { color: #fed7aa; background: rgba(249, 115, 22, 0.12); border: 1px solid rgba(251, 146, 60, 0.55); }
+.aw-escalation.is-live.is-critical { color: #fecaca; background: rgba(239, 68, 68, 0.14); border-color: rgba(248, 113, 113, 0.65); }
+
+.aw-escalation-label { font-size: 0.74rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+.aw-escalation-facts { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.82rem; font-weight: 700; color: #f8fafc; }
+
+.aw-triage {
+    padding: 12px;
+    border-radius: 9px;
+    background: #0a2440;
+    border: 1px solid rgba(34, 211, 238, 0.28);
+}
+
+.aw-triage p { margin: 8px 0; font-size: 0.86rem; line-height: 1.5; }
+.aw-triage p.aw-muted { font-size: 0.82rem; color: #a9bdd3; }
+.aw-confidence { font-size: 0.82rem; margin-bottom: 8px; color: #cbe6f5; }
+.aw-list-block { margin-top: 8px; }
+.aw-list-block ul { margin: 5px 0; padding-left: 20px; }
+.aw-list-block li { margin-bottom: 4px; font-size: 0.84rem; }
+.aw-triage small { display: block; margin-top: 8px; color: #a9bdd3; }
+
+.aw-time { margin-top: 10px; font-size: 0.78rem; color: #a9bdd3; }
+
+.aw-action { margin-top: 12px; width: 100%; padding: 10px 14px; font-weight: 700; cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) {
+    .aw-incident.is-focused { animation: none; box-shadow: 0 0 0 3px rgba(103, 232, 249, 0.5); }
+}
