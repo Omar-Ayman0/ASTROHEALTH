@@ -1,4 +1,5 @@
 import React from 'react';
+import { vitalSeverity, SEVERITY_COLORS } from '../../utils/vitalSeverity';
 import './AstronautHologram.css';
 
 const fmt = (value, digits = 1) => {
@@ -25,7 +26,9 @@ const Ring = ({ x, y, w }) => (
  * Display only: it reads the same `vitals` object the dashboard already builds,
  * so no API / payload / schema change is involved.
  */
-const AstronautHologram = ({ astronaut, vitals = {}, isAlert = false }) => {
+const AstronautHologram = ({ astronaut, vitals = {}, isAlert = false, alertLevel = null, flaggedKeys = [] }) => {
+    // 'high' -> red hologram, 'medium' -> yellow hologram (isAlert kept for backwards compatibility)
+    const level = alertLevel || (isAlert ? 'high' : null);
     const hr = Number(vitals.heart_rate);
     const beat = Number.isFinite(hr) && hr > 0
         ? Math.min(1.6, Math.max(0.4, 60 / hr))
@@ -37,19 +40,20 @@ const AstronautHologram = ({ astronaut, vitals = {}, isAlert = false }) => {
 
     // px/py: point on the body. ry: row of the reading (one row per reading, in the same order as the points).
     const readings = [
-        { key: 'temp', label: 'TEMP', value: fmt(vitals.temperature, 1), unit: '\u00B0C', px: CX + 15, py: 38, ry: 40 },
-        { key: 'hr', label: 'HR', value: fmt(vitals.heart_rate, 1), unit: 'BPM', px: CX + 17, py: 110, ry: 104 },
-        { key: 'resp', label: 'RESP', value: fmt(vitals.respiratory_rate, 1), unit: '/min', px: CX + 25, py: 136, ry: 168 },
-        { key: 'spo2', label: 'SpO2', value: fmt(vitals.spo2, 0), unit: '%', px: CX + 54, py: 186, ry: 232 }
+        { key: 'temp', vkey: 'temperature', raw: vitals.temperature, label: 'TEMP', value: fmt(vitals.temperature, 1), unit: '\u00B0C', px: CX + 15, py: 38, ry: 40 },
+        { key: 'hr', vkey: 'heart_rate', raw: vitals.heart_rate, label: 'HR', value: fmt(vitals.heart_rate, 1), unit: 'BPM', px: CX + 17, py: 110, ry: 104 },
+        { key: 'resp', vkey: 'respiratory_rate', raw: vitals.respiratory_rate, label: 'RESP', value: fmt(vitals.respiratory_rate, 1), unit: 'br/min', px: CX + 25, py: 136, ry: 168 },
+        { key: 'spo2', vkey: 'spo2', raw: vitals.spo2, label: 'SpO2', value: fmt(vitals.spo2, 0), unit: '%', px: CX + 54, py: 186, ry: 232 }
     ];
 
     const label = readings.map((r) => `${r.label} ${r.value} ${r.unit}`.trim()).join(', ');
-    const name = astronaut?.name || 'ASTRONAUT';
+    // name and ID both come from the same astronaut id, so they can never disagree with each other or the header
     const id = astronaut?.id || '';
+    const name = id ? id.replace('_', ' ') : (astronaut?.name || 'ASTRONAUT');
 
     return (
         <div
-            className={`astro-holo${isAlert ? ' is-alert' : ''}`}
+            className={`astro-holo${level === 'high' ? ' is-alert' : level === 'medium' ? ' is-warn' : ''}`}
             style={{ '--beat': `${beat}s` }}
         >
             <div className="astro-holo-grid" aria-hidden="true" />
@@ -172,9 +176,22 @@ const AstronautHologram = ({ astronaut, vitals = {}, isAlert = false }) => {
 
                 {/* callouts: one leader line + one row per reading */}
                 {readings.map((r) => {
+                    const sev = vitalSeverity(r.vkey, r.raw, level, flaggedKeys);
+                    const sevColor = SEVERITY_COLORS[sev];
                     const path = `M${r.px} ${r.py} H${LEAD_X} L${LEAD_X + 14} ${r.ry} H${ROW_X - 4}`;
                     return (
                         <g key={r.key} className={`holo-callout holo-callout-${r.key}`}>
+                            {sev !== 'ok' && (
+                                <rect
+                                    x={ROW_X - 8}
+                                    y={r.ry - 18}
+                                    width="78"
+                                    height="42"
+                                    rx="6"
+                                    className={`holo-reading-box holo-reading-box-${sev}`}
+                                    style={{ '--box': sevColor }}
+                                />
+                            )}
                             <path d={path} className="holo-leader-halo" />
                             <path d={path} className="holo-leader" />
                             <circle cx={r.px} cy={r.py} r="9" className="holo-pulse" />

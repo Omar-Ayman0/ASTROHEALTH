@@ -6,13 +6,13 @@ import AstronautHologram from './AstronautHologram';
  * With `vitals` (astronaut dashboard): holographic astronaut with live readings.
  * Without `vitals` (e.g. the doctor dashboard): the original photo layout, unchanged.
  */
-const AstronautProfileCard = ({ astronaut, vitals, isAlert = false }) => {
+const AstronautProfileCard = ({ astronaut, vitals, isAlert = false, alertLevel = null, flaggedKeys = [] }) => {
     if (!astronaut) return null;
 
     if (vitals) {
         return (
             <Card title="Astronaut Profile">
-                <AstronautHologram astronaut={astronaut} vitals={vitals} isAlert={isAlert} />
+                <AstronautHologram astronaut={astronaut} vitals={vitals} isAlert={isAlert} alertLevel={alertLevel} flaggedKeys={flaggedKeys} />
             </Card>
         );
     }

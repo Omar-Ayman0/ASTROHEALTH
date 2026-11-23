@@ -100,7 +100,7 @@ const VitalsDetailModal = ({ isOpen, onClose, history }) => {
         const rows = [];
 
         // Header
-        rows.push(['Timestamp', 'Heart Rate (BPM)', 'SpO2 (%)', 'BP Systolic (mmHg)', 'BP Diastolic (mmHg)', 'Skin Temperature (C)', 'HRV (ms)', 'Respiratory Rate (BPM)']);
+        rows.push(['Timestamp', 'Heart Rate (BPM)', 'SpO2 (%)', 'BP Systolic (mmHg)', 'BP Diastolic (mmHg)', 'Skin Temperature (C)', 'HRV (ms)', 'Respiratory Rate (br/min)']);
 
         // Data rows
         const maxLength = Math.max(
@@ -276,10 +276,10 @@ const VitalsDetailModal = ({ isOpen, onClose, history }) => {
                         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
                             <Card title="Respiratory Rate Trend">
                                 <div style={{ height: '200px' }}>
-                                    <Line data={createChartData(history.respiratory_rate || [], 'Respiratory Rate (BPM)', '#0d9488')} options={commonOptions} />
+                                    <Line data={createChartData(history.respiratory_rate || [], 'Respiratory Rate (br/min)', '#0d9488')} options={commonOptions} />
                                 </div>
                             </Card>
-                            <StatCard title="Statistics" stats={respiratoryStats} unit=" BPM" />
+                            <StatCard title="Statistics" stats={respiratoryStats} unit=" br/min" />
                         </div>
                     </div>
                 )}

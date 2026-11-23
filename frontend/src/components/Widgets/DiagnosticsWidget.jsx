@@ -6,7 +6,7 @@ const DiagnosticsWidget = ({ riskData, anomalyData }) => {
         <Card title="AI Analysis">
             <div style={{ marginBottom: '20px' }}>
                 <div className="unit">RISK ASSESSMENT</div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: riskData.risk_label === 'Critical' ? 'var(--accent-red)' : riskData.risk_label === 'High' ? 'var(--accent-orange)' : 'var(--accent-green)' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: ['Critical', 'HIGH RISK'].includes(riskData.risk_label) ? '#f87171' : ['High', 'MONITOR CLOSELY'].includes(riskData.risk_label) ? '#fbbf24' : 'var(--accent-green)' }}>
                     {riskData.risk_label || 'Analyzing...'}
                 </div>
             </div>

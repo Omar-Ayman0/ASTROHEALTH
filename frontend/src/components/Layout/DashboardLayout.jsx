@@ -57,10 +57,11 @@ const DashboardLayout = ({ title, statusBadge, children, className = '', topNavA
     const isDoctor = location.pathname.includes('doctor');
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+    const alertState = /critical-alert/.test(className) ? ' is-critical' : /high-risk-alert/.test(className) ? ' is-high-risk' : '';
     const subtitle = String(title || '').replace(/\s*\|\s*/g, ' // ');
 
     return (
-        <div className={`dashboard-layout astro-shell astro-space-theme${isDoctor ? ' doctor-shell' : ''}`}>
+        <div className={`dashboard-layout astro-shell astro-space-theme${isDoctor ? ' doctor-shell' : ''}${alertState}`}>
             <nav className="top-nav">
                 <div className="top-nav-inner">
                     <div className="dash-brand">

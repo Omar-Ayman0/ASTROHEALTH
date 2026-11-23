@@ -13,6 +13,7 @@ import HistoryWidget from '../components/Widgets/HistoryWidget';
 import AssignTaskWidget from '../components/Widgets/AssignTaskWidget';
 import AstronautProfileCard from '../components/Widgets/AstronautProfileCard';
 import { astronauts } from '../utils/astronauts';
+import { alertLevelFrom, flaggedKeysFromFeatures } from '../utils/vitalSeverity';
 import WorkflowCenter from '../components/Widgets/WorkflowCenter';
 import { API_URL, ENGINE_URL } from '../config';
 
@@ -340,6 +341,12 @@ const DoctorDashboard = () => {
         };
     }, [selectedAstronaut]);
 
+    const doctorAlertLevel = alertLevelFrom(
+        riskData.risk_label === 'HIGH RISK',
+        riskData.risk_label === 'MONITOR CLOSELY'
+    );
+    const doctorFlaggedKeys = flaggedKeysFromFeatures(riskData.top_features);
+
     const clearChat = async () => {
     if (!window.confirm('Clear the conversation for both doctor and astronaut?')) return;
     try {
@@ -508,6 +515,7 @@ const sendMessage = async (content) => {
     return (
         <DashboardLayout
             title="Medical Operations Dashboard"
+            className={doctorAlertLevel === 'high' ? 'critical-alert' : doctorAlertLevel === 'medium' ? 'high-risk-alert' : ''}
             topNavActions={(
                 <>
                     
@@ -652,7 +660,7 @@ const sendMessage = async (content) => {
                         gap: '24px'
                     }}>
                         <AstronautProfileCard astronaut={selectedAstronaut} />
-                        <VitalsWidget vitals={vitals} onClick={() => setIsModalOpen(true)} />
+                        <VitalsWidget vitals={vitals} onClick={() => setIsModalOpen(true)} alertLevel={doctorAlertLevel} flaggedKeys={doctorFlaggedKeys} />
                         <div style={{ background: 'linear-gradient(165deg, rgba(7, 24, 46, 0.94), rgba(4, 13, 27, 0.96))', border: '1px solid rgba(34, 211, 238, 0.36)', borderRadius: '14px', padding: '18px', boxShadow: '0 10px 28px rgba(0, 0, 0, 0.38), 0 0 18px rgba(34, 211, 238, 0.07)' }}>
                             <h3 style={{ color: '#67e8f9', letterSpacing: '0.06em', textTransform: 'uppercase', fontSize: '0.85rem' }}>Live Heart Rate Trend</h3>
                             <VitalsChart data={history.heart_rate} label="Heart Rate" color="#ef4444" min={40} max={180} />

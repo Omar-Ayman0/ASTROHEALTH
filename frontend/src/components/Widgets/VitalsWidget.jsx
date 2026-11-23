@@ -1,5 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../Common/Card';
+import { vitalSeverity, getVitalSeverity, SEVERITY_COLORS } from '../../utils/vitalSeverity';
+
+// Telemetry older than this (seconds) is flagged as stale.
+const STALE_AFTER_SEC = 30;
+
+const TONES = {
+    ok: {
+        border: 'rgba(34, 211, 238, 0.38)', borderHover: 'rgba(34, 211, 238, 0.92)',
+        bg: 'rgba(6, 22, 42, 0.78)', bgHover: 'linear-gradient(155deg, rgba(8, 145, 178, 0.24), rgba(6, 22, 42, 0.94))',
+        label: '#67e8f9', glow: ''
+    },
+    medium: {
+        border: 'rgba(251, 191, 36, 0.85)', borderHover: '#fbbf24',
+        bg: 'linear-gradient(155deg, rgba(251, 191, 36, 0.16), rgba(6, 22, 42, 0.9))', bgHover: 'linear-gradient(155deg, rgba(251, 191, 36, 0.26), rgba(6, 22, 42, 0.94))',
+        label: '#fde68a', glow: 'rgba(251, 191, 36, 0.75)'
+    },
+    high: {
+        border: 'rgba(248, 113, 113, 0.9)', borderHover: '#f87171',
+        bg: 'linear-gradient(155deg, rgba(239, 68, 68, 0.2), rgba(6, 22, 42, 0.9))', bgHover: 'linear-gradient(155deg, rgba(239, 68, 68, 0.3), rgba(6, 22, 42, 0.94))',
+        label: '#fca5a5', glow: 'rgba(248, 113, 113, 0.8)'
+    }
+};
+
+const SEVERITY_TEXT = { ok: 'Signal normal', medium: 'Warning: outside normal range', high: 'Alert: abnormal reading' };
 
 const TELEMETRY_META = {
     heart_rate: {
@@ -37,7 +61,7 @@ const TELEMETRY_META = {
     respiratory_rate: {
         code: 'CH-05 // RESP',
         label: 'Resp. Rate',
-        unit: 'BPM',
+        unit: 'br/min',
         min: 8,
         max: 26,
         isHeart: false
@@ -59,8 +83,9 @@ const getHeartStatus = (val) => {
     if (val === null || val === undefined || !Number.isFinite(n)) {
         return { label: 'NO SIGNAL', color: '#94a3b8' };
     }
-    if (n < HR_NORMAL.min) return { label: 'BELOW RANGE', color: '#fbbf24' };
-    if (n > HR_NORMAL.max) return { label: 'ABOVE RANGE', color: '#f87171' };
+    const color = SEVERITY_COLORS[getVitalSeverity('heart_rate', n)];
+    if (n < HR_NORMAL.min) return { label: 'BELOW RANGE', color };
+    if (n > HR_NORMAL.max) return { label: 'ABOVE RANGE', color };
     return { label: 'NORMAL', color: '#4ade80' };
 };
 
@@ -188,12 +213,26 @@ const HologramCore = ({ isHeartActive }) => (
     </div>
 );
 
-const VitalsWidget = ({ vitals, onClick }) => {
+const VitalsWidget = ({ vitals, onClick, alertLevel = null, flaggedKeys = [] }) => {
     const [activeKey, setActiveKey] = useState(null);
+    const [nowMs, setNowMs] = useState(() => Date.now());
+
+    useEffect(() => {
+        const timer = setInterval(() => setNowMs(Date.now()), 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     if (!vitals) {
         return <Card title="ORBITAL TELEMETRY // LIVE VITALS">Syncing sensor stream...</Card>;
     }
+
+    const lastMs = vitals.timestamp ? new Date(vitals.timestamp).getTime() : NaN;
+    const ageSec = Number.isFinite(lastMs) ? Math.max(0, Math.round((nowMs - lastMs) / 1000)) : null;
+    const isStale = ageSec !== null && ageSec > STALE_AFTER_SEC;
+    const ageLabel = ageSec === null ? '' : ageSec < 60 ? `${ageSec}s ago`
+        : ageSec < 3600 ? `${Math.floor(ageSec / 60)} min ago`
+        : ageSec < 86400 ? `${Math.floor(ageSec / 3600)} h ago`
+        : `${Math.floor(ageSec / 86400)} d ago`;
 
     const items = [
         { key: 'heart_rate', value: vitals.heart_rate },
@@ -205,7 +244,7 @@ const VitalsWidget = ({ vitals, onClick }) => {
 
     return (
         <Card
-            title="ORBITAL TELEMETRY // LIVE VITALS"
+            title={isStale ? 'ORBITAL TELEMETRY // LAST KNOWN VITALS' : 'ORBITAL TELEMETRY // LIVE VITALS'}
             className={onClick ? 'clickable-card' : ''}
             style={{
                 ...(onClick ? { cursor: 'pointer' } : {}),
@@ -227,17 +266,17 @@ const VitalsWidget = ({ vitals, onClick }) => {
                 }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <HologramCore isHeartActive={Boolean(vitals.heart_rate)} />
+                    <HologramCore isHeartActive={alertLevel === 'high'} />
                     <div>
                         <div
                             style={{
                                 fontFamily: 'monospace',
                                 fontSize: '0.68rem',
                                 letterSpacing: '0.1em',
-                                color: '#67e8f9'
+                                color: isStale ? '#fbbf24' : '#67e8f9'
                             }}
                         >
-                            HOLO-LINK // ACTIVE
+                            {isStale ? 'HOLO-LINK // DATA STALE' : 'HOLO-LINK // ACTIVE'}
                         </div>
                         <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
                             Biometric telemetry stream
@@ -258,36 +297,25 @@ const VitalsWidget = ({ vitals, onClick }) => {
                     const meta = TELEMETRY_META[key];
                     const isHovered = activeKey === key;
                     const progress = getProgress(value, meta.min, meta.max);
+                    const severity = vitalSeverity(key, value, alertLevel, flaggedKeys);
+                    const tone = TONES[severity];
+                    const dotColor = SEVERITY_COLORS[severity];
 
                     return (
                         <div
                             key={key}
+                            className={severity === 'ok' ? '' : `vital-glow vital-glow-${severity}`}
                             onMouseEnter={() => setActiveKey(key)}
                             onMouseLeave={() => setActiveKey(null)}
                             style={{
+                                '--glow': tone.glow,
                                 position: 'relative',
                                 padding: '13px 14px',
                                 borderRadius: 10,
-                                background: meta.isHeart
-                                    ? isHovered
-                                        ? 'linear-gradient(155deg, rgba(127, 29, 29, 0.36), rgba(6, 22, 42, 0.94))'
-                                        : 'linear-gradient(155deg, rgba(127, 29, 29, 0.2), rgba(6, 22, 42, 0.88))'
-                                    : isHovered
-                                        ? 'linear-gradient(155deg, rgba(8, 145, 178, 0.24), rgba(6, 22, 42, 0.94))'
-                                        : 'rgba(6, 22, 42, 0.78)',
-                                border: `1px solid ${
-                                    meta.isHeart
-                                        ? isHovered
-                                            ? 'rgba(248, 113, 113, 0.85)'
-                                            : 'rgba(239, 68, 68, 0.5)'
-                                        : isHovered
-                                            ? 'rgba(34, 211, 238, 0.92)'
-                                            : 'rgba(34, 211, 238, 0.38)'
-                                }`,
+                                background: isHovered ? tone.bgHover : tone.bg,
+                                border: `1px solid ${isHovered ? tone.borderHover : tone.border}`,
                                 boxShadow: isHovered
-                                    ? meta.isHeart
-                                        ? '0 12px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(239, 68, 68, 0.22)'
-                                        : '0 12px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(34, 211, 238, 0.25)'
+                                    ? '0 12px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(34, 211, 238, 0.25)'
                                     : '0 0 12px rgba(34, 211, 238, 0.08)',
                                 transform: isHovered
                                     ? 'translateY(-4px) rotateX(5deg) rotateY(-4deg) translateZ(8px)'
@@ -304,20 +332,19 @@ const VitalsWidget = ({ vitals, onClick }) => {
                                     fontFamily: 'monospace',
                                     fontSize: '0.64rem',
                                     letterSpacing: '0.08em',
-                                    color: meta.isHeart ? '#fca5a5' : '#67e8f9',
+                                    color: tone.label,
                                     marginBottom: 5
                                 }}
                             >
                                 <span>{meta.code}</span>
                                 <span
+                                    title={SEVERITY_TEXT[severity]}
                                     style={{
                                         width: 7,
                                         height: 7,
                                         borderRadius: '50%',
-                                        backgroundColor: meta.isHeart ? '#ef4444' : '#22d3ee',
-                                        boxShadow: meta.isHeart
-                                            ? '0 0 8px rgba(239, 68, 68, 0.85)'
-                                            : '0 0 8px rgba(34, 211, 238, 0.75)'
+                                        backgroundColor: dotColor,
+                                        boxShadow: `0 0 8px ${dotColor}`
                                     }}
                                 />
                             </div>
@@ -344,12 +371,12 @@ const VitalsWidget = ({ vitals, onClick }) => {
                                     lineHeight: 1.15
                                 }}
                             >
-                                <span>{value ?? '—'}</span>
+                                <span>{value ?? '\u2014'}</span>
                                 <span
                                     style={{
                                         fontSize: '0.75rem',
                                         fontWeight: 500,
-                                        color: '#94a3b8'
+                                        color: '#a9bdd3'
                                     }}
                                 >
                                     {meta.unit}
@@ -373,9 +400,9 @@ const VitalsWidget = ({ vitals, onClick }) => {
                                             height: '100%',
                                             width: `${progress}%`,
                                             borderRadius: 999,
-                                            background: meta.isHeart
-                                                ? 'linear-gradient(90deg, #dc2626, #f87171)'
-                                                : 'linear-gradient(90deg, #06b6d4, #22d3ee)',
+                                            background: severity === 'ok'
+                                                ? 'linear-gradient(90deg, #06b6d4, #22d3ee)'
+                                                : `linear-gradient(90deg, ${dotColor}, ${dotColor})`,
                                             transition: 'width 0.35s ease'
                                         }}
                                     />
@@ -394,6 +421,7 @@ const VitalsWidget = ({ vitals, onClick }) => {
                         borderTop: '1px solid rgba(34, 211, 238, 0.18)',
                         display: 'flex',
                         justifyContent: 'space-between',
+                        alignItems: 'center',
                         flexWrap: 'wrap',
                         gap: 8,
                         fontFamily: 'monospace',
@@ -402,12 +430,31 @@ const VitalsWidget = ({ vitals, onClick }) => {
                     }}
                 >
                     <span>DOWNLINK // CAIRO-EET</span>
-                    <span style={{ color: '#94a3b8' }}>
-                        {new Intl.DateTimeFormat('en-GB', {
-                            timeZone: 'Africa/Cairo',
-                            dateStyle: 'medium',
-                            timeStyle: 'medium'
-                        }).format(new Date(vitals.timestamp))}
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: '#a9bdd3' }}>
+                        {isStale && (
+                            <span
+                                style={{
+                                    padding: '2px 8px',
+                                    borderRadius: 999,
+                                    border: '1px solid rgba(251, 191, 36, 0.7)',
+                                    background: 'rgba(251, 191, 36, 0.16)',
+                                    color: '#fde68a',
+                                    fontWeight: 700,
+                                    letterSpacing: '0.06em'
+                                }}
+                            >
+                                DATA STALE
+                            </span>
+                        )}
+                        <span>
+                            Last updated:{' '}
+                            {new Intl.DateTimeFormat('en-GB', {
+                                timeZone: 'Africa/Cairo',
+                                dateStyle: 'medium',
+                                timeStyle: 'medium'
+                            }).format(new Date(vitals.timestamp))}
+                            {ageLabel && ` (${ageLabel})`}
+                        </span>
                     </span>
                 </div>
             )}

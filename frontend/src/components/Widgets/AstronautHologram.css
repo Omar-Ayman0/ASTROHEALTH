@@ -16,6 +16,13 @@
     container-type: inline-size;
 }
 
+.astro-holo.is-warn {
+    --holo: #fbbf24;
+    --holo-hot: #f97316;
+    --holo-glow: rgba(251, 191, 36, 0.45);
+    border-color: rgba(251, 191, 36, 0.5);
+}
+
 .astro-holo.is-alert {
     --holo: #f87171;
     --holo-hot: #fbbf24;
@@ -221,6 +228,21 @@
 }
 
 .is-alert .holo-label { fill: #fecaca; }
+.is-warn .holo-label { fill: #fde68a; }
+
+/* the reading whose vital is out of range glows in the alert colour */
+.holo-reading-box {
+    fill: var(--box);
+    fill-opacity: 0.14;
+    stroke: var(--box);
+    stroke-width: 1.4;
+    animation: holo-box-glow 1.6s ease-in-out infinite;
+}
+
+@keyframes holo-box-glow {
+    0%, 100% { filter: drop-shadow(0 0 2px var(--box)); stroke-opacity: 0.7; }
+    50% { filter: drop-shadow(0 0 9px var(--box)); stroke-opacity: 1; }
+}
 
 /* name block */
 .astro-holo-id {
@@ -258,6 +280,7 @@
     .holo-blink,
     .holo-ring-dash,
     .holo-ecg,
+    .holo-reading-box,
     .holo-pulse {
         animation: none;
     }

@@ -109,7 +109,7 @@ const HistoryWidget = ({ astronautId = 'ASTRO_01' }) => {
         const headers = [
             'Timestamp', 'Model Version', 'Heart Rate BPM',
             'SpO2 Percent', 'HRV ms', 'Skin Temperature C',
-            'Respiratory Rate BPM', 'Engine Flagged',
+            'Respiratory Rate br/min', 'Engine Flagged',
             'Engine Explanation', 'Data Quality', 'Scenario'
         ];
 
@@ -229,7 +229,7 @@ const HistoryWidget = ({ astronautId = 'ASTRO_01' }) => {
                                         SpO2: {record.spo2 ?? 'N/A'}%<br />
                                         HRV: {record.hrv ?? 'N/A'} ms<br />
                                         Temp: {record.temperature ?? 'N/A'} °C<br />
-                                        Resp: {record.respiratory_rate ?? 'N/A'} bpm
+                                        Resp: {record.respiratory_rate ?? 'N/A'} br/min
                                     </td>
                                     <td style={{
                                         padding: '9px',

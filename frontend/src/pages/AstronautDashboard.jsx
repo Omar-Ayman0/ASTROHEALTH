@@ -14,6 +14,7 @@ import AstronautProfileCard from '../components/Widgets/AstronautProfileCard';
 import TaskWidget from '../components/Widgets/TaskWidget';
 import HistoryWidget from '../components/Widgets/HistoryWidget';
 import { astronauts } from '../utils/astronauts';
+import { alertLevelFrom, flaggedKeysFromFeatures } from '../utils/vitalSeverity';
 import { API_URL, ENGINE_URL } from '../config';
 
 const BACKEND_URL = API_URL;
@@ -221,6 +222,8 @@ const AstronautDashboard = () => {
 
     const isCritical = anomalyData.is_anomaly;
     const isHighRisk = riskData.risk_label === 'MONITOR CLOSELY';
+    const alertLevel = alertLevelFrom(Boolean(isCritical), isHighRisk);
+    const flaggedKeys = flaggedKeysFromFeatures(riskData.top_features);
 
     return (
         <DashboardLayout
@@ -233,12 +236,12 @@ const AstronautDashboard = () => {
             }
         >
             <div className="col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                <AstronautProfileCard astronaut={astronaut} vitals={vitals} isAlert={Boolean(isCritical)} />
+                <AstronautProfileCard astronaut={astronaut} vitals={vitals} isAlert={Boolean(isCritical)} alertLevel={alertLevel} flaggedKeys={flaggedKeys} />
                 <DiagnosticsWidget riskData={riskData} anomalyData={anomalyData} />
             </div>
 
             <div className="col-span-8" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                <VitalsWidget vitals={vitals} />
+                <VitalsWidget vitals={vitals} alertLevel={alertLevel} flaggedKeys={flaggedKeys} />
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
                     <Card title="Heart Rate Trend">
