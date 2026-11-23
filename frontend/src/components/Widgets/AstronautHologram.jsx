@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { vitalSeverity, SEVERITY_COLORS } from '../../utils/vitalSeverity';
+import { ASTRONAUT_MODEL_URL } from '../../config';
 import './AstronautHologram.css';
+
+const isAvailable = (value) => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
 
 const fmt = (value, digits = 1) => {
     if (value === null || value === undefined || value === '') return '\u2014';
@@ -37,30 +40,68 @@ const AstronautHologram = ({ astronaut, vitals = {}, isAlert = false, alertLevel
         ? Math.min(1.6, Math.max(0.4, 60 / hr))
         : 0.9;
 
+    // 3D astronaut (three.js, loaded on demand). While it is loading, or if WebGL / the model is unavailable,
+    // the SVG astronaut below stays visible, so the hologram never disappears.
+    const mountRef = useRef(null);
+    const sceneRef = useRef(null);
+    const sceneLevel = level === 'high' || level === 'medium' ? level : null;
+    const liveRef = useRef({ level: sceneLevel, beat });
+    const [has3d, setHas3d] = useState(false);
+
+    useEffect(() => {
+        let cancelled = false;
+        let handle = null;
+        import('./holoScene3d')
+            .then((mod) => {
+                if (cancelled || !mountRef.current || !mod.webglAvailable()) return;
+                handle = mod.createHoloScene(mountRef.current, {
+                    modelUrl: ASTRONAUT_MODEL_URL,
+                    onReady: () => { if (!cancelled) setHas3d(true); },
+                    onError: () => { if (!cancelled) setHas3d(false); }
+                });
+                sceneRef.current = handle;
+                handle.update({ level: liveRef.current.level, beatSeconds: liveRef.current.beat });
+            })
+            .catch((err) => console.warn('3D astronaut unavailable, using 2D hologram:', err));
+        return () => {
+            cancelled = true;
+            sceneRef.current = null;
+            handle?.dispose();
+        };
+    }, []);
+
+    useEffect(() => {
+        liveRef.current = { level: sceneLevel, beat };
+        sceneRef.current?.update({ level: sceneLevel, beatSeconds: beat });
+    }, [sceneLevel, beat]);
+
     const CX = 200; // figure centre line
     const LEAD_X = 292; // where every leader line turns toward its row
     const ROW_X = 318; // start of the readings column
 
     // px/py: point on the body. ry: row of the reading (one row per reading, in the same order as the points).
+    // A metric the data source did not provide is hidden instead of being shown as a dash or a made-up number.
     const readings = [
-        { key: 'temp', vkey: 'temperature', raw: vitals.temperature, label: 'TEMP', value: fmt(vitals.temperature, 1), unit: '\u00B0C', px: CX + 15, py: 38, ry: 40 },
-        { key: 'hr', vkey: 'heart_rate', raw: vitals.heart_rate, label: 'HR', value: fmt(vitals.heart_rate, 1), unit: 'BPM', px: CX + 17, py: 110, ry: 104 },
-        { key: 'resp', vkey: 'respiratory_rate', raw: vitals.respiratory_rate, label: 'RESP', value: fmt(vitals.respiratory_rate, 1), unit: 'br/min', px: CX + 25, py: 136, ry: 168 },
-        { key: 'spo2', vkey: 'spo2', raw: vitals.spo2, label: 'SpO2', value: fmt(vitals.spo2, 0), unit: '%', px: CX + 54, py: 186, ry: 232 }
-    ];
+        { key: 'temp', vkey: 'temperature', raw: vitals.temperature, label: 'TEMP', value: fmt(vitals.temperature, 1), unit: '\u00B0C', px: CX + 15, py: 38, ry: 34 },
+        { key: 'hr', vkey: 'heart_rate', raw: vitals.heart_rate, label: 'HR', value: fmt(vitals.heart_rate, 1), unit: 'BPM', px: CX + 18, py: 102, ry: 88 },
+        { key: 'hrv', vkey: 'hrv', raw: vitals.hrv, label: 'HRV', value: fmt(vitals.hrv, 0), unit: 'ms', px: CX + 24, py: 120, ry: 142 },
+        { key: 'resp', vkey: 'respiratory_rate', raw: vitals.respiratory_rate, label: 'RESP', value: fmt(vitals.respiratory_rate, 1), unit: 'br/min', px: CX + 27, py: 138, ry: 196 },
+        { key: 'spo2', vkey: 'spo2', raw: vitals.spo2, label: 'SpO2', value: fmt(vitals.spo2, 0), unit: '%', px: CX + 54, py: 186, ry: 250 }
+    ].filter((r) => isAvailable(r.raw));
 
-    const label = readings.map((r) => `${r.label} ${r.value} ${r.unit}`.trim()).join(', ');
+    const label = readings.map((r) => `${r.label} ${r.value} ${r.unit}`.trim()).join(', ') || 'no telemetry available';
     // name and ID both come from the same astronaut id, so they can never disagree with each other or the header
     const id = astronaut?.id || '';
     const name = id ? id.replace('_', ' ') : (astronaut?.name || 'ASTRONAUT');
 
     return (
         <div
-            className={`astro-holo${level === 'high' ? ' is-alert' : level === 'medium' ? ' is-warn' : ''}`}
+            className={`astro-holo${level === 'high' ? ' is-alert' : level === 'medium' ? ' is-warn' : ''}${has3d ? ' has-3d' : ''}`}
             style={{ '--beat': `${beat}s` }}
         >
             <div className="astro-holo-grid" aria-hidden="true" />
             <div className="astro-holo-scan" aria-hidden="true" />
+            <div className="astro-holo-3d" ref={mountRef} aria-hidden="true" />
 
             <svg
                 className="astro-holo-svg"

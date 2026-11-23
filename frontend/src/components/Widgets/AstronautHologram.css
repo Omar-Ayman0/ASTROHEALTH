@@ -286,3 +286,13 @@
     }
     .astro-holo-scan { top: 50%; }
 }
+
+/* 3D astronaut layer: sits between the grid and the SVG callouts; the SVG figure is hidden once it is ready */
+.astro-holo-3d {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.astro-holo.has-3d .holo-figure { display: none; }
